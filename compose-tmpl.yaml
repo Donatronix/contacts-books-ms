@@ -1,0 +1,52 @@
+version: '3.5'
+
+networks:
+  app-tier:
+    name: sumraNet
+    driver: bridge
+
+services:
+  apache:
+    container_name: {{DEPLOY_NAME}}-front
+#    hostname: nginx
+    image: {{DOCKER_IMAGE}}
+    networks:
+      - app-tier
+    ports:
+      - '8107:8080'
+    volumes:
+#      - ./conf/nginx.conf:/opt/sumra/nginx/conf/vhosts/vhosts.conf:ro
+#      - ./conf/mime.types:/opt/sumra/nginx/conf/mime.types:ro
+#      - ./web/public:/web/public:ro
+#      - ./conf/server_blocks.conf:/opt/sumra/nginx/conf/server_blocks/server_blocks.conf:ro
+      - ./conf/vhost.conf:/etc/apache2/sites-enabled/000-default.conf:ro
+      - ./certs/dev.sumra.net.crt:/certs/dev.sumra.net.crt:ro
+      - ./certs/dev.sumra.net.key:/certs/dev.sumra.net.key:ro
+      - ./web:/app:rw
+      - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:rw
+#      - ./conf/.env_local:/app/.env:rw
+#  redis:
+#    container_name: sumra-kv-dev-redis-cache
+#    hostname: sumra-kv-dev-redis-cache
+#    image: 'bitnami/redis:5.0'
+#    environment:
+#      - ALLOW_EMPTY_PASSWORD=yes
+#      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+#    command: /run.sh --maxmemory 100mb
+#    networks:
+#      - app-tier
+#    ports:
+#      - '6379:6379'
+#    volumes:
+#      - './redis-data:/opt/sumra/redis/data'
+#  php-fpm:
+#    container_name: {{DEPLOY_NAME}}-php-fpm
+#    hostname: {{DEPLOY_NAME}}-php-fpm
+#    image: "bitnami/php-fpm:latest"
+#    networks:
+#      - app-tier
+#    volumes:
+#      - ./web:/web
+#      - ./conf/sumra-pool.conf:/opt/bitnami/php/etc/php-fpm.d/sumra-pool.conf
+#    ports:
+#      - '9000:9000'

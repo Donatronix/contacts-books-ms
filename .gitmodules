@@ -1,0 +1,6 @@
+[submodule "pubsub"]
+	path = pubsub
+	url = git@bitbucket.org:sumraprague/pubsub.git
+[submodule "json-api"]
+	path = json-api
+	url = git@bitbucket.org:sumraprague/json-api.git

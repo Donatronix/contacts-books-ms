@@ -1,0 +1,5 @@
+.idea/*
+.env
+.phpunit.result.cache
+storage/api-docs/api-docs.json
+vendor/*

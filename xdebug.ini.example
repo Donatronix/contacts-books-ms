@@ -1,0 +1,8 @@
+zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20200930/xdebug.so
+xdebug.mode=debug
+xdebug.remote_handler=dbgp
+xdebug.client_port=9000
+xdebug.start_with_request=yes
+xdebug.discover_client_host=yes
+xdebug.idekey=docker
+xdebug.client_host=192.168.1.101

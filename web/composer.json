@@ -1,0 +1,66 @@
+{
+    "name": "sumra/contacts",
+    "description": "Contacts Book Microservice",
+    "type": "project",
+    "private": true,
+    "require": {
+        "php": "^7.3|^8.0",
+        "darkaonline/swagger-lume": "~8",
+        "doctrine/dbal": "~3",
+        "ext-bcmath": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "guzzlehttp/guzzle": "~6",
+        "laravel/lumen-framework": "~8",
+        "robbrazier/piwik": "~4",
+        "sumra/json-api": "*",
+        "sumra/pubsub": "*",
+        "vladimir-yuldashev/laravel-queue-rabbitmq": "~11",
+        "zircote/swagger-php": "~3"
+    },
+    "require-dev": {
+        "fakerphp/faker": "~1",
+        "mockery/mockery": "~1",
+        "phpunit/phpunit": "~9"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../pubsub",
+            "options": {
+                "symlink": false
+            }
+        },
+        {
+            "type": "path",
+            "url": "../json-api",
+            "options": {
+                "symlink": false
+            }
+        }
+    ],
+    "scripts": {
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ]
+    }
+}
