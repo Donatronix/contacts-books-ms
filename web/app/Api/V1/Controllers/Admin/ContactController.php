@@ -4,7 +4,7 @@ namespace App\Api\V1\Controllers\Admin;
 
 use App\Helpers\AdminListing;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Contact;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -126,7 +126,7 @@ class ContactController extends Controller
         }
 
         // create AdminListing instance for a specific model
-        $data = AdminListing::create(User::class)->processRequestAndGet(
+        $data = AdminListing::create(Contact::class)->processRequestAndGet(
             $request,
 
             // set columns to query
@@ -226,14 +226,14 @@ class ContactController extends Controller
         // Get user model
         try {
             // Get and return user data
-            $user  = User::findOrFail($id)->toArray();
+            $user  = Contact::findOrFail($id)->toArray();
 
             return response()->jsonApi($user, 200);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
                 'type' => 'error',
-                'title' => 'User not found',
-                'message' => "User #{$id} not found"
+                'title' => 'Contact not found',
+                'message' => "Contact #{$id} not found"
             ], 404);
         }
     }
