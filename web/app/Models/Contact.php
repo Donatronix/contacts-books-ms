@@ -5,18 +5,21 @@ namespace App\Models;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Contact extends Model
 {
     use HasFactory;
+    use SoftDeletes;
     use UuidTrait;
 
+    /**
+     * @var string[]
+     */
     protected $fillable = [
-        'commonid',
         'user_id',
-        'firstname',
-        'lastname',
+        'first_name',
+        'last_name',
         'middlename',
         'prefix',
         'suffix',
@@ -28,49 +31,22 @@ class Contact extends Model
         'adrstate',
         'adrzip',
         'adrcountry',
-        'tel1',
-        'tel2',
-        'email'
+        'is_favorite'
     ];
 
-    public function user()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function phones(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(ContactPhone::class);
     }
 
-    public function save(array $options = [])
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function emails(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        if ($options['user_id']) {
-            $user_id = $options['user_id'];
-        } else {
-            $user_id = (int) Auth::user()->getAuthIdentifier();
-        }
-
-        $contact = self::select("1")
-            ->where('user_id', $user_id)
-            ->where(function ($query) use ($options) {
-                $query->orWhere('tel1', $options['tel1'])
-                    ->orWhere('tel2', $options['tel2']);
-            })
-            ->first();
-
-        if ($contact) {
-            // contact already exists
-            return false;
-        }
-
-        // check for same contact from other users
-        $common = self::select('commonid')
-            ->where(function ($query) use ($options) {
-                $query->orWhere('tel1', $options['tel1'])
-                    ->orWhere('tel2', $options['tel2']);
-            })
-            ->first();
-
-        if ($common) {
-            $options['commonid'] = $common->commonid;
-        }
-
-        return parent::save($options);
+        return $this->hasMany(ContactEmail::class);
     }
 }
