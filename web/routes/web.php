@@ -13,7 +13,7 @@ Route::get('/', function () use ($router) {
 });
 
 Route::group(
-    ['prefix' => env('API_PREFIX') . '/v1'],
+    ['prefix' => env('API_PREFIX', '') . '/v1'],
     function ($router) {
         include base_path('app/Api/V1/routes.php');
     }

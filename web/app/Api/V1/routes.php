@@ -5,41 +5,58 @@
  */
 $router->group([
     'prefix' => 'contacts',
-    'namespace' => '\App\Api\V1\Controllers'
+    'namespace' => '\App\Api\V1\Controllers',
+    'middleware' => 'checkUser'
 ], function ($router) {
-    /*
-     * Main contacts routes
-     * */
+    /**
+     * Contacts
+     */
     $router->get('/', 'ContactController@index');
-    $router->post('/import/vcard', 'ContactController@addvcard');
-    $router->post('/import/google', 'ContactController@addgoogle');
+    $router->post('/', 'ContactController@store');
+    $router->delete('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@destroy');
+    $router->post('merge', 'ContactController@merge');
+
+    /**
+     * Contact Emails
+     */
+    $router->group([
+        'prefix' => 'emails',
+    ], function ($router) {
+        $router->post('/', 'ContactEmailController@store');
+        $router->put('/{id}', 'ContactEmailController@update');
+        $router->delete('/{id}', 'ContactEmailController@destroy');
+    });
+
+    /**
+     * Contact Phones
+     */
+    $router->group([
+        'prefix' => 'phones',
+    ], function ($router) {
+        $router->post('/', 'ContactPhoneController@store');
+        $router->put('/{id}', 'ContactPhoneController@update');
+        $router->delete('/{id}', 'ContactPhoneController@destroy');
+    });
+
+    /**
+     * Contact External Imports
+     */
+    $router->group([
+        'prefix' => 'import',
+    ], function ($router) {
+        $router->post('vcard', 'ContactController@addvcard');
+        $router->post('google', 'ContactController@addgoogle');
+    });
 
     /**
      * ADMIN PANEL
      */
-    $router->group(
-        ['middleware' => 'checkUser'],
-        function ($router) {
-            /**
-             * Management
-             */
-            $router->post('contacts', 'ContactController@store');
-            $router->delete('contacts', 'ContactController@destroy');
-
-            /**
-             * ADMIN PANEL
-             */
-            $router->group([
-                'prefix' => 'admin',
-                'namespace' => 'Admin',
-                'middleware' => 'checkAdmin'
-            ], function ($router) {
-                /**
-                 * Refferals
-                 */
-                $router->get('referrals-list', 'ContactController@index');
-                $router->get('referrals-list/{id:[\d]+}', 'ContactController@show');
-            });
-        }
-    );
+    $router->group([
+        'prefix' => 'admin',
+        'namespace' => 'Admin',
+        'middleware' => 'checkAdmin'
+    ], function ($router) {
+        $router->get('list', 'ContactController@index');
+        $router->get('list/{id:[\d]+}', 'ContactController@show');
+    });
 });
