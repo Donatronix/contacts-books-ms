@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Services\Imports;
 
 class Vcard
 {

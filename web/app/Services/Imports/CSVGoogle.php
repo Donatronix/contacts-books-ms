@@ -28,8 +28,8 @@ class CSVGoogle
             foreach ($gcontacts as $c) {
                 $contact = Contact::create([
                     'user_id' => $user_id,
-                    'firstname' => $c['First Name'],
-                    'lastname' => $c['Last Name'],
+                    'first_name' => $c['First Name'],
+                    'last_name' => $c['Last Name'],
                     'middlename' => $c['Middle Name'],
                     'prefix' => $c['Title'],
                     'suffix' => $c['Suffix'],
@@ -40,8 +40,8 @@ class CSVGoogle
                     'adrstate' => $c['Home State'],
                     'adrzip' => $c['Home Postal Code'],
                     'adrcountry' => $c['Home Country'],
-                    'tel1' => $c['Other Phone'] ?? $c['Primary Phone'] ?? $c['Home Phone'] ?? $c['Home Phone 2'] ?? $c['Mobile Phone'],
-                    'email' => $c['E-mail Address']
+                   // 'tel1' => $c['Other Phone'] ?? $c['Primary Phone'] ?? $c['Home Phone'] ?? $c['Home Phone 2'] ?? $c['Mobile Phone'],
+                   // 'email' => $c['E-mail Address']
                 ]);
                 $contact->save();
                 $contacts[] = $contact;
