@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Contact;
+use App\Models\ContactPhone;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ContactFactory extends Factory
+class ContactPhoneFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Contact::class;
+    protected $model = ContactPhone::class;
 
     /**
      * Define the model's default state.
@@ -23,9 +23,8 @@ class ContactFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'first_name' => $this->faker->firstName(),
-            'last_name' => $this->faker->lastName(),
-           // 'status' => $this->faker->boolean()
+            'phone' => $this->faker->phoneNumber(),
+            //'status' => $this->faker->boolean()
         ];
     }
 }
