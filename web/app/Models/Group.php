@@ -11,6 +11,10 @@ class Group extends Model
     use HasFactory;
     use UuidTrait;
 
+    /**
+     * @var string[]
+     */
     protected $fillable = [
+        'name'
     ];
 }
