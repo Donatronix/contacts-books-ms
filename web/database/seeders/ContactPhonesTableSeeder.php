@@ -14,31 +14,26 @@ class ContactPhonesTableSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $faker = Faker::create('en_GB');
 
-        //$codes = [205, 251, 256, 334, 907, 480, 520, 602, 623, 928, 479, 501, 870];
-
         $contacts = Contact::all();
 
-        for ($x = 0; $x <= 20; $x++) {
-            $row = ContactPhone::factory()->create();
+        foreach($contacts as $contact) {
+            $is_default = true;
 
+            for ($x = 0; $x <= $faker->numberBetween(1, 5); $x++) {
+                if ($x > 0) {
+                    $is_default = false;
+                }
 
-            $row->contact()->associate($contacts->random());
+                $row = ContactPhone::factory()->create();
+                $row->is_default = $is_default;
+                $row->contact()->associate($contact);
 
-//            $row->phone = '(' . $codes[rand(0, count($codes) - 1)] . ') ' . rand(100, 999) . '-'. rand(100, 999) . rand(1, 9);
-
-            $row->type = $faker->randomElement([
-                ContactPhone::TYPE_CELL,
-                ContactPhone::TYPE_WORK,
-                ContactPhone::TYPE_HOME,
-                ContactPhone::TYPE_OTHER
-            ]);
-
-            $row->is_default = $faker->randomElement([]);
-            $row->save();
+                $row->save();
+            }
         }
     }
 }

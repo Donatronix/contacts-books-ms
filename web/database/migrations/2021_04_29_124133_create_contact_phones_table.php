@@ -12,19 +12,15 @@ class CreateContactPhonesTable extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('contact_phones', function (Blueprint $table) {
             $table->uuid('id')->primary();
-
-            $table->foreignUuid('contact_id')->references('id')->on('contacts')->onUpdate('cascade')->onDelete('cascade');
-
             $table->string('phone');
-
-            $table->enum('type', ['cell', 'work', 'home', 'other'])->default(ContactPhone::TYPE_CELL);
-
             $table->boolean('is_default')->default(false);
-
+            $table->foreignUuid('contact_id')->constrained()
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -34,7 +30,7 @@ class CreateContactPhonesTable extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('contact_phones');
     }

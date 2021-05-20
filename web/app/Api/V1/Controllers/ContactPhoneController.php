@@ -39,12 +39,6 @@ class ContactPhoneController extends Controller
      *                 example="(555)-777-1234"
      *             ),
      *             @OA\Property(
-     *                 property="type",
-     *                 type="string",
-     *                 description="Phone type (Cell, Work, Home, Other)",
-     *                 enum={"cell","work","home","other"}
-     *             ),
-     *             @OA\Property(
      *                 property="is_default",
      *                 type="string",
      *                 description="Phone is_default (text, voice or nothing)",
@@ -91,9 +85,9 @@ class ContactPhoneController extends Controller
      */
     public function store(Request $request)
     {
-        $client = Contact::find($request->get('contact_id', 0));
+        $contact = Contact::find($request->get('contact_id', 0));
 
-        if (!$client) {
+        if (!$contact) {
             return response()->json([
                 'error' => Config::get('constants.errors.ClientNotFound')
             ], 404);
@@ -101,13 +95,9 @@ class ContactPhoneController extends Controller
 
         try {
             $phone = new ContactPhone();
-            $phone->contact()->associate($client);
+            $phone->contact()->associate($contact);
 
             $phone->phone = $request->get('phone');
-
-            if ($request->has('type')) {
-                $phone->type = $request->get('type', ContactPhone::TYPE_CELL);
-            }
 
             $phone->is_default = $request->get('is_default', false);
 
@@ -152,12 +142,6 @@ class ContactPhoneController extends Controller
      *                 type="string",
      *                 description="Phone of client",
      *                 example="(555)-777-1234"
-     *             ),
-     *             @OA\Property(
-     *                 property="type",
-     *                 type="string",
-     *                 description="Phone type (Cell, Work, Home, Other)",
-     *                 enum={"cell","work","home","other"}
      *             ),
      *             @OA\Property(
      *                 property="is_default",
@@ -209,10 +193,6 @@ class ContactPhoneController extends Controller
         try {
             if ($request->has('phone')) {
                 $phone->phone = $request->get('phone');
-            }
-
-            if ($request->has('type')) {
-                $phone->type = $request->get('type', ContactPhone::TYPE_CELL);
             }
 
             $phone->is_default = $request->get('is_default', false);
