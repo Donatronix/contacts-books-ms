@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Contact;
 use App\Models\ContactEmail;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,12 +20,15 @@ class ContactEmailFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition(): array
     {
         return [
             'id' => $this->faker->uuid(),
             'email' => $this->faker->email(),
-            //'status' => $this->faker->boolean()
+            'is_default' => false,
+            'contact_id' => function () {
+                return Contact::factory()->create()->id;
+            },
         ];
     }
 }

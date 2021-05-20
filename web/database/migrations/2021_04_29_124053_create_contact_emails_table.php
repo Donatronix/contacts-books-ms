@@ -11,17 +11,15 @@ class CreateContactEmailsTable extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('contact_emails', function (Blueprint $table) {
             $table->uuid('id')->primary();
-
-            $table->foreignUuid('contact_id')->references('id')->on('contacts')->onUpdate('cascade')->onDelete('cascade');
-
             $table->string('email');
-
             $table->boolean('is_default')->default(false);
-
+            $table->foreignUuid('contact_id')->constrained()
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -31,7 +29,7 @@ class CreateContactEmailsTable extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('contact_emails');
     }

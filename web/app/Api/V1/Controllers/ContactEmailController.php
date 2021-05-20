@@ -83,9 +83,9 @@ class ContactEmailController extends Controller
      */
     public function store(Request $request)
     {
-        $client = Contact::find($request->get('contact_id', 0));
+        $contact = Contact::find($request->get('contact_id', 0));
 
-        if (!$client) {
+        if (!$contact) {
             return response()->json([
                 'error' => Config::get('constants.errors.ClientNotFound')
             ], 404);
@@ -96,7 +96,7 @@ class ContactEmailController extends Controller
 
             // Reset is_default for other emails
             if ($is_default) {
-                foreach ($client->emails as $email) {
+                foreach ($contact->emails as $email) {
                     $email->is_default = false;
                     $email->save();
                 }
@@ -104,7 +104,7 @@ class ContactEmailController extends Controller
 
             // Create new
             $email = new ContactEmail();
-            $email->contact()->associate($client);
+            $email->contact()->associate($contact);
             $email->email = $request->get('email');
             $email->is_default = $is_default;
             $email->save();
