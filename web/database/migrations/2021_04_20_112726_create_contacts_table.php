@@ -15,11 +15,11 @@ class CreateContactsTable extends Migration
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-
-            $table->bigInteger('user_id')->default(0);
+            $table->bigInteger('user_id');
 
             $table->string('first_name')->default('');
             $table->string('last_name')->default('');
+
             $table->string('middlename')->default('');
             $table->string('prefix')->default('');
             $table->string('suffix')->default('');

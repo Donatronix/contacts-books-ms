@@ -20,7 +20,7 @@ class ReferredContactsTableSeeder extends Seeder
 
         $contacts = Contact::all();
 
-        foreach($contacts as $client) {
+        foreach($contacts as $contact) {
             $is_default = false;
 
             for ($x = 1; $x <= $faker->numberBetween(1, 5); $x++) {
@@ -29,7 +29,7 @@ class ReferredContactsTableSeeder extends Seeder
                 }
 
                 $row = new ContactEmail();
-                $row->contact()->associate($client);
+                $row->contact()->associate($contact);
 
                 $row->save();
             }
