@@ -2,13 +2,14 @@
 
 namespace App\Api\V1\Controllers;
 
-use App\Helpers\Vcard;
 use App\Http\Controllers\Controller;
-use App\Models\Contact;
+use App\Models\Group;
+use App\Models\Payment;
 use Exception;
-use GraphAware\Neo4j\Client\ClientBuilder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 /**
  * Class ContactController
@@ -18,13 +19,13 @@ use Illuminate\Support\Facades\Auth;
 class GroupController extends Controller
 {
     /**
-     * User's contact list
+     * List of user's groups
      *
      * @OA\Get(
      *     path="/v1/contacts/groups",
-     *     summary="Load user's contact list",
-     *     description="Load user's contact list",
-     *     tags={"Contact's Groups"},
+     *     summary="Load user's groups list",
+     *     description="Load user's groups list",
+     *     tags={"Contact Groups"},
      *
      *     security={{
      *         "default": {
@@ -67,12 +68,12 @@ class GroupController extends Controller
         $user_id = (int)Auth::user()->getAuthIdentifier();
 
         try {
-            $contacts = Contact::where('user_id', $user_id)->get();
+            $groups = Group::all(); //where('user_id', $user_id)->get();
 
             // Return response
             return response()->json([
                 'success' => true,
-                'data' => $contacts
+                'data' => $groups
             ], 200);
 
         } catch (Exception $e) {
@@ -84,13 +85,13 @@ class GroupController extends Controller
     }
 
     /**
-     * Save contact data
+     * Save user's group data
      *
      * @OA\Post(
      *     path="/v1/contacts/groups",
-     *     summary="Save contact data in Neo4j",
-     *     description="Save contact data in Neo4j",
-     *     tags={"Contact's Groups"},
+     *     summary="Save user's group data",
+     *     description="Save user's group data",
+     *     tags={"Contact Groups"},
      *
      *     security={{
      *         "default": {
@@ -112,22 +113,10 @@ class GroupController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             @OA\Property(
-     *                 property="user_id",
-     *                 type="integer",
-     *                 description="User ID",
-     *                 example="124"
-     *             ),
-     *             @OA\Property(
-     *                 property="contacts",
+     *                 property="name",
      *                 type="text",
-     *                 description="Contacts in JSON",
+     *                 description="Group Name",
      *                 example=""
-     *             ),
-     *            @OA\Property(
-     *                 property="deleteAbsent",
-     *                 type="integer",
-     *                 description="Delete contacts, absent in JSON, or not",
-     *                 example="0"
      *             )
      *         )
      *     ),
@@ -156,10 +145,7 @@ class GroupController extends Controller
      */
     public function store(Request $request)
     {
-        $userID = 0;
-        $json = '';
-        $deleteAbsent = false;
-        $errors = $this->validation($request, $userID, $json, $deleteAbsent);
+        $this->validate($request, $this->rules());
 
         if (count($errors) > 0)
             return response()->json([
@@ -186,13 +172,91 @@ class GroupController extends Controller
     }
 
     /**
-     * Delete contact data
+     * Update email of client
+     *
+     * @OA\Put(
+     *     path="/v1/contacts/emails/{id}",
+     *     summary="Update email of client",
+     *     description="Can send one parameter",
+     *     tags={"Contact Emails"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Email Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(
+     *             type="object",
+     *
+     *             @OA\Property(
+     *                 property="email",
+     *                 type="string",
+     *                 description="Email of client",
+     *                 example="test@tes.com"
+     *             ),
+     *             @OA\Property(
+     *                 property="is_default",
+     *                 type="boolean",
+     *                 description="Communication prefernce",
+     *                 example="true"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *          response="200",
+     *          description="Successfully save"
+     *     ),
+     *     @OA\Response(
+     *         response="500",
+     *         description="Unknown error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="code",
+     *                     type="string",
+     *                     description="code of error"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="message",
+     *                     type="string",
+     *                     description="error message"
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(Request $request, $id)
+    {
+        // Validate input
+        $this->validate($request, $this->rules());
+
+        // Get payment order model
+        $group = $this->getObject($id);
+
+
+
+    }
+
+    /**
+     * Delete contact's group
      *
      * @OA\Delete(
      *     path="/v1/contacts/groups/{id}",
-     *     summary="Save contact data in Neo4j",
-     *     description="Save contact data in Neo4j",
-     *     tags={"Contact's Groups"},
+     *     summary="Delete contact's group",
+     *     description="Delete contact's group",
+     *     tags={"Contact Groups"},
      *
      *     security={{
      *         "default": {
@@ -211,21 +275,12 @@ class GroupController extends Controller
      *     },
      *
      *     @OA\Parameter(
-     *         name="userID",
-     *         description="user id",
+     *         name="id",
+     *         description="Group ID",
      *         required=true,
      *         in="query",
      *          @OA\Schema (
      *              type="integer"
-     *          )
-     *     ),
-     *     @OA\Parameter(
-     *         name="contacts",
-     *         description="Contacts in JSON",
-     *         required=true,
-     *         in="query",
-     *          @OA\Schema (
-     *              type="string"
      *          )
      *     ),
      *     @OA\Response(
@@ -246,51 +301,61 @@ class GroupController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param $id
      *
-     * @return \Illuminate\Http\JsonResponse|mixed
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id)
+    public function destroy($id): \Illuminate\Http\JsonResponse
     {
-        $userID = 0;
-        $json = '';
-        $errors = $this->validation($request, $userID, $json);
-
-        if (count($errors) > 0)
-            return response()->json([
-                'status' => 'error',
-                'title' => 'Data is not valid',
-                'message' => implode(', ', $errors)
-            ], 400);
+        // Check group model
+        $group = $this->getObject($id);
+        if(!$group instanceof Group){
+            return $group;
+        }
 
         try {
-            $client = ClientBuilder::create()
-                ->addConnection('default', env('NEO_DEFAULT_URL', 'http://neo4j:kanku@localhost:7474')) // Example for HTTP connection configuration (port is optional)
-                ->addConnection('bolt', env('NEO_BOLT_URL', 'bolt://neo4j:kanku@localhost:7687')) // Example for BOLT connection configuration (port is optional)
-                ->build();
-
-            foreach ($json as $one) {
-                $arr = (array)$one;
-                foreach ($arr as $key => $value) {
-                    $name = $key;
-                    $text = $value;
-
-                    $query = "MATCH (person:User {  id:$userID })-[:LISTEN]->(ct:Contact {name: \"$name\", text:\"" . $text . "\"}) DETACH DELETE ct";
-                    $client->run($query);
-                }
-            }
+            $group->delete();
 
             return response()->json([
                 'status' => 'success',
-                'title' => 'Contacts are deleted',
-                'message' => 'Contacts are deleted'
+                'title' => "Delete of contact's group",
+                'message' => 'Group of contacts is successfully deleted'
             ], 200);
         } catch (Exception $e) {
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'error',
-                'title' => 'Contacts are not saved',
+                'title' => "Delete of contact's group",
                 'message' => $e->getMessage()
             ], 400);
+        }
+    }
+
+    /**
+     * @return string[]
+     */
+    private function rules(): array
+    {
+        return [
+            'name' => 'required|min:3|string'
+        ];
+    }
+
+    /**
+     * Contact's group not found
+     *
+     * @param $id
+     *
+     * @return mixed
+     */
+    private function getObject($id){
+        try {
+            return Group::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->jsonApi([
+                'type' => 'error',
+                'title' => "Get contact's group",
+                'message' => "Contact's group #{$id} not found"
+            ], 404);
         }
     }
 }

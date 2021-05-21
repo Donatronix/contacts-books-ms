@@ -318,4 +318,8 @@ class ContactEmailController extends Controller
             ]
         ];
     }
+
+    private function getObject($id){
+
+    }
 }

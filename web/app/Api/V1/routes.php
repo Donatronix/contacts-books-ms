@@ -17,6 +17,18 @@ $router->group([
     $router->post('merge', 'ContactController@merge');
 
     /**
+     * Contacts Groups
+     */
+    $router->group([
+        'prefix' => 'groups',
+    ], function ($router) {
+        $router->get('/', 'GroupController@index');
+        $router->post('/', 'GroupController@store');
+        $router->put('/{id}', 'GroupController@update');
+        $router->delete('/{id}', 'GroupController@destroy');
+    });
+
+    /**
      * Contact Emails
      */
     $router->group([
