@@ -4,18 +4,16 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateGroupContactTable extends Migration
+class CreateContactGroupTable extends Migration
 {
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('group_contact', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-
+        Schema::create('contact_group', function (Blueprint $table) {
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
@@ -23,8 +21,6 @@ class CreateGroupContactTable extends Migration
             $table->foreignUuid('group_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-
-            $table->timestamps();
         });
     }
 
@@ -33,8 +29,8 @@ class CreateGroupContactTable extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('group_contact');
+        Schema::dropIfExists('contact_group');
     }
 }

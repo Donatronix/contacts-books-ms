@@ -17,4 +17,12 @@ class Group extends Model
     protected $fillable = [
         'name'
     ];
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function contacts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Contact::class);
+    }
 }

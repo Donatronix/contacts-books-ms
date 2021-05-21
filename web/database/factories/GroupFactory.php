@@ -23,7 +23,8 @@ class GroupFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'name' => $this->faker->words(3)
+            'name' => $this->faker->words(3),
+            'user_id' => $this->faker->randomNumber(3, true)
         ];
     }
 }

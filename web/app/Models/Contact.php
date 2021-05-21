@@ -49,4 +49,12 @@ class Contact extends Model
     {
         return $this->hasMany(ContactEmail::class);
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function groups(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Group::class);
+    }
 }
