@@ -31,7 +31,6 @@ class ContactPhonesTableSeeder extends Seeder
                 $row = ContactPhone::factory()->create();
                 $row->is_default = $is_default;
                 $row->contact()->associate($contact);
-
                 $row->save();
             }
         }

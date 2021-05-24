@@ -31,7 +31,6 @@ class ContactEmailsTableSeeder extends Seeder
                 $row = ContactEmail::factory()->create();
                 $row->is_default = $is_default;
                 $row->contact()->associate($contact);
-
                 $row->save();
             }
         }

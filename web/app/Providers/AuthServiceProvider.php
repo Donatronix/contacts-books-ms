@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Auth\GenericUser;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider

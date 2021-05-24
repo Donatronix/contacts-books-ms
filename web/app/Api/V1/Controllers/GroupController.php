@@ -4,12 +4,10 @@ namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Group;
-use App\Models\Payment;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 /**
  * Class ContactController
@@ -68,18 +66,15 @@ class GroupController extends Controller
         $user_id = (int)Auth::user()->getAuthIdentifier();
 
         try {
-            $groups = Group::all(); //where('user_id', $user_id)->get();
+            $groups = Group::where('user_id', $user_id)->get();
 
             // Return response
-            return response()->json([
-                'success' => true,
-                'data' => $groups
-            ], 200);
-
+            return response()->jsonApi($groups->toArray(), 200);
         } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
+            return response()->jsonApi([
+                'type' => 'error',
+                'title' => "Get groups list",
+                'message' => $e->getMessage()
             ], 400);
         }
     }
@@ -116,7 +111,7 @@ class GroupController extends Controller
      *                 property="name",
      *                 type="text",
      *                 description="Group Name",
-     *                 example=""
+     *                 example="My Group 1"
      *             )
      *         )
      *     ),
@@ -141,50 +136,47 @@ class GroupController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      *
-     * @return \Illuminate\Http\JsonResponse|mixed
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         $this->validate($request, $this->rules());
 
-        if (count($errors) > 0)
-            return response()->json([
-                'status' => 'error',
-                'title' => 'Data is not valid',
-                'message' => implode(', ', $errors)
-            ], 400);
+        try {
+            $group = Group::create([
+                'name' => $request->get('name'),
+                'user_id' => (int)Auth::user()->getAuthIdentifier()
+            ]);
 
-        $result = $this->save($userID, $json, $deleteAbsent);
-
-        if ($result == 'Ok')
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'success',
-                'title' => 'Contacts are saved',
-                'message' => 'Contacts are saved'
+                'title' => 'Group creating',
+                'message' => "Group {$group->name} successfully added"
             ], 200);
-        else {
-            return response()->json([
+        }catch (Exception $e){
+            return response()->jsonApi([
                 'status' => 'error',
-                'title' => 'Contacts are not saved',
-                'message' => $result
+                'title' => 'Group creating',
+                'message' => $e->getMessage()
             ], 400);
         }
     }
 
     /**
-     * Update email of client
+     * Update user's group data
      *
      * @OA\Put(
-     *     path="/v1/contacts/emails/{id}",
-     *     summary="Update email of client",
-     *     description="Can send one parameter",
-     *     tags={"Contact Emails"},
+     *     path="/v1/contacts/groups/{id}",
+     *     summary="Update user's group data",
+     *     description="Update user's group data",
+     *     tags={"Contact Groups"},
      *     security={{"bearerAuth":{}}},
      *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Email Id",
+     *         description="Group Id",
      *         required=true,
      *         @OA\Schema(
      *             type="string"
@@ -195,16 +187,10 @@ class GroupController extends Controller
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="email",
+     *                 property="name",
      *                 type="string",
-     *                 description="Email of client",
-     *                 example="test@tes.com"
-     *             ),
-     *             @OA\Property(
-     *                 property="is_default",
-     *                 type="boolean",
-     *                 description="Communication prefernce",
-     *                 example="true"
+     *                 description="Name of group",
+     *                 example="My Group 111"
      *             )
      *         )
      *     ),
@@ -237,16 +223,33 @@ class GroupController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): \Illuminate\Http\JsonResponse
     {
         // Validate input
         $this->validate($request, $this->rules());
 
         // Get payment order model
         $group = $this->getObject($id);
+        if(!$group instanceof Group){
+            return $group;
+        }
 
+        try {
+            $group->fill($request->toArray());
+            $group->save();
 
-
+            return response()->jsonApi([
+                'status' => 'success',
+                'title' => 'Group updating',
+                'message' => "Group {$group->name} successfully updated"
+            ], 200);
+        }catch (Exception $e){
+            return response()->jsonApi([
+                'status' => 'error',
+                'title' => 'Group updating',
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     /**
@@ -316,7 +319,7 @@ class GroupController extends Controller
         try {
             $group->delete();
 
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'success',
                 'title' => "Delete of contact's group",
                 'message' => 'Group of contacts is successfully deleted'

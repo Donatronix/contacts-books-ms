@@ -2,11 +2,11 @@
 
 namespace App\Api\V1\Controllers;
 
-
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
+use App\Models\ContactEmail;
+use App\Models\ContactPhone;
 use Exception;
-use GraphAware\Neo4j\Client\ClientBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -67,29 +67,26 @@ class ContactController extends Controller
         $user_id = (int)Auth::user()->getAuthIdentifier();
 
         try {
-            $contacts = Contact::where('user_id', $user_id)->get();
+            $contacts = Contact::where('user_id', $user_id)->with(['phones', 'emails'])->get();
 
             // Return response
-            return response()->json([
-                'success' => true,
-                'data' => $contacts
-            ], 200);
-
+            return response()->jsonApi($contacts->toArray(), 200);
         } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
+            return response()->jsonApi([
+                'type' => 'error',
+                'title' => "Get contacts list",
+                'message' => $e->getMessage()
             ], 400);
         }
     }
 
     /**
-     * Save contact data
+     * Save user's contacts data
      *
      * @OA\Post(
      *     path="/v1/contacts",
-     *     summary="Save contact data in Neo4j",
-     *     description="Save contact data in Neo4j",
+     *     summary="Save user's contacts data",
+     *     description="Save user's contacts data",
      *     tags={"Contacts"},
      *
      *     security={{
@@ -112,22 +109,10 @@ class ContactController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             @OA\Property(
-     *                 property="user_id",
-     *                 type="integer",
-     *                 description="User ID",
-     *                 example="124"
-     *             ),
-     *             @OA\Property(
      *                 property="contacts",
-     *                 type="text",
-     *                 description="Contacts in JSON",
+     *                 type="json",
+     *                 description="Contacts data in JSON",
      *                 example=""
-     *             ),
-     *            @OA\Property(
-     *                 property="deleteAbsent",
-     *                 type="integer",
-     *                 description="Delete contacts, absent in JSON, or not",
-     *                 example="0"
      *             )
      *         )
      *     ),
@@ -152,145 +137,58 @@ class ContactController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      *
-     * @return \Illuminate\Http\JsonResponse|mixed
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request)
     {
-        $userID = 0;
-        $json = '';
-        $deleteAbsent = false;
-        $errors = $this->validation($request, $userID, $json, $deleteAbsent);
+        // Validate input
+        $this->validate($request, $this->rules());
 
-        if (count($errors) > 0)
-            return response()->json([
-                'status' => 'error',
-                'title' => 'Data is not valid',
-                'message' => implode(', ', $errors)
-            ], 400);
+        try {
+            foreach($request->get('contacts') as $item){
+                // First, Create contact
+                $contact = Contact::create([
+                    'first_name' => $item['first_name'],
+                    'last_name' => $item['last_name'],
+                    'username' => $item['username'],
+                    'user_id' => (int)Auth::user()->getAuthIdentifier()
+                ]);
 
-        $result = $this->save($userID, $json, $deleteAbsent);
+                // Save contact's phones
+                if(isset($item['phones']) && count($item['phones']) > 0){
+                    foreach ($item['phones'] as $x => $phone) {
+                        ContactPhone::create([
+                            'phone' => $phone,
+                            'is_default' => $x === 0,
+                            'contact_id' => $contact->id
+                        ]);
+                    }
+                }
 
-        if ($result == 'Ok')
+                // Save contact's emails
+                if(isset($item['emails']) && count($item['emails']) > 0){
+                    foreach ($item['emails'] as $x => $email) {
+                        ContactEmail::create([
+                            'email' => $email,
+                            'is_default' => $x === 0,
+                            'contact_id' => $contact->id
+                        ]);
+                    }
+                }
+            }
+
             return response()->json([
                 'status' => 'success',
-                'title' => 'Contacts are saved',
-                'message' => 'Contacts are saved'
+                'title' => "Upload user's contacts",
+                'message' => "User's contacts successfully saved"
             ], 200);
-        else {
+        } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'title' => 'Contacts are not saved',
-                'message' => $result
+                'title' => "Upload user's contacts",
+                'message' => $e->getMessage()
             ], 400);
-        }
-    }
-
-    /***********************************
-     *  P R I V A T E
-     ************************************/
-    private function validation(Request $request, &$userID, &$json, &$deleteAbsent)
-    {
-        $errors = [];
-
-        if (!isset($request->userID))
-            $errors[] = 'No user ID';
-        else {
-            $userID = (int)$request->userID;
-            if ($userID == 0)
-                $errors[] = 'Invalid user ID';
-        }
-
-        if (isset($request->deleteAbsent)) {
-            $absent = (int)$request->deleteAbsent;
-            $deleteAbsent = ($absent > 0);
-        }
-
-        $json = '';
-
-        if (!isset($request->contacts))
-            $errors[] = 'No contacts';
-        else {
-            $json = json_decode($request->contacts);
-            $msg = json_last_error();
-
-            if ($msg !== JSON_ERROR_NONE) {
-                $string = json_last_error_msg();
-                $errors[] = 'Invalid contacts: ' . $string;
-            }
-        }
-
-        return $errors;
-    }
-
-    private function save($userID, $json, $deleteAbsent)
-    {
-        try {
-            $client = ClientBuilder::create()
-                ->addConnection('default', env('NEO_DEFAULT_URL', 'http://neo4j:kanku@localhost:7474')) // Example for HTTP connection configuration (port is optional)
-                ->addConnection('bolt', env('NEO_BOLT_URL', 'bolt://neo4j:kanku@localhost:7687')) // Example for BOLT connection configuration (port is optional)
-                ->build();
-
-            //Look for a user id= $userID. If not found, create such a user.
-            $query = "MERGE (person:User {  id:$userID })
-RETURN person";
-            $client->run($query);
-
-            //get existing contacts
-            $query = "MATCH (person:User {  id:$userID })-[:LISTEN]->(Contact) RETURN collect(Contact) as contacts";
-            $result = $client->run($query);
-            $existing = [];
-            $records = $result->getRecords();
-            foreach ($records as $record) {
-                foreach ($record->value('contacts') as $one) {
-                    $name = $one->value('name');
-                    $value = $one->value('text');
-                    $existing[] = ['name' => $name, 'text' => $value, 'inJson' => 0];
-                }
-            }
-
-            foreach ($json as $one) {
-                $arr = (array)$one;
-                foreach ($arr as $key => $value) {
-                    $name = $key;
-                    $text = $value;
-
-                    $exists = false;
-
-                    foreach ($existing as $index => $one) {
-                        if (($one['name'] == $name) && ($one['text'] == $text)) {
-                            $exists = true;
-
-                            $existing[$index]['inJson'] = 1;
-
-                            break;
-                        }
-                    }
-
-                    if ($exists)
-                        continue;
-
-                    $query = "MATCH (person:User) WHERE person.id = $userID
-                        CREATE (ct:Contact {name: \"$name\", text:\"" . $text . "\"}),
-                        (person)-[:LISTEN]->(ct)
-                        ";
-                    $client->run($query);
-                }
-            }
-
-            if ($deleteAbsent) {
-                foreach ($existing as $one) {
-                    if ($one['inJson'] == 0) {
-                        $name = $one['name'];
-                        $text = $one['text'];
-                        $query = "MATCH (person:User {  id:$userID })-[:LISTEN]->(ct:Contact {name: \"$name\", text:\"" . $text . "\"}) DETACH DELETE ct";
-                        $client->run($query);
-                    }
-                }
-            }
-
-            return 'Ok';
-        } catch (Exception $e) {
-            return $e->getMessage();
         }
     }
 
@@ -361,34 +259,7 @@ RETURN person";
      */
     public function destroy($id)
     {
-        $userID = 0;
-        $json = '';
-        $errors = $this->validation($request, $userID, $json);
-
-        if (count($errors) > 0)
-            return response()->json([
-                'status' => 'error',
-                'title' => 'Data is not valid',
-                'message' => implode(', ', $errors)
-            ], 400);
-
         try {
-            $client = ClientBuilder::create()
-                ->addConnection('default', env('NEO_DEFAULT_URL', 'http://neo4j:kanku@localhost:7474')) // Example for HTTP connection configuration (port is optional)
-                ->addConnection('bolt', env('NEO_BOLT_URL', 'bolt://neo4j:kanku@localhost:7687')) // Example for BOLT connection configuration (port is optional)
-                ->build();
-
-            foreach ($json as $one) {
-                $arr = (array)$one;
-                foreach ($arr as $key => $value) {
-                    $name = $key;
-                    $text = $value;
-
-                    $query = "MATCH (person:User {  id:$userID })-[:LISTEN]->(ct:Contact {name: \"$name\", text:\"" . $text . "\"}) DETACH DELETE ct";
-                    $client->run($query);
-                }
-            }
-
             return response()->json([
                 'status' => 'success',
                 'title' => 'Contacts are deleted',
@@ -561,5 +432,15 @@ RETURN person";
                 ]
             ], 500);
         }
+    }
+
+    /**
+     * @return string[]
+     */
+    private function rules(): array
+    {
+        return [
+            'contacts' => 'required|array'
+        ];
     }
 }
