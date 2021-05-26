@@ -7,6 +7,7 @@ use App\Models\Contact;
 use App\Models\ContactEmail;
 use App\Models\ContactPhone;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -42,6 +43,56 @@ class ContactController extends Controller
      *         }
      *     },
      *
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         description="Limit contacts of page",
+     *         @OA\Schema(
+     *             type="number"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Count contacts of page",
+     *         @OA\Schema(
+     *             type="number"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search keywords",
+     *         @OA\Schema(
+     *             type="string"
+     *         ),
+     *         style="form"
+     *     ),
+     *     @OA\Parameter(
+     *         name="isFavorite",
+     *         in="query",
+     *         description="Show contacts that is favorite",
+     *         @OA\Schema(
+     *             type="boolean"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort[by]",
+     *         in="query",
+     *         description="Sort by field",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort[order]",
+     *         in="query",
+     *         description="Sort order",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *
      *     @OA\Response(
      *         response="200",
      *         description="Success send data"
@@ -62,12 +113,40 @@ class ContactController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function index()
+    public function index(Request $request)
     {
-        $user_id = (int)Auth::user()->getAuthIdentifier();
-
         try {
-            $contacts = Contact::where('user_id', $user_id)->with(['phones', 'emails'])->get();
+            $contacts = Contact::with([
+                    'phones',
+                    'emails',
+                    'groups'
+                ])
+
+                ->when($request->has('search'), function ($q) use ($request) {
+                    $search = $request->get('search');
+
+                    return $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('note', 'like', "%{$search}%")
+
+                        ->orWhereHas('emails', function ($q) use ($search) {
+                            return $q->where('email', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('phones', function ($q) use ($search) {
+                            return $q->where('phone', 'like', "%{$search}%");
+                        });
+                })
+
+                ->when($request->has('isFavorite'), function ($q) use ($request) {
+                    return $q->where('is_favorite',  $request->get('isFavorite'));
+                })
+
+                ->when($request->has('isRecently'), function ($q) use ($request) {
+                    return $q->where('is_favorite',  $request->get('isFavorite'));
+                })
+
+                ->byOwner()
+                ->get();
 
             // Return response
             return response()->jsonApi($contacts->toArray(), 200);
@@ -140,13 +219,13 @@ class ContactController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         // Validate input
-        $this->validate($request, $this->rules());
+        $input = (object) $this->validate($request, $this->rules());
 
         try {
-            foreach($request->get('contacts') as $item){
+            foreach($input->contacts as $item){
                 // First, Create contact
                 $contact = Contact::create([
                     'first_name' => $item['first_name'],
@@ -279,7 +358,22 @@ class ContactController extends Controller
      *     path="/v1/contacts/merge",
      *     summary="Merge 2 contacts to 1",
      *     tags={"Contacts"},
-     *     security={{"bearerAuth":{}}},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
      *
      *     @OA\RequestBody(
      *         @OA\JsonContent(
@@ -328,7 +422,7 @@ class ContactController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function merge(Request $request)
+    public function merge(Request $request): \Illuminate\Http\JsonResponse
     {
         // Check exist contacts
         $contact_from = Contact::find($request->contact_id_from);
@@ -421,7 +515,7 @@ class ContactController extends Controller
             // Return response
             return response()->json([
                 'success' => [
-                    'message' => 'Contacts was merged successfull'
+                    'message' => 'Contacts was merged successfully'
                 ]
             ]);
         } catch (Exception $e) {
@@ -435,6 +529,76 @@ class ContactController extends Controller
     }
 
     /**
+     * Add / delete contacts to/from favorites
+     *
+     * @OA\Get(
+     *     path="/v1/contacts/{id}/favorite",
+     *     summary="Add / delete contacts to / from favorites",
+     *     tags={"Contacts"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
+     *
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Contact ID",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *          response="200",
+     *          description="Successfully updated"
+     *     )
+     * )
+     *
+     * @param $id
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function favorite($id)
+    {
+        // Get object
+        $contact = $this->getObject($id);
+        if(!$contact instanceof Contact){
+            return $contact;
+        }
+
+        try {
+            $contact->update([
+                'is_favorite' => !$contact->is_favorite
+            ]);
+
+            return response()->jsonApi([
+                'status' => 'success',
+                'title' => 'Favorites list',
+                'message' => sprintf("%s was successfully %s favorites", $contact->display_name, $contact->is_favorite ? 'added to' : 'removed from')
+            ], 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'type' => 'error',
+                'title' => "Favorites list",
+                'message' => "Can't change status for contacts {$contact->display_name}"
+            ], 404);
+        }
+    }
+
+    /**
      * @return string[]
      */
     private function rules(): array
@@ -442,5 +606,24 @@ class ContactController extends Controller
         return [
             'contacts' => 'required|array'
         ];
+    }
+
+    /**
+     * Contact's group not found
+     *
+     * @param $id
+     *
+     * @return mixed
+     */
+    private function getObject($id){
+        try {
+            return Contact::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->jsonApi([
+                'type' => 'error',
+                'title' => "Get contact's group",
+                'message' => "Contact's group #{$id} not found"
+            ], 404);
+        }
     }
 }

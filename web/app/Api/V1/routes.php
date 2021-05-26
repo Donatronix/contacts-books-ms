@@ -15,6 +15,16 @@ $router->group([
     $router->post('/', 'ContactController@store');
     $router->delete('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@destroy');
     $router->post('merge', 'ContactController@merge');
+    $router->get('/{id:[a-fA-F0-9\-]{36}}/favorite', 'ContactController@favorite');
+
+    /**
+     * Contacts Categories
+     */
+    $router->group([
+        'prefix' => 'categories',
+    ], function ($router) {
+        $router->get('/', 'CategoryController');
+    });
 
     /**
      * Contacts Groups

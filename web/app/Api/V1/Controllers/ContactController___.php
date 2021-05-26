@@ -16,77 +16,71 @@ use Illuminate\Support\Facades\Auth;
  */
 class ContactController___ extends Controller
 {
-    /**
-     * Save contact data
-     *
-     * @OA\Post(
-     *     path="/v1/contacts",
-     *     summary="Save contact data in Neo4j",
-     *     description="Save contact data in Neo4j",
-     *     tags={"Contacts"},
-     *
-     *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
-     *     }},
-     *     x={
-     *         "auth-type": "Application & Application User",
-     *         "throttling-tier": "Unlimited",
-     *         "wso2-application-security": {
-     *             "security-types": {"oauth2"},
-     *             "optional": "false"
-     *         }
-     *     },
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="user_id",
-     *                 type="integer",
-     *                 description="User ID",
-     *                 example="124"
-     *             ),
-     *             @OA\Property(
-     *                 property="contacts",
-     *                 type="text",
-     *                 description="Contacts in JSON",
-     *                 example=""
-     *             ),
-     *            @OA\Property(
-     *                 property="deleteAbsent",
-     *                 type="integer",
-     *                 description="Delete contacts, absent in JSON, or not",
-     *                 example="0"
-     *             )
-     *         )
-     *     ),
-     *
-     *     @OA\Response(
-     *         response="200",
-     *         description="Success send data"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid request"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="not found"
-     *     )
-     * )
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\JsonResponse|mixed
-     */
+//    /**
+//     * Save contact data
+//     *
+//     * @ OA\Post (
+//     *     path="/v1/contacts/11",
+//     *     summary="Save contact data in Neo4j",
+//     *     description="Save contact data in Neo4j",
+//     *     tags={"Contacts"},
+//     *
+//     *     security={{
+//     *         "default": {
+//     *             "ManagerRead",
+//     *             "User",
+//     *             "ManagerWrite"
+//     *         }
+//     *     }},
+//     *     x={
+//     *         "auth-type": "Application & Application User",
+//     *         "throttling-tier": "Unlimited",
+//     *         "wso2-application-security": {
+//     *             "security-types": {"oauth2"},
+//     *             "optional": "false"
+//     *         }
+//     *     },
+//     *
+//     *     @ OA\RequestBody(
+//     *         required=true,
+//     *         @ OA\JsonContent(
+//     *             @ OA\Property(
+//     *                 property="contacts",
+//     *                 type="text",
+//     *                 description="Contacts in JSON",
+//     *                 example=""
+//     *             ),
+//     *            @ OA\Property(
+//     *                 property="deleteAbsent",
+//     *                 type="integer",
+//     *                 description="Delete contacts, absent in JSON, or not",
+//     *                 example="0"
+//     *             )
+//     *         )
+//     *     ),
+//     *
+//     *     @ OA\Response(
+//     *         response="200",
+//     *         description="Success send data"
+//     *     ),
+//     *     @ OA\Response(
+//     *         response=401,
+//     *         description="Unauthorized"
+//     *     ),
+//     *     @ OA\Response(
+//     *         response=400,
+//     *         description="Invalid request"
+//     *     ),
+//     *     @ OA\Response(
+//     *         response=404,
+//     *         description="not found"
+//     *     )
+//     * )
+//     *
+//     * @param \Illuminate\Http\Request $request
+//     *
+//     * @return \Illuminate\Http\JsonResponse|mixed
+//     */
     public function store(Request $request)
     {
         $userID = 0;
@@ -230,8 +224,8 @@ RETURN person";
     /**
      * Delete contact data
      *
-     * @OA\Delete(
-     *     path="/v1/contacts/{id}",
+     * @ OA Delete(
+     *     path="/v1/contacts/{id}/11",
      *     summary="Save contact data in Neo4j",
      *     description="Save contact data in Neo4j",
      *     tags={"Contacts"},
@@ -252,37 +246,37 @@ RETURN person";
      *         }
      *     },
      *
-     *     @OA\Parameter(
+     *     @ OA\Parameter(
      *         name="userID",
      *         description="user id",
      *         required=true,
      *         in="query",
-     *          @OA\Schema (
+     *          @ OA\Schema (
      *              type="integer"
      *          )
      *     ),
-     *     @OA\Parameter(
+     *     @ OA\Parameter(
      *         name="contacts",
      *         description="Contacts in JSON",
      *         required=true,
      *         in="query",
-     *          @OA\Schema (
+     *          @ OA\Schema (
      *              type="string"
      *          )
      *     ),
-     *     @OA\Response(
+     *     @ OA\Response(
      *         response="200",
      *         description="Success send data"
      *     ),
-     *     @OA\Response(
+     *     @ OA\Response(
      *         response=401,
      *         description="Unauthorized"
      *     ),
-     *     @OA\Response(
+     *     @ OA\Response(
      *         response=400,
      *         description="Invalid request"
      *     ),
-     *     @OA\Response(
+     *     @ OA\Response(
      *         response=404,
      *         description="not found"
      *     )

@@ -20,7 +20,7 @@ class CreateContactPhonesTable extends Migration
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->timestamps();
+            $table->dateTime('created_at');
         });
     }
 

@@ -32,6 +32,7 @@ class CreateContactsTable extends Migration
 
             $table->boolean('is_favorite')->default(false);
             $table->bigInteger('user_id')->index();
+            $table->text('note')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

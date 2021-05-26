@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
             ContactsTableSeeder::class,
             ContactEmailsTableSeeder::class,
             ContactPhonesTableSeeder::class,
-            ContactsToGroupsTableSeeder::class
+            ContactsToGroupsTableSeeder::class,
+            CategoriesTableSeeder::class
         ]);
     }
 }

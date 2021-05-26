@@ -63,10 +63,8 @@ class GroupController extends Controller
      */
     public function index()
     {
-        $user_id = (int)Auth::user()->getAuthIdentifier();
-
         try {
-            $groups = Group::where('user_id', $user_id)->get();
+            $groups = Group::byOwner()->get();
 
             // Return response
             return response()->jsonApi($groups->toArray(), 200);
@@ -195,8 +193,8 @@ class GroupController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *          response="200",
-     *          description="Successfully save"
+     *         response="200",
+     *         description="Successfully save"
      *     ),
      *     @OA\Response(
      *         response="500",
