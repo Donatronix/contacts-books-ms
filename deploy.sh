@@ -60,6 +60,3 @@ rm)
 *) echo "${RED}Command $1 is not implemented${NC}\n"
    ;;
 esac
-
-
-

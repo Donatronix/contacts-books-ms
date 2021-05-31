@@ -20,7 +20,7 @@ RUN composer -v update
 
 #	2. The second part creates a final Docker image with an Apache web server to serve the application
 
-FROM php:8.0.3-apache-buster
+FROM php:8.0.6-apache-buster
 
 COPY --from=build /app /app
 COPY conf/vhost.conf /etc/apache2/sites-available/000-default.conf

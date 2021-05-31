@@ -44,6 +44,7 @@ class RouteListCommand extends Command
     public function displayRoutes()
     {
         $headers = ['Method', 'URI', 'Name', 'Action', 'Middleware', 'Map To'];
+
         $this->generateRoutes();
         $this->applyFilters();
         if (!$this->routes) {
@@ -51,12 +52,14 @@ class RouteListCommand extends Command
 
             return false;
         }
+
         //change the reverse order if command contains reverse command
         $str = '';
         if ($this->option('reverse')) {
             rsort($this->routes);
             $str = '. Displayed in reverse order';
         }
+
         $this->info("Route found: " . count($this->routes) . $str);
         $this->table($headers, $this->routes);
     }
