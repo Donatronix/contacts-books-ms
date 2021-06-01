@@ -39,7 +39,7 @@ pipelines:
             #- curl https://raw.githubusercontent.com/helm/helm/master/scripts/get -o helm_install.sh
             #- bash helm_install.sh
             -
-            - helm init --client-only
+            #- helm init --client-only
             - bitbucket-cicd/deploy.sh set-image
 
 definitions:
