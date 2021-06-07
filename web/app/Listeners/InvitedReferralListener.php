@@ -2,6 +2,8 @@
 
 namespace App\Listeners;
 
+use Illuminate\Support\Facades\Log;
+
 class InvitedReferralListener
 {
     /**
@@ -11,6 +13,9 @@ class InvitedReferralListener
      */
     public function handle($data)
     {
+
+        Log::info($data);
+
         // Send result by pubsub
         \PubSub::transaction(function () {})->publish('InvitedReferralResponse', $data, 'referrals');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\InvitedReferralListener;
 use Laravel\Lumen\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -12,6 +13,8 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        //
+        'invitedReferral' => [
+            InvitedReferralListener::class
+        ]
     ];
 }
