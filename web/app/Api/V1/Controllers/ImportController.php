@@ -17,6 +17,85 @@ use Illuminate\Support\Facades\Auth;
  */
 class ImportController extends Controller
 {
+
+    /**
+     * import user contacts
+     *
+     * @OA\Post(
+     *     path="/v1/contacts/import/create",
+     *     summary="create contacts from vCard",
+     *     description="create contacts from vCard",
+     *     tags={"Import Contacts"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
+     *
+     *     @OA\Parameter(
+     *         name="vcards",
+     *         description="Import file",
+     *         required=true,
+     *         in="query",
+     *          @OA\Schema (
+     *              type="file"
+     *          )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response="200",
+     *         description="Import of data create successful"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid request"
+     *     ),
+     *
+     *     @OA\Response(
+     *          response="404",
+     *          description="Not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(
+     *                  property="vcards",
+     *                  type="text",
+     *                  description="Required parameter must be specified for execution amount"
+     *              ),
+     *              @OA\Property(
+     *                  property="message",
+     *                  type="string",
+     *                  description="Error message"
+     *              ),
+     *          ),
+     *     ),
+     *
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+
+    public function create()
+    {
+
+    }
+
     /**
      * User's contact list: add contacts from vCard
      *
@@ -76,9 +155,12 @@ class ImportController extends Controller
      */
     public function addvcard(Request $request)
     {
+
         $user_id = (int)Auth::user()->getAuthIdentifier();
 
+        dd($request->vcards);
         $cards = (new Vcard())->readData($request->vcards);
+
         $contacts = [];
         try {
             foreach ($cards as $c) {

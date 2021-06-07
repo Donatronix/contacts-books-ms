@@ -6,7 +6,7 @@
 $router->group([
     'prefix' => 'contacts',
     'namespace' => '\App\Api\V1\Controllers',
-    'middleware' => 'checkUser'
+    //'middleware' => 'checkUser' TODO: uncomment!!!
 ], function ($router) {
     /**
      * Contacts
@@ -66,9 +66,15 @@ $router->group([
     $router->group([
         'prefix' => 'import',
     ], function ($router) {
-        $router->post('vcard', 'ContactController@addvcard');
-        $router->post('google', 'ContactController@addgoogle');
+        $router->post('create', 'ImportController@create');
+        $router->post('vcard', 'ImportController@addvcard');
+        $router->post('google', 'ImportController@addgoogle');
     });
+
+    /**
+     *  For test
+     */
+    $router->get('test', '\App\Services\Test@test');
 
     /**
      * ADMIN PANEL
