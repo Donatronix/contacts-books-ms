@@ -16,16 +16,7 @@ class Test
     public function test(Request $request)
     {
 
-        dd($request->files);
-        $file = Import::readFile($request);
-
-        dd($file);
-        //$user_id = (int)Auth::user()->getAuthIdentifier();
-
-
-        $cards = (new Vcard())->readData($request->vcards);
-
-
-
+//        dd($request->files);
+        return view("tests.import");
     }
 }
