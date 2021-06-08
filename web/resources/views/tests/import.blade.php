@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
 
-        <form method="post" action="" enctype="multipart/form-data">
+        <form method="post" action="/v1/contacts/test" enctype="multipart/form-data">
 
 
 

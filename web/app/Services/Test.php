@@ -13,10 +13,16 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Test
 {
+    public function run(Request $request)
+    {
+        return view("tests.import");
+    }
+
     public function test(Request $request)
     {
 
+        dd($request);
 //        dd($request->files);
-        return view("tests.import");
+
     }
 }

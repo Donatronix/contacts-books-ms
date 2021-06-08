@@ -74,7 +74,8 @@ $router->group([
     /**
      *  For test
      */
-    $router->get('test', '\App\Services\Test@test');
+    $router->post('test', '\App\Services\Test@test');
+    $router->get('run', '\App\Services\Test@run');
 
     /**
      * ADMIN PANEL
