@@ -9,7 +9,7 @@ use App\Services\Imports\Vcard;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Illuminate\Http\UploadedFile;
 
 class Test
 {
@@ -20,9 +20,13 @@ class Test
 
     public function test(Request $request)
     {
-
-        dd($request);
-//        dd($request->files);
+        /*$request->validate([
+            'contacts' => 'file'
+        ]);*/
+        $file = $request->file('contacts');
+        $file_data = file_get_contents($file->getPathname());
+        $cards = (new Vcard())->readData($file_data);
+        dd($cards[0]['FN']);
 
     }
 }
