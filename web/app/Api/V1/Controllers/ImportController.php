@@ -2,7 +2,7 @@
 
 namespace App\Api\V1\Controllers;
 
-use App\Helpers\Vcard;
+use App\Services\Imports\Vcard;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use Exception;
@@ -91,9 +91,10 @@ class ImportController extends Controller
      * @return \Illuminate\Http\JsonResponse|mixed
      */
 
-    public function create()
+    public function create(Request $request)
     {
-
+        $cards = (new Vcard())->readData($request->vcards);
+        dd($cards);
     }
 
     /**
