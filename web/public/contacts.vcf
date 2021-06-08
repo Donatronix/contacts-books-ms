@@ -1,0 +1,69 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:pref zxc cvb suffics
+N:cvb;zxc;;pref;suffics
+NICKNAME:333
+X-PHONETIC-FIRST-NAME:fghnmx
+X-PHONETIC-MIDDLE-NAME:qwert
+X-PHONETIC-LAST-NAME:kjhgfg
+item1.EMAIL;TYPE=INTERNET:qwe.ghj.nmd
+item1.X-ABLabel:Рабочие контакты
+item2.EMAIL;TYPE=INTERNET:rr.hns@zxc.kkk
+item2.X-ABLabel:Домашние контакты
+item3.X-AIM:chatu
+item3.X-ABLabel:
+item4.X-SKYPE:asxcvb
+item4.X-ABLabel:
+item5.TEL:+430665782389
+item5.X-ABLabel:Рабочие контакты
+item6.TEL:+320772348899
+item6.X-ABLabel:qweryt
+item7.ADR:789005;fbnm;вулиця Попудренка;Київ;Vinnyts'ka oblast;02000;UA;вул
+ иця Попудренка\n789005\nfbnm\nКиїв\nVinnyts'ka oblast\nUA\n02000
+item7.X-ABLabel:Другое
+item8.ADR:334445;hwrenm;вулиця Дерибасівська;Одеса;Odessa oblast;65000;UA;в
+ улиця Дерибасівська\n334445\nhwrenm\nОдеса\nOdessa oblast\nUA\n65000
+item8.X-ABLabel:Рабочие контакты
+item9.ORG:asd;fewo
+item9.X-ABLabel:
+item10.TITLE:fgh
+item10.X-ABLabel:
+BDAY;VALUE=text:22/11/2011
+item11.URL:tyj.fui
+item11.X-ABLabel:Рабочие контакты
+X-ABDATE:21220908
+item12.X-ABRELATEDNAMES:gog
+item12.X-ABLabel:_$!<Mother>!$_
+NOTE:test\njuo: wertyulh
+PHOTO:https://lh6.googleusercontent.com/--U_XEaF5FjM/YL-HRiEAg6I/AAAAAAAAAA
+ A/0JYuA0RxVBAY0JKNDpDG1HJu1rm7xUNaQCOQCEAE/photo.jpg
+CATEGORIES:Work,myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:gas ьвд fml qwer
+N:fml;gas;ьвд;;qwer
+NICKNAME:asdfg
+X-PHONETIC-FIRST-NAME:trans name
+X-PHONETIC-MIDDLE-NAME:trans mid
+X-PHONETIC-LAST-NAME:trans lastn
+EMAIL;TYPE=INTERNET;TYPE=HOME:qwerty@asd.gs
+item1.X-GTALK:chat
+item1.X-ABLabel:
+TEL;TYPE=HOME:068 123 45 67
+ADR;TYPE=HOME:567893;adress 2;adress 1;sity;Volyns'ka oblast;1234590;UA;adr
+ ess 1\n567893\nadress 2\nsity\nVolyns'ka oblast\nUA\n1234590
+item2.ORG:com;большой
+item2.X-ABLabel:
+item3.TITLE:cup
+item3.X-ABLabel:
+BDAY;VALUE=text:02/44/3000
+item4.URL:gen-ka.gs
+item4.X-ABLabel:PROFILE
+item5.X-ABDATE:19991203
+item5.X-ABLabel:_$!<Anniversary>!$_
+item6.X-ABRELATEDNAMES:cvbnm\,
+item6.X-ABLabel:_$!<Spouse>!$_
+NOTE:Это я \nperson: person field
+CATEGORIES:Home,myContacts
+END:VCARD
