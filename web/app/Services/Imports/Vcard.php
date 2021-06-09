@@ -488,6 +488,30 @@ class Vcard
     }
 
     /**
+     *
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getPhone($data)
+    {
+        if($data['TEL']){
+            for($i=0; $i < count($data['TEL']); $i++){
+                $result[$i]['value'] = str_replace(" ", '', $data['TEL'][$i]['value'][0][0]);
+
+                if(isset($data['TEL'][$i]['param']['TYPE'][0])){
+                    $result[$i]['type'] = $data['TEL'][$i]['param']['TYPE'][0];
+                }
+                else{
+                    $result[$i]['type'] = $data['TEL'][$i]['X-ABLABEL']['value'][0][0] ?? false;
+                }
+            }
+            return $result;
+        }
+        return false;
+    }
+
+    /**
      *  Checking for the presence of a parameter in the imported file.
      *
      * @param array $param
