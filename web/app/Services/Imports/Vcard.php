@@ -458,6 +458,17 @@ class Vcard
     }
 
     /**
+     *  Get nickname from imported file
+     *
+     * @param array $data
+     * @return string
+     */
+    public function getNickname($data)
+    {
+        return $this->checkParam($data["NICKNAME"][0]["value"][0][0]);
+    }
+
+    /**
      *  Checking for the presence of a parameter in the imported file.
      *
      * @param array $param

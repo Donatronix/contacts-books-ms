@@ -38,7 +38,10 @@ class Test
             // field: N (array of name parameters)
             $data[$k]['name_param'] = $vcard->getParamsName($item,);
 
-            $data[$k]['NICKNAME'] = $this->checkParam($item['NICKNAME'][0]['value'][0][0]);
+            // field: NICKNAME (pseudonym)
+            $data[$k]['nickname'] = $vcard->getNickname($item);
+
+
             $data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
             $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
             $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);
