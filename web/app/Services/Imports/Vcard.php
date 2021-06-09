@@ -440,6 +440,24 @@ class Vcard
     }
 
     /**
+     *  Get an array of full name parameters
+     *
+     * @param array $data
+     * @return array|false
+     */
+    public function getParamsName($data,)
+    {
+        if($data["N"][0]['value']){
+            $result = [];
+            for($i=0; $i < count($data["N"][0]['value']); $i++){
+                $result[$i] = $data['N'][0]['value'][$i][0];
+            }
+            return $result;
+        }
+        return FALSE;
+    }
+
+    /**
      *  Checking for the presence of a parameter in the imported file.
      *
      * @param array $param

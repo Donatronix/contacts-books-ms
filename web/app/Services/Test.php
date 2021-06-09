@@ -32,15 +32,11 @@ class Test
 
         foreach ($file_data_array as $k => $item)
         {
-            // field: FN
+            // field: FN (Full name)
             $data[$k]['full_name'] = $vcard->getFullname($item);
 
-            //
-            if($item["N"][0]['value']){
-                for($i=0; $i < count($item["N"][0]['value']); $i++){
-                    $data[$k]['N'][$i] = $item['N'][0]['value'][$i][0];
-                }
-            }
+            // field: N (array of name parameters)
+            $data[$k]['name_param'] = $vcard->getParamsName($item,);
 
             $data[$k]['NICKNAME'] = $this->checkParam($item['NICKNAME'][0]['value'][0][0]);
             $data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
