@@ -574,6 +574,34 @@ class Vcard
     }
 
     /**
+     *  Get info by sites
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getSites($data)
+    {
+        $tmp = $data['URL'];
+        if($tmp)
+        {
+            for($i=0; $i < count($tmp); $i++)
+            {
+                $result[$i]['value'] = $this->checkParam($tmp[$i]['value'][0][0]);
+
+                if(isset($tmp[$i]['param']['TYPE'][0])){
+                    $result[$i]['type'] = $tmp[$i]['param']['TYPE'][0];
+                }
+                else{
+                    $result[$i]['type'] = $tmp[$i]['X-ABLABEL']['value'][0][0] ?? false;
+                }
+                $result[$i]['type'] = mb_strtolower($result[$i]['type']);
+            }
+            return $result;
+        }
+        return false;
+    }
+
+    /**
      *  Checking for the presence of a parameter in the imported file.
      *
      * @param array $param
