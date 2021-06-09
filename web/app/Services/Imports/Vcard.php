@@ -546,6 +546,22 @@ class Vcard
     }
 
     /**
+     *  Get company info
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getCompanyInfo($data)
+    {
+        $tmp = $data['ORG'][0]['value'];
+        if($tmp){
+            $result['company'] = $tmp[0][0];
+            $result['department'] = $tmp[1][0];
+            return $result;
+        }
+        return false;
+    }
+
+    /**
      *  Checking for the presence of a parameter in the imported file.
      *
      * @param array $param

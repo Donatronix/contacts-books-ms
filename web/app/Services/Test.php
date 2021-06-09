@@ -50,6 +50,9 @@ class Test
             // field: ADR (address)
             $data[$k]['address'] = $vcard->getAddress($item);
 
+            // field: ORG (company_info)
+            $data[$k]['company_info'] = $vcard->getCompanyInfo($item);
+
             $data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
             $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
             $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);
@@ -60,12 +63,6 @@ class Test
 //            $data[$k]['X-AIM'] = $this->checkParam($item['X-AIM'][0]['value'][0][0]);
 
 //            $data[$k]['X-SKYPE'] = $this->checkParam($item['X-SKYPE'][0]['value'][0][0]);
-
-            if($item['ORG'][0]['value']){
-                for($i=0; $i < count($item['ORG'][0]['value']); $i++){
-                    $data[$k]['ORG'][$i] = $item['ORG'][0]['value'][$i][0];
-                }
-            }
 
             $data[$k]['TITLE'] = $this->checkParam($item['TITLE'][0]['value'][0][0]);
             $data[$k]['BDAY'] = $this->checkParam($item['BDAY'][0]['value'][0][0]);
