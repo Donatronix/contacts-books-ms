@@ -59,10 +59,8 @@ class Test
             // field: URL (sites)
             $data[$k]['sites'] = $vcard->getSites($item);
 
-
-            $data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
-            $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
-            $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);
+            // field: X-ABRELATEDNAMES (relation)
+            $data[$k]['relation'] = $vcard->getRelationInfo($item);
 
 //            $data[$k]['PHOTO'] = $this->checkParam($item['PHOTO'][0]['value'][0][0]);
 
@@ -72,7 +70,6 @@ class Test
 //            $data[$k]['X-SKYPE'] = $this->checkParam($item['X-SKYPE'][0]['value'][0][0]);
 
 //            $data[$k]['X-ABDATE'] = $this->checkParam($item['X-ABDATE'][0]['value'][0][0]);
-            $data[$k]['X-ABRELATEDNAMES'] = $this->checkParam($item['X-ABRELATEDNAMES'][0]['value'][0][0]);
             $data[$k]['NOTE'] = $this->checkParam($item['NOTE'][0]['value'][0][0]);
 
             if($item['CATEGORIES'][0]['value'][0]){
@@ -80,6 +77,10 @@ class Test
                     $data[$k]['CATEGORIES'][$i] = $item['CATEGORIES'][0]['value'][0][$i];
                 }
             }
+
+            $data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
+            $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
+            $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);
 
         }
 

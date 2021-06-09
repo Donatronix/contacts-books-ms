@@ -601,6 +601,84 @@ class Vcard
         return false;
     }
 
+    public function getRelationInfo($data)
+    {
+        $tmp = $data['X-ABRELATEDNAMES'];
+        if($tmp)
+        {
+            $type_info = '';
+            for($i=0; $i < count($tmp); $i++)
+            {
+                switch ($tmp[$i]['X-ABLABEL']['value'][0][0])
+                {
+                    case '_$!<Spouse>!$_':
+                        $type_info = 'spouse';
+                        break;
+
+                    case '_$!<Child>!$_':
+                        $type_info = 'child';
+                        break;
+
+                    case '_$!<Mother>!$_':
+                        $type_info = 'mother';
+                        break;
+
+                    case '_$!<Father>!$_':
+                        $type_info = 'father';
+                        break;
+
+                    case '_$!<Parent>!$_':
+                        $type_info = 'parent';
+                        break;
+
+                    case '_$!<Brother>!$_':
+                        $type_info = 'brother';
+                        break;
+
+                    case '_$!<Sister>!$_':
+                        $type_info = 'sister';
+                        break;
+
+                    case '_$!<Friend>!$_':
+                        $type_info = 'friend';
+                        break;
+
+                    case 'RELATIVE':
+                        $type_info = 'relative';
+                        break;
+
+                    case '_$!<Manager>!$_':
+                        $type_info = 'manager';
+                        break;
+
+                    case '_$!<Assistant>!$_':
+                        $type_info = 'assistant';
+                        break;
+
+                    case 'referredBy':
+                        $type_info = 'referred_by';
+                        break;
+
+                    case '_$!<Partner>!$_':
+                        $type_info = 'partner';
+                        break;
+
+                    case 'domesticPartner':
+                        $type_info = 'domestic_partner';
+                        break;
+
+                    default:
+                        $type_info = false;
+                }
+
+                $result[$i]['value'] = $this->checkParam($tmp[$i]['value'][0][0]);
+                $result[$i]['type'] = $type_info;
+            }
+            return $result;
+        }
+        return false;
+    }
+
     /**
      *  Checking for the presence of a parameter in the imported file.
      *
