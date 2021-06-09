@@ -36,10 +36,15 @@ class Test
             $data[$k]['full_name'] = $vcard->getFullname($item);
 
             // field: N (array of name parameters)
-            $data[$k]['name_param'] = $vcard->getParamsName($item,);
+            $data[$k]['name_param'] = $vcard->getParamsName($item);
 
             // field: NICKNAME (pseudonym)
             $data[$k]['nickname'] = $vcard->getNickname($item);
+
+            // field: EMAIL
+            $data[$k]['email'] = $vcard->getEmail($item);
+
+//            dump($item['EMAIL'][0]['param']['TYPE']);
 
 
             $data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);

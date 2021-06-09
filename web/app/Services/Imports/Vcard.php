@@ -445,7 +445,7 @@ class Vcard
      * @param array $data
      * @return array|false
      */
-    public function getParamsName($data,)
+    public function getParamsName($data)
     {
         if($data["N"][0]['value']){
             $result = [];
@@ -466,6 +466,25 @@ class Vcard
     public function getNickname($data)
     {
         return $this->checkParam($data["NICKNAME"][0]["value"][0][0]);
+    }
+
+    /**
+     *  Receive email and its type
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getEmail($data)
+    {
+        if($data['EMAIL']){
+            $result = [];
+            for($i=0; $i < count($data['EMAIL']); $i++){
+                $result[$i]['value'] = $data['EMAIL'][$i]['value'][0][0];
+                $result[$i]['type'] = $data['EMAIL'][$i]['param']['TYPE'][1] ?? 'OTHER';
+            }
+            return $result;
+        }
+        return false;
     }
 
     /**
