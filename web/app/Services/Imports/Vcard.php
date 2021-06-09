@@ -427,4 +427,29 @@ class Vcard
 
         return $out_string;
     }
+
+    /**
+     *  Get full name from imported file
+     *
+     * @param array $data
+     * @return string
+     */
+    public function getFullname($data)
+    {
+        return $this->checkParam($data["FN"][0]["value"][0][0]);
+    }
+
+    /**
+     *  Checking for the presence of a parameter in the imported file.
+     *
+     * @param array $param
+     * @return boolean
+     */
+    private function checkParam($param)
+    {
+        if($param){
+            return $param;
+        }
+        return false;
+    }
 }
