@@ -556,9 +556,21 @@ class Vcard
         if($tmp){
             $result['company'] = $tmp[0][0];
             $result['department'] = $tmp[1][0];
+            $result['post'] = $data['TITLE'][0]['value'][0][0] ?? false;
             return $result;
         }
         return false;
+    }
+
+    /**
+     *  Get birthday
+     *
+     * @param array $data
+     * @return array|bool
+     */
+    public function getBirthday($data)
+    {
+        return $this->checkParam($data["BDAY"][0]["value"][0][0]);
     }
 
     /**
