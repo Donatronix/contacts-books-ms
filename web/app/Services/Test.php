@@ -47,6 +47,9 @@ class Test
             // field: TEL (phone)
             $data[$k]['phone'] = $vcard->getPhone($item);
 
+            // field: ADR (address)
+            $data[$k]['address'] = $vcard->getAddress($item);
+
             $data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
             $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
             $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);
@@ -57,16 +60,6 @@ class Test
 //            $data[$k]['X-AIM'] = $this->checkParam($item['X-AIM'][0]['value'][0][0]);
 
 //            $data[$k]['X-SKYPE'] = $this->checkParam($item['X-SKYPE'][0]['value'][0][0]);
-
-
-
-            if($item['ADR']){
-                for($i=0; $i < count($item['ADR']); $i++){
-                    for($j=0; $j < count($item['ADR'][$i]['value']);$j++){
-                        $data[$k]['ADR'][$i][$j] = $item['ADR'][$i]['value'][$j][0];
-                    }
-                }
-            }
 
             if($item['ORG'][0]['value']){
                 for($i=0; $i < count($item['ORG'][0]['value']); $i++){

@@ -447,10 +447,16 @@ class Vcard
      */
     public function getParamsName($data)
     {
-        if($data["N"][0]['value']){
+        $tmp = $data['N'][0]['value'];
+        if($tmp){
             $result = [];
-            for($i=0; $i < count($data["N"][0]['value']); $i++){
-                $result[$i] = $data['N'][0]['value'][$i][0];
+            $arr_type = ['lastname', 'firstname', 'surname', 'prefix', 'suffix'];
+            for($i=0; $i < count($tmp); $i++)
+            {
+                $result[$i]['value'] = $this->checkParam($tmp[$i][0]);
+                if($result[$i]['value']){
+                    $result[$i]['type'] = $arr_type[$i];
+                }
             }
             return $result;
         }
@@ -476,11 +482,13 @@ class Vcard
      */
     public function getEmail($data)
     {
-        if($data['EMAIL']){
+        $tmp = $data['EMAIL'];
+        if($tmp){
             $result = [];
-            for($i=0; $i < count($data['EMAIL']); $i++){
-                $result[$i]['value'] = $data['EMAIL'][$i]['value'][0][0];
-                $result[$i]['type'] = $data['EMAIL'][$i]['param']['TYPE'][1] ?? 'OTHER';
+            for($i=0; $i < count($tmp); $i++){
+                $result[$i]['value'] = $tmp[$i]['value'][0][0];
+                $result[$i]['type'] = $tmp[$i]['param']['TYPE'][1] ?? 'other';
+                $result[$i]['type'] = mb_strtolower($result[$i]['type']);
             }
             return $result;
         }
@@ -488,23 +496,49 @@ class Vcard
     }
 
     /**
-     *
+     * get a phone and its type
      *
      * @param array $data
      * @return array $result|false
      */
     public function getPhone($data)
     {
-        if($data['TEL']){
-            for($i=0; $i < count($data['TEL']); $i++){
-                $result[$i]['value'] = str_replace(" ", '', $data['TEL'][$i]['value'][0][0]);
+        $tmp = $data['TEL'];
+        if($tmp){
+            for($i=0; $i < count($tmp); $i++){
+                $result[$i]['value'] = str_replace(" ", '', $tmp[$i]['value'][0][0]);
 
-                if(isset($data['TEL'][$i]['param']['TYPE'][0])){
-                    $result[$i]['type'] = $data['TEL'][$i]['param']['TYPE'][0];
+                if(isset($tmp[$i]['param']['TYPE'][0])){
+                    $result[$i]['type'] = $tmp[$i]['param']['TYPE'][0];
                 }
                 else{
-                    $result[$i]['type'] = $data['TEL'][$i]['X-ABLABEL']['value'][0][0] ?? false;
+                    $result[$i]['type'] = $tmp[$i]['X-ABLABEL']['value'][0][0] ?? false;
                 }
+
+                $result[$i]['type'] = mb_strtolower($result[$i]['type']);
+            }
+            return $result;
+        }
+        return false;
+    }
+
+    /**
+     *  Get address parameters
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getAddress($data)
+    {
+        $tmp = $data['ADR'];
+        if($tmp){
+            $arr_type = ['post_office_box_number', 'address_string2', 'address_string1', 'city', 'provinces', 'postcode', 'country'];
+            for($i=0; $i < count($tmp); $i++){
+                for($j=0; $j < count($tmp[$i]['value']);$j++){
+                    $type = $arr_type[$j];
+                    $result[$i][$type] = $tmp[$i]['value'][$j][0];
+                }
+                $result[$i] = array_reverse($result[$i]);
             }
             return $result;
         }
@@ -519,7 +553,7 @@ class Vcard
      */
     private function checkParam($param)
     {
-        if($param){
+        if(isset($param)){
             return $param;
         }
         return false;
