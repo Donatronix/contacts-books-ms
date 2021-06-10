@@ -13,8 +13,13 @@ class CreateWorkTable extends Migration
      */
     public function up()
     {
-        Schema::create('work', function (Blueprint $table) {
-            $table->id();
+        Schema::create('work', function (Blueprint $table)
+        {
+            $table->bigIncrements('id');
+            $table->bigInteger('user_id')->index();
+            $table->string('company', 100)->default('');
+            $table->string('department', 100)->default('');
+            $table->string('post', 50)->default('')->comment('user position at work');
             $table->timestamps();
         });
     }

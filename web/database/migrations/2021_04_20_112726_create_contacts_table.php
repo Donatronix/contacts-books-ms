@@ -13,29 +13,12 @@ class CreateContactsTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('contacts', function (Blueprint $table) {
+        $table_name = "contacts";
+        Schema::create($table_name, function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('first_name', 50)->default('');
             $table->string('last_name', 50)->default('');
             $table->string('surname', 50)->default('');
-            $table->date('birthday')->default('');
-            $table->text('avatar')->default('');
-            $table->string('nickname', 50)->default('')->comment('user alias');
-            $table->string('prefix', 50)->default('')->comment('prefix user name');
-            $table->string('suffix', 50)->default('')->comment('suffix user name');
-            $table->string('suffix', 50)->default('')->comment('suffix user name');
-
-
-//            $table->string('middlename')->default('');
-//            $table->string('prefix')->default('');
-//            $table->string('suffix')->default('');
-//            $table->string('adrpob')->default('');
-//            $table->string('adrextend')->default('');
-//            $table->string('adrstreet')->default('');
-//            $table->string('adrcity')->default('');
-//            $table->string('adrstate')->default('');
-//            $table->string('adrzip')->default('');
-//            $table->string('adrcountry')->default('');
 
             $table->boolean('is_favorite')->default(false);
             $table->bigInteger('user_id')->index();
@@ -44,6 +27,12 @@ class CreateContactsTable extends Migration
             $table->timestamps();
             $table->softDeletes();
         });
+
+        DB::statement("ALTER TABLE {$table_name} ADD `avatar` TEXT  DEFAULT NULL");
+        DB::statement("ALTER TABLE {$table_name} ADD `nickname` VARCHAR(50) DEFAULT NULL COMMENT 'user alias'");
+        DB::statement("ALTER TABLE {$table_name} ADD `user_prefix` VARCHAR(20) DEFAULT NULL COMMENT 'prefix user name'");
+        DB::statement("ALTER TABLE {$table_name} ADD `user_suffix` VARCHAR (20) DEFAULT NULL COMMENT 'suffix user name'");
+        DB::statement("ALTER TABLE {$table_name} ADD `birthday` DATE DEFAULT NULL");
     }
 
     /**
