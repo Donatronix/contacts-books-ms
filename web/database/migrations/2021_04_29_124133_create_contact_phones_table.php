@@ -13,7 +13,8 @@ class CreateContactPhonesTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact_phones', function (Blueprint $table) {
+        $table_name = 'contact_phones';
+        Schema::create($table_name, function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('phone');
             $table->boolean('is_default')->default(false);
@@ -22,6 +23,8 @@ class CreateContactPhonesTable extends Migration
                 ->onDelete('cascade');
             $table->dateTime('created_at');
         });
+
+        DB::statement("ALTER TABLE {$table_name} ADD `phone_type` VARCHAR (30) DEFAULT NULL COMMENT 'a field type for a phone that denotes a group, such as home'");
     }
 
     /**
