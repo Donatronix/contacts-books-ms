@@ -62,9 +62,12 @@ class Test
             // field: X-ABRELATEDNAMES (relation)
             $data[$k]['relation'] = $vcard->getRelationInfo($item);
 
+            // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
+            $data[$k]['chats'] = $vcard->getChat($item);
+
 //            $data[$k]['PHOTO'] = $this->checkParam($item['PHOTO'][0]['value'][0][0]);
 
-//            $this->checkParam($item['X-AIM'][0]['value'][0][0]);
+//            $data[$k]['chat'] = $this->checkParam($item['X-YAHOO']);
 //            $data[$k]['X-AIM'] = $this->checkParam($item['X-AIM'][0]['value'][0][0]);
 
 //            $data[$k]['X-SKYPE'] = $this->checkParam($item['X-SKYPE'][0]['value'][0][0]);

@@ -601,6 +601,12 @@ class Vcard
         return false;
     }
 
+    /**
+     *  Get relationship information
+     *
+     * @param array $data
+     * @return array $result|false
+     */
     public function getRelationInfo($data)
     {
         $tmp = $data['X-ABRELATEDNAMES'];
@@ -677,6 +683,28 @@ class Vcard
             return $result;
         }
         return false;
+    }
+
+    /**
+     *  Get info by chats
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getChat($data)
+    {
+        $data_arr_chats = ['X-GTALK', 'X-AIM', 'X-YAHOO', 'X-SKYPE', 'X-QQ', 'X-MSN', 'X-ICQ', 'X-JABBER'];
+        $result_arr_chats = ['gtalk', 'aim', 'yahoo', 'skype', 'qq', 'msn', 'isq', 'jabber'];
+
+        for($i=0; $i < count($data_arr_chats); $i++)
+        {
+            $data_arr = $data_arr_chats[$i];
+            if(isset($data[$data_arr])){
+                $result_arr = $result_arr_chats[$i];
+                $result[$result_arr] = $data[$data_arr][0]['value'][0][0];
+            }
+        }
+        return $result ?? false;
     }
 
     /**
