@@ -65,7 +65,13 @@ class Test
             // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
             $data[$k]['chats'] = $vcard->getChat($item);
 
-//            $data[$k]['PHOTO'] = $this->checkParam($item['PHOTO'][0]['value'][0][0]);
+            // field: NOTE
+            $data[$k]['note'] = $vcard->getNote($item); // доработать
+
+            // field: PHOTO
+            $data[$k]['photo'] = $vcard->getAvatar($item);
+
+
 
 //            $data[$k]['chat'] = $this->checkParam($item['X-YAHOO']);
 //            $data[$k]['X-AIM'] = $this->checkParam($item['X-AIM'][0]['value'][0][0]);
@@ -73,7 +79,6 @@ class Test
 //            $data[$k]['X-SKYPE'] = $this->checkParam($item['X-SKYPE'][0]['value'][0][0]);
 
 //            $data[$k]['X-ABDATE'] = $this->checkParam($item['X-ABDATE'][0]['value'][0][0]);
-            $data[$k]['NOTE'] = $this->checkParam($item['NOTE'][0]['value'][0][0]);
 
             if($item['CATEGORIES'][0]['value'][0]){
                 for($i=0; $i < count($item['CATEGORIES'][0]['value'][0]); $i++){

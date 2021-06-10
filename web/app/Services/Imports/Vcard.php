@@ -707,6 +707,29 @@ class Vcard
         return $result ?? false;
     }
 
+    public function getNote($data)
+    {
+        $tmp = $data["NOTE"][0]["value"][0][0];
+        if($this->checkParam($tmp)){
+            $result = strstr($tmp, ' ', true);
+        }
+        return $result ?? false;
+    }
+
+    /**
+     *  Get avatar
+     *
+     * @param array $data
+     * @return array $result|bool
+     */
+    public function getAvatar($data)
+    {
+        if(isset($data['PHOTO'])){
+            $result = $this->checkParam($data['PHOTO'][0]['value'][0][0]);
+        }
+        return $result ?? false;
+    }
+
     /**
      *  Checking for the presence of a parameter in the imported file.
      *
