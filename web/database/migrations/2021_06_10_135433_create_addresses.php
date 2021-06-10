@@ -22,6 +22,9 @@ class CreateAddresses extends Migration
             $table->string('address_type', 30)->default('another')->comment('the type of address to be grouped, such as home. if not specified, another is specified by default');
             $table->string('postcode', 10)->default('');
             $table->string('post_office_box_number', 10)->default('');
+            $table->foreignUuid('contact_id')->constrained()
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }
