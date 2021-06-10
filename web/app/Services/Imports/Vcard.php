@@ -532,11 +532,19 @@ class Vcard
     {
         $tmp = $data['ADR'];
         if($tmp){
-            $arr_type = ['post_office_box_number', 'address_string2', 'address_string1', 'city', 'provinces', 'postcode', 'country'];
+            $arr_type = ['post_office_box_number', 'address_string2', 'address_string1', 'city', 'provinces', 'postcode', 'country', 'type'];
             for($i=0; $i < count($tmp); $i++){
-                for($j=0; $j < count($tmp[$i]['value']);$j++){
+                $cnt = count($tmp[$i]['value']) + 1;
+                for($j=0; $j < $cnt;$j++){
                     $type = $arr_type[$j];
-                    $result[$i][$type] = $tmp[$i]['value'][$j][0];
+                    if($type != 'type'){
+                        $result[$i][$type] = $tmp[$i]['value'][$j][0];
+                    }
+                    else{
+                        if(isset($tmp[$i]['X-ABLABEL']['value'][0][0])){
+                            $result[$i][$type] = $tmp[$i]['X-ABLABEL']['value'][0][0];
+                        }
+                    }
                 }
                 $result[$i] = array_reverse($result[$i]);
             }
