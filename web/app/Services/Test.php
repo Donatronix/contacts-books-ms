@@ -71,25 +71,12 @@ class Test
             // field: PHOTO
             $data[$k]['photo'] = $vcard->getAvatar($item);
 
+            // field: CATEGORIES
+            $data[$k]['categories'] = $vcard->getCategories($item);
 
-
-//            $data[$k]['chat'] = $this->checkParam($item['X-YAHOO']);
-//            $data[$k]['X-AIM'] = $this->checkParam($item['X-AIM'][0]['value'][0][0]);
-
-//            $data[$k]['X-SKYPE'] = $this->checkParam($item['X-SKYPE'][0]['value'][0][0]);
-
-//            $data[$k]['X-ABDATE'] = $this->checkParam($item['X-ABDATE'][0]['value'][0][0]);
-
-            if($item['CATEGORIES'][0]['value'][0]){
-                for($i=0; $i < count($item['CATEGORIES'][0]['value'][0]); $i++){
-                    $data[$k]['CATEGORIES'][$i] = $item['CATEGORIES'][0]['value'][0][$i];
-                }
-            }
-
-            $data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
+            /*$data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
             $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
-            $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);
-
+            $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);*/
         }
 
         dump($data);

@@ -730,6 +730,17 @@ class Vcard
         return $result ?? false;
     }
 
+    public function getCategories($data)
+    {
+        $tmp = $data['CATEGORIES'][0]['value'][0];
+        if(isset($tmp)){
+            for($i=0; $i < count($tmp); $i++){
+                $result[$i] = $tmp[$i];
+            }
+        }
+        return $result ?? false;
+    }
+
     /**
      *  Checking for the presence of a parameter in the imported file.
      *
