@@ -13,7 +13,8 @@ class CreateContactEmailsTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact_emails', function (Blueprint $table) {
+        $table_name = 'contact_emails';
+        Schema::create($table_name, function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('email');
             $table->boolean('is_default')->default(false);
@@ -22,6 +23,7 @@ class CreateContactEmailsTable extends Migration
                 ->onDelete('cascade');
             $table->dateTime('created_at');
         });
+        DB::statement("ALTER TABLE {$table_name} ADD `email_type` VARCHAR (30) DEFAULT NULL COMMENT 'the type of email field, for example: home, work, etc.'");
     }
 
     /**
