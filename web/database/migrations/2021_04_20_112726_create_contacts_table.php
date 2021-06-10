@@ -15,9 +15,16 @@ class CreateContactsTable extends Migration
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('first_name')->default('');
-            $table->string('last_name')->default('');
-            $table->string('username', 50)->default('');
+            $table->string('first_name', 50)->default('');
+            $table->string('last_name', 50)->default('');
+            $table->string('surname', 50)->default('');
+            $table->date('birthday')->default('');
+            $table->text('avatar')->default('');
+            $table->string('nickname', 50)->default('')->comment('user alias');
+            $table->string('prefix', 50)->default('')->comment('prefix user name');
+            $table->string('suffix', 50)->default('')->comment('suffix user name');
+            $table->string('suffix', 50)->default('')->comment('suffix user name');
+
 
 //            $table->string('middlename')->default('');
 //            $table->string('prefix')->default('');
