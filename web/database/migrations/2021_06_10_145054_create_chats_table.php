@@ -16,6 +16,7 @@ class CreateChatsTable extends Migration
         Schema::create('chats', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->text('chat')->nullable()->comment('chat link');
+            $table->boolean('is_default')->default(false);
             $table->string('chat_name', 30)->nullable()->comment('the name of the chat provided by Google contacts');
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')

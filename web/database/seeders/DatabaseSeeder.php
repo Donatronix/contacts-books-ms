@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ContactsToGroupsTableSeeder::class,
             CategoriesTableSeeder::class,
             WorkSeeder::class,
+            AddressSeeder::class,
         ]);
     }
 }
