@@ -4,17 +4,17 @@
 namespace Database\Factories;
 
 use App\Models\Contact;
-use App\Models\Relation;
+use App\Models\Work;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class RelationFactory extends Factory
+class WorkFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Relation::class;
+    protected $model = Work::class;
 
     /**
      * Define the model's default state.
@@ -25,8 +25,9 @@ class RelationFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'relation' => $this->faker->word(),
-            'relation_name' => $this->faker->randomElement(['spouse', 'child', 'mother', 'father', 'parent', 'brother', 'sister', 'friend', 'relative', 'manager', 'assistant', 'referred_by', 'partner', 'domestic_partner']),
+            'company' => $this->faker->word(),
+            'department' => $this->faker->word(),
+            'post' => $this->faker->word(),
             'contact_id' => function () {
                 return Contact::factory()->create()->id;
             },
