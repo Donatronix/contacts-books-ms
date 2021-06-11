@@ -32,17 +32,13 @@ class Contact extends Model
         'user_id',
         'first_name',
         'last_name',
-        'middlename',
+        'surname',
         'prefix',
         'suffix',
         'nickname',
-        'adrpob',
-        'adrextend',
-        'adrstreet',
-        'adrcity',
-        'adrstate',
-        'adrzip',
-        'adrcountry',
+        'note',
+        'avatar',
+        'birthday',
         'is_favorite'
     ];
 
