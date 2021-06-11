@@ -25,6 +25,7 @@ class ContactPhoneFactory extends Factory
         return [
             'id' => $this->faker->uuid(),
             'phone' => $this->faker->phoneNumber(),
+            'phone_type' => $this->faker->randomElement(['home', 'work', 'cell', 'other', 'main', 'homefax', 'workfax', 'googlevoice', 'pager']),
             'is_default' => false,
             'contact_id' => function () {
                 return Contact::factory()->create()->id;
