@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Chat extends Model
+class Relation extends Model
 {
     use HasFactory;
     use UuidTrait;
@@ -17,8 +17,8 @@ class Chat extends Model
      * @var string[]
      */
     protected $fillable = [
-        'chat',
-        'chat_name',
+        'relation',
+        'relation_name',
     ];
 
     /**
