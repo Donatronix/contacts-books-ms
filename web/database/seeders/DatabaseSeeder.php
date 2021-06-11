@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             WorkSeeder::class,
             AddressSeeder::class,
             SiteSeeder::class,
+            ChatSeeder::class,
         ]);
     }
 }
