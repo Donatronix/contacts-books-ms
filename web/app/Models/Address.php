@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Models;
 
 use App\Traits\UuidTrait;
@@ -7,24 +8,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ContactEmail extends Model
+class Address extends Model
 {
     use HasFactory;
     use UuidTrait;
 
     /**
-     * Off updated_at column
-     */
-    const UPDATED_AT = null;
-
-    /**
      * @var string[]
      */
     protected $fillable = [
-        'email',
-        'email_type',
-        'is_default',
-        'contact_id'
+        'country',
+        'provinces',
+        'city',
+        'address',
+        'address_type',
+        'postcode',
+        'post_office_box_number',
+        'contact_id',
     ];
 
     /**
