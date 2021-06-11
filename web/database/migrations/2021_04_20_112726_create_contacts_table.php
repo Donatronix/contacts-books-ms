@@ -19,6 +19,12 @@ class CreateContactsTable extends Migration
             $table->string('first_name', 50)->default('');
             $table->string('last_name', 50)->default('');
             $table->string('surname', 50)->default('');
+            $table->text('avatar')->nullable();
+            $table->date('birthday')->nullable();
+            $table->string('nickname', 50)->nullable()->comment('user alias');
+            $table->string('user_prefix', 20)->nullable()->comment('prefix user name');
+            $table->string('user_suffix', 20)->nullable()->comment('suffix user name');
+
 
             $table->boolean('is_favorite')->default(false);
             $table->bigInteger('user_id')->index();
@@ -27,12 +33,6 @@ class CreateContactsTable extends Migration
             $table->timestamps();
             $table->softDeletes();
         });
-
-        DB::statement("ALTER TABLE {$table_name} ADD `avatar` TEXT  DEFAULT NULL");
-        DB::statement("ALTER TABLE {$table_name} ADD `nickname` VARCHAR(50) DEFAULT NULL COMMENT 'user alias'");
-        DB::statement("ALTER TABLE {$table_name} ADD `user_prefix` VARCHAR(20) DEFAULT NULL COMMENT 'prefix user name'");
-        DB::statement("ALTER TABLE {$table_name} ADD `user_suffix` VARCHAR (20) DEFAULT NULL COMMENT 'suffix user name'");
-        DB::statement("ALTER TABLE {$table_name} ADD `birthday` DATE DEFAULT NULL");
     }
 
     /**

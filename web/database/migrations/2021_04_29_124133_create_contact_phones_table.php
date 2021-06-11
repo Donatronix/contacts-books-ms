@@ -17,14 +17,13 @@ class CreateContactPhonesTable extends Migration
         Schema::create($table_name, function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('phone');
+            $table->string('phone_type', 30)->nullable()->comment('a field type for a phone that denotes a group, such as home');
             $table->boolean('is_default')->default(false);
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->dateTime('created_at');
         });
-
-        DB::statement("ALTER TABLE {$table_name} ADD `phone_type` VARCHAR (30) DEFAULT NULL COMMENT 'a field type for a phone that denotes a group, such as home'");
     }
 
     /**

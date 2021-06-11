@@ -17,13 +17,13 @@ class CreateContactEmailsTable extends Migration
         Schema::create($table_name, function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('email');
+            $table->string('email_type',30)->nullable()->comment('the type of email field, for example: home, work, etc.');
             $table->boolean('is_default')->default(false);
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->dateTime('created_at');
         });
-        DB::statement("ALTER TABLE {$table_name} ADD `email_type` VARCHAR (30) DEFAULT NULL COMMENT 'the type of email field, for example: home, work, etc.'");
     }
 
     /**

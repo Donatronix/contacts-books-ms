@@ -16,7 +16,6 @@ class CreateWorksTable extends Migration
         Schema::create('works', function (Blueprint $table)
         {
             $table->uuid('id')->primary();
-            $table->bigInteger('user_id')->index();
             $table->string('company', 100)->default('');
             $table->string('department', 100)->default('');
             $table->string('post', 50)->default('')->comment('user position at work');

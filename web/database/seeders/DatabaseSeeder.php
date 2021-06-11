@@ -19,7 +19,8 @@ class DatabaseSeeder extends Seeder
             ContactEmailsTableSeeder::class,
             ContactPhonesTableSeeder::class,
             ContactsToGroupsTableSeeder::class,
-            CategoriesTableSeeder::class
+            CategoriesTableSeeder::class,
+            WorkSeeder::class,
         ]);
     }
 }
