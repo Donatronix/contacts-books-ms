@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\ContactEmail;
 use App\Models\ContactPhone;
+use App\Models\Work;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -119,7 +120,7 @@ class ContactController extends Controller
             $contacts = Contact::with([
                     'phones',
                     'emails',
-                    'groups'
+                    'groups',
                 ])
 
                 ->when($request->has('search'), function ($q) use ($request) {
@@ -230,7 +231,12 @@ class ContactController extends Controller
                 $contact = Contact::create([
                     'first_name' => $item['first_name'],
                     'last_name' => $item['last_name'],
-                    'username' => $item['username'],
+                    'surname' => $item['surname'],
+                    'avatar' => $item['avatar'],
+                    'birthday' => $item['birthday'],
+                    'nickname' => $item['nickname'],
+                    'user_prefix' => $item['user_prefix'],
+                    'user_suffix' => $item['user_suffix'],
                     'user_id' => (int)Auth::user()->getAuthIdentifier()
                 ]);
 
@@ -239,6 +245,7 @@ class ContactController extends Controller
                     foreach ($item['phones'] as $x => $phone) {
                         ContactPhone::create([
                             'phone' => $phone,
+                            'phone_type' => $item['phone_type'],
                             'is_default' => $x === 0,
                             'contact_id' => $contact->id
                         ]);
@@ -246,10 +253,78 @@ class ContactController extends Controller
                 }
 
                 // Save contact's emails
-                if(isset($item['emails']) && count($item['emails']) > 0){
+                if(isset($item['emails']) && count($item['emails']) > 0)
+                {
                     foreach ($item['emails'] as $x => $email) {
                         ContactEmail::create([
                             'email' => $email,
+                            'email_type' => $item['email_type'],
+                            'is_default' => $x === 0,
+                            'contact_id' => $contact->id
+                        ]);
+                    }
+                }
+
+                if(isset($item['works']) && count($item['works']) > 0)
+                {
+                    foreach ($item['works'] as $x => $company) {
+                        Work::create([
+                            'company' => $company,
+                            'department' => $item['department'],
+                            'post' => $item['post'],
+                            'is_default' => $x === 0,
+                            'contact_id' => $contact->id
+                        ]);
+                    }
+                }
+
+                if(isset($item['addresses']) && count($item['addresses']) > 0)
+                {
+                    foreach ($item['addresses'] as $x => $country) {
+                        Work::create([
+                            'country' => $country,
+                            'provinces' => $item['provinces'],
+                            'city' => $item['city'],
+                            'address' => $item['address'],
+                            'address_type' => $item['address_type'],
+                            'postcode' => $item['postcode'],
+                            'post_office_box_number' => $item['post_office_box_number'],
+                            'is_default' => $x === 0,
+                            'contact_id' => $contact->id
+                        ]);
+                    }
+                }
+
+                if(isset($item['sites']) && count($item['sites']) > 0)
+                {
+                    foreach ($item['sites'] as $x => $site) {
+                        Work::create([
+                            'site' => $site,
+                            'site_type' => $item['site_type'],
+                            'is_default' => $x === 0,
+                            'contact_id' => $contact->id
+                        ]);
+                    }
+                }
+
+                if(isset($item['chats']) && count($item['chats']) > 0)
+                {
+                    foreach ($item['chats'] as $x => $chat) {
+                        Work::create([
+                            'site' => $chat,
+                            'chat_name' => $item['chat_name'],
+                            'is_default' => $x === 0,
+                            'contact_id' => $contact->id
+                        ]);
+                    }
+                }
+
+                if(isset($item['relation']) && count($item['relation']) > 0)
+                {
+                    foreach ($item['relation'] as $x => $relation) {
+                        Work::create([
+                            'relation' => $relation,
+                            'relation_name' => $item['relation_name'],
                             'is_default' => $x === 0,
                             'contact_id' => $contact->id
                         ]);

@@ -79,6 +79,46 @@ class Contact extends Model
         return $this->belongsToMany(Group::class, 'contact_category');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function works(): BelongsToMany
+    {
+        return $this->belongsToMany(Work::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function addresses(): BelongsToMany
+    {
+        return $this->belongsToMany(Address::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function sites(): BelongsToMany
+    {
+        return $this->belongsToMany(Site::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function chats(): BelongsToMany
+    {
+        return $this->belongsToMany(Chat::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function relations(): BelongsToMany
+    {
+        return $this->belongsToMany(Relation::class);
+    }
+
     public function scopeFavorites($query)
     {
 
