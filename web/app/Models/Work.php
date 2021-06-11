@@ -21,6 +21,7 @@ class Work extends Model
         'company',
         'department',
         'post',
+        'contact_id',
     ];
 
     /**

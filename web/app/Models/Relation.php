@@ -19,6 +19,7 @@ class Relation extends Model
     protected $fillable = [
         'relation',
         'relation_name',
+        'contact_id',
     ];
 
     /**

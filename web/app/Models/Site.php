@@ -19,6 +19,7 @@ class Site extends Model
     protected $fillable = [
         'site',
         'site_type',
+        'contact_id',
     ];
 
     /**
