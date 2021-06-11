@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             AddressSeeder::class,
             SiteSeeder::class,
             ChatSeeder::class,
+            RelationSeeder::class,
         ]);
     }
 }
