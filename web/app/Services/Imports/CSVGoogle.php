@@ -8,7 +8,20 @@ use Illuminate\Support\Facades\Auth;
 
 class CSVGoogle
 {
-    public function readData(Request $request)
+    public $data = [];
+
+    public function __construct($file_data=false)
+    {
+        //$this->data = $this->readData($file_data);
+        return false;
+    }
+
+    public function parse()
+    {
+        return false;
+    }
+
+    public function readData($request)
     {
         $user_id = (int)Auth::user()->getAuthIdentifier();
         $googlecsv = $request['googleexport'];

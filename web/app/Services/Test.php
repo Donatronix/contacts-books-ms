@@ -26,6 +26,7 @@ class Test
 
         $file = $request->file('contacts');
         $file_data = file_get_contents($file->getPathname());
+        dd($file_data);
         $vcard = new Vcard();
         $file_data_array = (new Vcard())->readData($file_data);
         $data = [];

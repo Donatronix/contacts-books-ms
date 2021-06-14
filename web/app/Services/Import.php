@@ -8,6 +8,11 @@ use Illuminate\Http\UploadedFile;
 
 class Import
 {
+    public function run(Request $request)
+    {
+        return view("tests.import1");
+    }
+
     public function check(Request $request)
     {
         // get list classes by path app/Services/Imports/
@@ -17,47 +22,76 @@ class Import
         // read the uploaded file
         $file_data = $this->readFile($request);
         // trying to parse the contents of the file
-        return $this->parse($file_data, $classes) ?? false;
+        $data_result = $this->parse($file_data, $classes) ?? false;
+        dd($data_result);
+        return $data_result;
     }
 
     public function readFile($request)
     {
         $file = $request->file('contacts');
         $path_file = $file->getPathname();
-        return trim(file_get_contents($path_file)) ?? false;
+
+        return file_get_contents($path_file) ?? false;
     }
 
     public function parse($file_data, $classes)
     {
 
-        for($i=1; $i < count($classes); $i++)
+        $data_result = false;
+        $path_to_dir = '\App\Services\Imports\\';
+        foreach ($classes as $k => $class)
         {
+            if($path_to_dir . $class)
+            {
+                $path_to_class = $path_to_dir . $class;
 
-
-                $file_data_array = (new Vcard())->readData($file_data);
-                if($file_data_array){
-                    $vcard = new Vcard();
-                    $data_result = $vcard->parse($file_data_array, $vcard);
-                    break;
+                $data_object = new $path_to_class($file_data);
+                $data_check = $this->checkArrayByEmpty((array)$data_object);
+                if($data_check == null)
+                {
+//                    var_dump($data_check);
+                    dump(123456);
+                }
+                else{
+                    /*dump($path_to_class);
+                    unset($data_object);*/
+                    dump($path_to_class);
+//                    var_dump($data_check);
+                    /*$data_result = $data_object->parse($data_object->data);
+                    break;*/
                 }
             }
+            else{
+                break;
+            }
         }
-        /*dump($data_result);
-        dd($file_data_array);*/
 
-//        return $file_data_array ?? false;
+        return $data_result ?? false;
     }
 
     public function getClassList($dirpath)
     {
         $result = [];
         $cdir = scandir($dirpath);
-        foreach ($cdir as $value) {
-            if (!in_array($value,array(".", "..")) && !is_dir($dirpath . DIRECTORY_SEPARATOR . $value)) {
-                $value = substr($value, 0, -4);
+        foreach ($cdir as $value)
+        {
+            if (!in_array($value,array(".", "..")) && !is_dir($dirpath . DIRECTORY_SEPARATOR . $value))
+            {
+                $value = trim(substr($value, 0, -4));
                 $result[] = $value;
             }
         }
         return $result;
+    }
+
+    public function checkArrayByEmpty($list)
+    {
+        foreach ($list as $key => $value)
+        {
+            if ($value == [] || !$value) {
+                unset($key);
+            }
+        }
     }
 }
