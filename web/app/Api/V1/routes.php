@@ -74,7 +74,7 @@ $router->group([
     /**
      *  For test
      */
-    $router->post('test', '\App\Services\Test@test');
+    $router->post('test', '\App\Services\Import@check');
     $router->get('run', '\App\Services\Test@run');
 
     /**
