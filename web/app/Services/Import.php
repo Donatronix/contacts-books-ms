@@ -37,7 +37,6 @@ class Import
 
     public function parse($file_data, $classes)
     {
-
         $data_result = false;
         $path_to_dir = '\App\Services\Imports\\';
         foreach ($classes as $k => $class)
@@ -45,27 +44,23 @@ class Import
             if($path_to_dir . $class)
             {
                 $path_to_class = $path_to_dir . $class;
-
                 $data_object = new $path_to_class($file_data);
                 $data_check = $this->checkArrayByEmpty((array)$data_object);
                 if($data_check == null)
                 {
-//                    var_dump($data_check);
-                    dump(123456);
+                    unset($data_object);
                 }
                 else{
-                    /*dump($path_to_class);
-                    unset($data_object);*/
-                    dump($path_to_class);
-//                    var_dump($data_check);
-                    /*$data_result = $data_object->parse($data_object->data);
-                    break;*/
+                    $data_result = $data_object->parse($data_object->data);
+                    break;
                 }
             }
             else{
                 break;
             }
         }
+        dump($data_result);
+        die('END');
 
         return $data_result ?? false;
     }
@@ -87,11 +82,8 @@ class Import
 
     public function checkArrayByEmpty($list)
     {
-        foreach ($list as $key => $value)
-        {
-            if ($value == [] || !$value) {
-                unset($key);
-            }
+        foreach ($list as $value){
+            return $value;
         }
     }
 }
