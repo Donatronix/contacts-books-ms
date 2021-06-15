@@ -5,7 +5,7 @@ namespace App\Services;
 
 use PubSub;
 use Exception;
-use App\Services\Imports\Vcard;
+use App\Services\Imports\CSVGoogle;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,12 +26,12 @@ class Test
 
         $file = $request->file('contacts');
         $file_data = file_get_contents($file->getPathname());
-        dd($file_data);
-        $vcard = new Vcard();
-        $file_data_array = (new Vcard())->readData($file_data);
+        $data_object = new CSVGoogle($file_data);
+        dd($data_object);
+        //$file_data_array = (new CSVGoogle())->readData($file_data);
         $data = [];
 
-        foreach ($file_data_array as $k => $item)
+        /*foreach ($file_data_array as $k => $item)
         {
             // field: FN (Full name)
             $data[$k]['full_name'] = $vcard->getFullname($item);
@@ -74,11 +74,7 @@ class Test
 
             // field: CATEGORIES
             $data[$k]['categories'] = $vcard->getCategories($item);
-
-            /*$data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
-            $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
-            $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);*/
-        }
+        }*/
 
         dump($data);
         dd($file_data_array);

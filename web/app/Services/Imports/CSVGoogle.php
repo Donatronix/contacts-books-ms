@@ -5,6 +5,7 @@ namespace App\Services\Imports;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\CsvParser;
 
 class CSVGoogle
 {
@@ -12,8 +13,31 @@ class CSVGoogle
 
     public function __construct($file_data=false)
     {
-        //$this->data = $this->readData($file_data);
-        return false;
+        $csv_object = new CsvParser();
+        $this->data = $csv_object->readData($file_data);
+
+        dd($this->data);
+        return $this->data ?? false;
+    }
+
+    public function readData($file_data)
+    {
+        /*$googles = $this->parse_csv($file_data);
+        dd($googles);*/
+        /*$delimiter = ';';
+        $rows = explode(PHP_EOL, $file_data);
+        $data = [];
+        foreach ($rows as $row)
+        {
+            $data[] = explode($delimiter, $row);
+        }*/
+        $csv_data = [];
+        $lines = explode(PHP_EOL, $file_data);
+        foreach ($lines as $line) {
+            $csv_data[] = str_getcsv($line);
+        }
+        dd($csv_data);
+//        print_r($data);
     }
 
     public function parse()
@@ -21,12 +45,44 @@ class CSVGoogle
         return false;
     }
 
-    public function readData($request)
+    function parse_csv($str)
+    {
+        $str = preg_replace_callback('/([^"]*)("((""|[^"])*)"|$)/s',
+            function ($matches) {
+                $str = str_replace("\r", "\rR", $matches[3]);
+                //$str = str_replace("\n", "\rN", $str);
+                //$str = str_replace('""', "\rQ", $str);
+                //$str = str_replace(',', "\rC", $str);
+
+                return preg_replace('/\r\n?/', "\n", $matches[1]) . $str;
+            },
+            $str);
+        dd($str);
+        $str = preg_replace('/\n$/', '', $str);
+
+        return array_map(
+            function ($line) {
+                return array_map(
+                    function ($field) {
+                        $field = str_replace("\rC", ',', $field);
+                        $field = str_replace("\rQ", '"', $field);
+                        $field = str_replace("\rN", "\n", $field);
+                        $field = str_replace("\rR", "\r", $field);
+
+                        return $field;
+                    },
+                    explode(',', $line));
+            }, explode("\n", $str)
+        );
+    }
+
+    public function readDataTmp($file_data)
     {
         $user_id = (int)Auth::user()->getAuthIdentifier();
-        $googlecsv = $request['googleexport'];
+//        $googlecsv = $request['googleexport'];
 
-        $googles = $this->parse_csv($googlecsv);
+        $googles = $this->parse_csv($file_data);
+        dd($googles);
 
         $header = array_shift($googles);
         $header[] = "tmp";
@@ -71,35 +127,5 @@ class CSVGoogle
             'success' => true,
             'data' => $contacts
         ], 200);
-    }
-
-    function parse_csv($str)
-    {
-        $str = preg_replace_callback('/([^"]*)("((""|[^"])*)"|$)/s',
-            function ($matches) {
-                $str = str_replace("\r", "\rR", $matches[3]);
-                $str = str_replace("\n", "\rN", $str);
-                $str = str_replace('""', "\rQ", $str);
-                $str = str_replace(',', "\rC", $str);
-
-                return preg_replace('/\r\n?/', "\n", $matches[1]) . $str;
-            },
-            $str);
-        $str = preg_replace('/\n$/', '', $str);
-
-        return array_map(
-            function ($line) {
-                return array_map(
-                    function ($field) {
-                        $field = str_replace("\rC", ',', $field);
-                        $field = str_replace("\rQ", '"', $field);
-                        $field = str_replace("\rN", "\n", $field);
-                        $field = str_replace("\rR", "\r", $field);
-
-                        return $field;
-                    },
-                    explode(',', $line));
-            }, explode("\n", $str)
-        );
     }
 }
