@@ -30,7 +30,7 @@ class Import
         $file_data = $this->readFile($request);
         // trying to parse the contents of the file
         $data_result = $this->parse($file_data, $classes) ?? false;
-        dd($data_result); // TODO: Remove when finished working with parsing of all possible formats.
+//        dd($data_result); // TODO: Remove when finished working with parsing of all possible formats.
         return $data_result;
     }
 

@@ -5,7 +5,7 @@ namespace App\Services;
 
 use PubSub;
 use Exception;
-use App\Services\Imports\CSVGoogle;
+use App\Services\Imports\Vcard;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +15,7 @@ class Test
 {
     public function run(Request $request)
     {
-        return view("tests.import");
+        return view("tests.import1");
     }
 
     public function test(Request $request)
@@ -26,55 +26,55 @@ class Test
 
         $file = $request->file('contacts');
         $file_data = file_get_contents($file->getPathname());
-        $data_object = new CSVGoogle($file_data);
-        dd($data_object);
-        //$file_data_array = (new CSVGoogle())->readData($file_data);
+        $data_object = new Vcard($file_data);
+//        dd($data_object);
+        $file_data_array = (new Vcard())->readData($file_data);
         $data = [];
 
-        /*foreach ($file_data_array as $k => $item)
+        foreach ($file_data_array as $k => $item)
         {
             // field: FN (Full name)
-            $data[$k]['full_name'] = $vcard->getFullname($item);
+            $data[$k]['full_name'] = $data_object->getFullname($item);
 
             // field: N (array of name parameters)
-            $data[$k]['name_param'] = $vcard->getParamsName($item);
+            $data[$k]['name_param'] = $data_object->getParamsName($item);
 
             // field: NICKNAME (pseudonym)
-            $data[$k]['nickname'] = $vcard->getNickname($item);
+            $data[$k]['nickname'] = $data_object->getNickname($item);
 
             // field: EMAIL
-            $data[$k]['email'] = $vcard->getEmail($item);
+            $data[$k]['email'] = $data_object->getEmail($item);
 
             // field: TEL (phone)
-            $data[$k]['phone'] = $vcard->getPhone($item);
+            $data[$k]['phone'] = $data_object->getPhone($item);
 
             // field: ADR (address)
-            $data[$k]['address'] = $vcard->getAddress($item);
+            $data[$k]['address'] = $data_object->getAddress($item);
 
             // field: ORG (company, department) + TITLE (post)
-            $data[$k]['company_info'] = $vcard->getCompanyInfo($item);
+            $data[$k]['company_info'] = $data_object->getCompanyInfo($item);
 
             // field: BDAY (birthday)
-            $data[$k]['birthday'] = $vcard->getBirthday($item);
+            $data[$k]['birthday'] = $data_object->getBirthday($item);
 
             // field: URL (sites)
-            $data[$k]['sites'] = $vcard->getSites($item);
+            $data[$k]['sites'] = $data_object->getSites($item);
 
             // field: X-ABRELATEDNAMES (relation)
-            $data[$k]['relation'] = $vcard->getRelationInfo($item);
+            $data[$k]['relation'] = $data_object->getRelationInfo($item);
 
             // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
-            $data[$k]['chats'] = $vcard->getChat($item);
+            $data[$k]['chats'] = $data_object->getChat($item);
 
             // field: NOTE
-            $data[$k]['note'] = $vcard->getNote($item); // доработать
+            $data[$k]['note'] = $data_object->getNote($item); // доработать
 
             // field: PHOTO
-            $data[$k]['photo'] = $vcard->getAvatar($item);
+            $data[$k]['photo'] = $data_object->getAvatar($item);
 
             // field: CATEGORIES
-            $data[$k]['categories'] = $vcard->getCategories($item);
-        }*/
+            $data[$k]['categories'] = $data_object->getCategories($item);
+        }
 
         dump($data);
         dd($file_data_array);
