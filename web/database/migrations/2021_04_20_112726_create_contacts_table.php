@@ -13,22 +13,18 @@ class CreateContactsTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('contacts', function (Blueprint $table) {
+        $table_name = "contacts";
+        Schema::create($table_name, function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('first_name')->default('');
-            $table->string('last_name')->default('');
-            $table->string('username', 50)->default('');
+            $table->string('first_name', 50)->default('');
+            $table->string('last_name', 50)->default('');
+            $table->string('surname', 50)->default('');
+            $table->text('avatar')->nullable();
+            $table->date('birthday')->nullable();
+            $table->string('nickname', 50)->nullable()->comment('user alias');
+            $table->string('user_prefix', 20)->nullable()->comment('prefix user name');
+            $table->string('user_suffix', 20)->nullable()->comment('suffix user name');
 
-//            $table->string('middlename')->default('');
-//            $table->string('prefix')->default('');
-//            $table->string('suffix')->default('');
-//            $table->string('adrpob')->default('');
-//            $table->string('adrextend')->default('');
-//            $table->string('adrstreet')->default('');
-//            $table->string('adrcity')->default('');
-//            $table->string('adrstate')->default('');
-//            $table->string('adrzip')->default('');
-//            $table->string('adrcountry')->default('');
 
             $table->boolean('is_favorite')->default(false);
             $table->bigInteger('user_id')->index();

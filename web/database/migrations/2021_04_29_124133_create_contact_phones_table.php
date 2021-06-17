@@ -13,9 +13,11 @@ class CreateContactPhonesTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact_phones', function (Blueprint $table) {
+        $table_name = 'contact_phones';
+        Schema::create($table_name, function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('phone');
+            $table->string('phone_type', 30)->nullable()->comment('a field type for a phone that denotes a group, such as home');
             $table->boolean('is_default')->default(false);
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')

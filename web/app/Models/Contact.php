@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\OwnerTrait;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ class Contact extends Model
     use HasFactory;
     use SoftDeletes;
     use UuidTrait;
+    use OwnerTrait;
 
     /**
      * @var string[]
@@ -30,17 +32,13 @@ class Contact extends Model
         'user_id',
         'first_name',
         'last_name',
-        'middlename',
+        'surname',
         'prefix',
         'suffix',
         'nickname',
-        'adrpob',
-        'adrextend',
-        'adrstreet',
-        'adrcity',
-        'adrstate',
-        'adrzip',
-        'adrcountry',
+        'note',
+        'avatar',
+        'birthday',
         'is_favorite'
     ];
 
@@ -79,6 +77,46 @@ class Contact extends Model
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Group::class, 'contact_category');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function works(): BelongsToMany
+    {
+        return $this->belongsToMany(Work::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function addresses(): BelongsToMany
+    {
+        return $this->belongsToMany(Address::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function sites(): BelongsToMany
+    {
+        return $this->belongsToMany(Site::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function chats(): BelongsToMany
+    {
+        return $this->belongsToMany(Chat::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function relations(): BelongsToMany
+    {
+        return $this->belongsToMany(Relation::class);
     }
 
     public function scopeFavorites($query)

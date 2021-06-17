@@ -22,6 +22,7 @@ class ContactPhone extends Model
      */
     protected $fillable = [
         'phone',
+        'phone_type',
         'is_default',
         'contact_id'
     ];

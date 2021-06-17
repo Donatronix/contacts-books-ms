@@ -4,6 +4,8 @@ namespace App\Services\Imports;
 
 class Vcard
 {
+
+    public $data = [];
     /**
      *
      * Reads a file for parsing, then sends it to $this->readData()
@@ -21,6 +23,12 @@ class Vcard
      * @see    Contact_Vcard_Parse::_fromArray()
      *
      */
+
+    public function __construct($file_data=false)
+    {
+        $this->data = $this->readData($file_data);
+        return $this->data;
+    }
 
     function fromFile($filename, $decode_qp = true)
     {
@@ -426,5 +434,402 @@ class Vcard
         }
 
         return $out_string;
+    }
+
+    /**
+     *  Get full name from imported file
+     *
+     * @param array $data
+     * @return string
+     */
+    public function getFullname($data)
+    {
+        return $this->checkParam($data["FN"][0]["value"][0][0]);
+    }
+
+    /**
+     *  Get an array of full name parameters
+     *
+     * @param array $data
+     * @return array|false
+     */
+    public function getParamsName($data)
+    {
+        $tmp = $data['N'][0]['value'];
+        if($tmp){
+            $result = [];
+            $arr_type = ['lastname', 'firstname', 'surname', 'prefix', 'suffix'];
+            for($i=0; $i < count($tmp); $i++)
+            {
+                $result[$i]['value'] = $this->checkParam($tmp[$i][0]);
+                if($result[$i]['value']){
+                    $result[$i]['type'] = $arr_type[$i];
+                }
+            }
+            return $result;
+        }
+        return FALSE;
+    }
+
+    /**
+     *  Get nickname from imported file
+     *
+     * @param array $data
+     * @return string
+     */
+    public function getNickname($data)
+    {
+        return $this->checkParam($data["NICKNAME"][0]["value"][0][0]);
+    }
+
+    /**
+     *  Receive email and its type
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getEmail($data)
+    {
+        $tmp = $data['EMAIL'];
+        if($tmp){
+            $result = [];
+            for($i=0; $i < count($tmp); $i++){
+                $result[$i]['value'] = $tmp[$i]['value'][0][0];
+                $result[$i]['type'] = $tmp[$i]['param']['TYPE'][1] ?? 'other';
+                $result[$i]['type'] = mb_strtolower($result[$i]['type']);
+            }
+            return $result;
+        }
+        return false;
+    }
+
+    /**
+     * get a phone and its type
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getPhone($data)
+    {
+        $tmp = $data['TEL'];
+        if($tmp){
+            for($i=0; $i < count($tmp); $i++){
+                $result[$i]['value'] = str_replace(" ", '', $tmp[$i]['value'][0][0]);
+
+                if(isset($tmp[$i]['param']['TYPE'][0])){
+                    $result[$i]['type'] = $tmp[$i]['param']['TYPE'][0];
+                }
+                else{
+                    $result[$i]['type'] = $tmp[$i]['X-ABLABEL']['value'][0][0] ?? false;
+                }
+
+                $result[$i]['type'] = mb_strtolower($result[$i]['type']);
+            }
+            return $result;
+        }
+        return false;
+    }
+
+    /**
+     *  Get address parameters
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getAddress($data)
+    {
+        $tmp = $data['ADR'];
+        if($tmp){
+            $arr_type = ['post_office_box_number', 'address_string2', 'address_string1', 'city', 'provinces', 'postcode', 'country', 'type'];
+            for($i=0; $i < count($tmp); $i++){
+                $cnt = count($tmp[$i]['value']) + 1;
+                for($j=0; $j < $cnt;$j++){
+                    $type = $arr_type[$j];
+                    if($type != 'type'){
+                        $result[$i][$type] = $tmp[$i]['value'][$j][0];
+                    }
+                    else{
+                        if(isset($tmp[$i]['X-ABLABEL']['value'][0][0])){
+                            $result[$i][$type] = $tmp[$i]['X-ABLABEL']['value'][0][0];
+                        }
+                    }
+                }
+                $result[$i] = array_reverse($result[$i]);
+            }
+            return $result;
+        }
+        return false;
+    }
+
+    /**
+     *  Get company info
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getCompanyInfo($data)
+    {
+        $tmp = $data['ORG'][0]['value'];
+        if($tmp){
+            $result['company'] = $tmp[0][0];
+            $result['department'] = $tmp[1][0];
+            $result['post'] = $data['TITLE'][0]['value'][0][0] ?? false;
+            return $result;
+        }
+        return false;
+    }
+
+    /**
+     *  Get birthday
+     *
+     * @param array $data
+     * @return array|bool
+     */
+    public function getBirthday($data)
+    {
+        return $this->checkParam($data["BDAY"][0]["value"][0][0]);
+    }
+
+    /**
+     *  Get info by sites
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getSites($data)
+    {
+        $tmp = $data['URL'];
+        if($tmp)
+        {
+            for($i=0; $i < count($tmp); $i++)
+            {
+                $result[$i]['value'] = $this->checkParam($tmp[$i]['value'][0][0]);
+
+                if(isset($tmp[$i]['param']['TYPE'][0])){
+                    $result[$i]['type'] = $tmp[$i]['param']['TYPE'][0];
+                }
+                else{
+                    $result[$i]['type'] = $tmp[$i]['X-ABLABEL']['value'][0][0] ?? false;
+                }
+                $result[$i]['type'] = mb_strtolower($result[$i]['type']);
+            }
+            return $result;
+        }
+        return false;
+    }
+
+    /**
+     *  Get relationship information
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getRelationInfo($data)
+    {
+        $tmp = $data['X-ABRELATEDNAMES'];
+        if($tmp)
+        {
+            $type_info = '';
+            for($i=0; $i < count($tmp); $i++)
+            {
+                switch ($tmp[$i]['X-ABLABEL']['value'][0][0])
+                {
+                    case '_$!<Spouse>!$_':
+                        $type_info = 'spouse';
+                        break;
+
+                    case '_$!<Child>!$_':
+                        $type_info = 'child';
+                        break;
+
+                    case '_$!<Mother>!$_':
+                        $type_info = 'mother';
+                        break;
+
+                    case '_$!<Father>!$_':
+                        $type_info = 'father';
+                        break;
+
+                    case '_$!<Parent>!$_':
+                        $type_info = 'parent';
+                        break;
+
+                    case '_$!<Brother>!$_':
+                        $type_info = 'brother';
+                        break;
+
+                    case '_$!<Sister>!$_':
+                        $type_info = 'sister';
+                        break;
+
+                    case '_$!<Friend>!$_':
+                        $type_info = 'friend';
+                        break;
+
+                    case 'RELATIVE':
+                        $type_info = 'relative';
+                        break;
+
+                    case '_$!<Manager>!$_':
+                        $type_info = 'manager';
+                        break;
+
+                    case '_$!<Assistant>!$_':
+                        $type_info = 'assistant';
+                        break;
+
+                    case 'referredBy':
+                        $type_info = 'referred_by';
+                        break;
+
+                    case '_$!<Partner>!$_':
+                        $type_info = 'partner';
+                        break;
+
+                    case 'domesticPartner':
+                        $type_info = 'domestic_partner';
+                        break;
+
+                    default:
+                        $type_info = false;
+                }
+
+                $result[$i]['value'] = $this->checkParam($tmp[$i]['value'][0][0]);
+                $result[$i]['type'] = $type_info;
+            }
+            return $result;
+        }
+        return false;
+    }
+
+    /**
+     *  Get info by chats
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getChat($data)
+    {
+        $data_arr_chats = ['X-GTALK', 'X-AIM', 'X-YAHOO', 'X-SKYPE', 'X-QQ', 'X-MSN', 'X-ICQ', 'X-JABBER'];
+        $result_arr_chats = ['gtalk', 'aim', 'yahoo', 'skype', 'qq', 'msn', 'isq', 'jabber'];
+
+        for($i=0; $i < count($data_arr_chats); $i++)
+        {
+            $data_arr = $data_arr_chats[$i];
+            if(isset($data[$data_arr])){
+                $result_arr = $result_arr_chats[$i];
+                $result[$result_arr] = $data[$data_arr][0]['value'][0][0];
+            }
+        }
+        return $result ?? false;
+    }
+
+    public function getNote($data)
+    {
+        $tmp = $data["NOTE"][0]["value"][0][0];
+        if($this->checkParam($tmp)){
+            $result = strstr($tmp, ' ', true);
+        }
+        return $result ?? false;
+    }
+
+    /**
+     *  Get avatar
+     *
+     * @param array $data
+     * @return array $result|bool
+     */
+    public function getAvatar($data)
+    {
+        if(isset($data['PHOTO'])){
+            $result = $this->checkParam($data['PHOTO'][0]['value'][0][0]);
+        }
+        return $result ?? false;
+    }
+
+    /**
+     *  Get categories from imported file
+     *
+     * @param array $data
+     * @return array $result|false
+     */
+    public function getCategories($data)
+    {
+        $tmp = $data['CATEGORIES'][0]['value'][0];
+        if(isset($tmp)){
+            for($i=0; $i < count($tmp); $i++){
+                $result[$i] = $tmp[$i];
+            }
+        }
+        return $result ?? false;
+    }
+
+    /**
+     *  Checking for the presence of a parameter in the imported file.
+     *
+     * @param array $param
+     * @return boolean
+     */
+    private function checkParam($param)
+    {
+        if(isset($param)){
+            return $param;
+        }
+        return false;
+    }
+
+    public function parse($file_data_array)
+    {
+        $data = [];
+
+        foreach ($file_data_array as $k => $item)
+        {
+            // field: FN (Full name)
+            $data[$k]['full_name'] = $this->getFullname($item);
+
+            // field: N (array of name parameters)
+            $data[$k]['name_param'] = $this->getParamsName($item);
+
+            // field: NICKNAME (pseudonym)
+            $data[$k]['nickname'] = $this->getNickname($item);
+
+            // field: EMAIL
+            $data[$k]['email'] = $this->getEmail($item);
+
+            // field: TEL (phone)
+            $data[$k]['phone'] = $this->getPhone($item);
+
+            // field: ADR (address)
+            $data[$k]['address'] = $this->getAddress($item);
+
+            // field: ORG (company, department) + TITLE (post)
+            $data[$k]['company_info'] = $this->getCompanyInfo($item);
+
+            // field: BDAY (birthday)
+            $data[$k]['birthday'] = $this->getBirthday($item);
+
+            // field: URL (sites)
+            $data[$k]['sites'] = $this->getSites($item);
+
+            // field: X-ABRELATEDNAMES (relation)
+            $data[$k]['relation'] = $this->getRelationInfo($item);
+
+            // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
+            $data[$k]['chats'] = $this->getChat($item);
+
+            // field: NOTE
+            $data[$k]['note'] = $this->getNote($item); // доработать
+
+            // field: PHOTO
+            $data[$k]['photo'] = $this->getAvatar($item);
+
+            // field: CATEGORIES
+            $data[$k]['categories'] = $this->getCategories($item);
+
+
+            /*$data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
+            $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
+            $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);*/
+        }
+        return $data;
     }
 }

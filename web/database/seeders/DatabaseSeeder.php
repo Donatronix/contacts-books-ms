@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,7 +20,12 @@ class DatabaseSeeder extends Seeder
             ContactEmailsTableSeeder::class,
             ContactPhonesTableSeeder::class,
             ContactsToGroupsTableSeeder::class,
-            CategoriesTableSeeder::class
+            CategoriesTableSeeder::class,
+            WorkSeeder::class,
+            AddressSeeder::class,
+            SiteSeeder::class,
+            ChatSeeder::class,
+            RelationSeeder::class,
         ]);
     }
 }

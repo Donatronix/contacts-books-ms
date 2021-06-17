@@ -1,19 +1,20 @@
 <?php
 
+
 namespace Database\Factories;
 
 use App\Models\Contact;
-use App\Models\ContactEmail;
+use App\Models\Address;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ContactEmailFactory extends Factory
+class AddressFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = ContactEmail::class;
+    protected $model = Address::class;
 
     /**
      * Define the model's default state.
@@ -24,9 +25,13 @@ class ContactEmailFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'email' => $this->faker->email(),
-            'email_type' => $this->faker->randomElement(['home', 'work', 'other']),
-            'is_default' => false,
+            'country' => $this->faker->country,
+            'provinces' => $this->faker->state,
+            'city' => $this->faker->city,
+            'address' => $this->faker->address,
+            'address_type' => $this->faker->randomElement(['home', 'work', 'another']),
+            'postcode' => $this->faker->postcode,
+            'post_office_box_number' => $this->faker->postcode,
             'contact_id' => function () {
                 return Contact::factory()->create()->id;
             },
