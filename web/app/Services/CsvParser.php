@@ -47,12 +47,69 @@ class CsvParser
                 }
             }
         }
-//        dump($data_result);
-//        die('END');
-        return $this->getTranformation($data_result);
+        /*dump($data_result);
+        die('END');*/
+
+        return $this->getTransformationFromOutlookCSV($data_result);
+
+//        return $this->getTranformationFromGoogleCSV($data_result);
     }
 
-    public function getTranformation($data_array)
+    public function getTransformationFromOutlookCSV($data_array)
+    {
+        $data_result = [];
+
+        foreach ($data_array as $k => $value)
+        {
+            $data_params = ['cnt_name_key' => 0,];
+            foreach ($value as $key => $item)
+            {
+                if($key == 'First Name'){
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'firstname';
+                    $data_params['cnt_name_key']++;
+                    continue;
+                }
+
+                if($key == 'Last Name'){
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'lastname';
+                    $data_params['cnt_name_key']++;
+                    continue;
+                }
+
+                if($key == 'Middle Name'){
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'surname';
+                    $data_params['cnt_name_key']++;
+                    continue;
+                }
+
+                if($key == 'Title'){
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'prefix';
+                    $data_params['cnt_name_key']++;
+                    continue;
+                }
+
+                if($key == 'Suffix'){
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'suffix';
+                    $data_params['cnt_name_key']++;
+                    continue;
+                }
+            }
+        }
+        dump($data_result);
+        die('END');
+    }
+
+    /**
+     *  Formats an array from unloading Google CSV
+     *
+     * @param $data_array
+     */
+    public function getTranformationFromGoogleCSV($data_array)
     {
         $data_result = [];
 
