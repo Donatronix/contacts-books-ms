@@ -7,7 +7,7 @@ networks:
 
 services:
   apache:
-    container_name: {{DEPLOY_NAME}}-front
+    container_name: {{DEPLOY_NAME}}-ms
 #    hostname: nginx
     image: {{DOCKER_IMAGE}}
     networks:
@@ -22,9 +22,9 @@ services:
       - ./conf/vhost.conf:/etc/apache2/sites-enabled/000-default.conf:ro
       - ./certs/dev.sumra.net.crt:/certs/dev.sumra.net.crt:ro
       - ./certs/dev.sumra.net.key:/certs/dev.sumra.net.key:ro
-      - ./web:/app:rw
+      - ./web:/var/www/html:rw
       - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:rw
-#      - ./conf/.env_local:/app/.env:rw
+#      - ./conf/.env_local:/var/www/html/.env:rw
 #  redis:
 #    container_name: sumra-kv-dev-redis-cache
 #    hostname: sumra-kv-dev-redis-cache

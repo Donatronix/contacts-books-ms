@@ -12,10 +12,10 @@
         "doctrine/dbal": "~3",
         "guzzlehttp/guzzle": "~7",
         "laravel/lumen-framework": "~8",
+        "phpoffice/phpspreadsheet": "~1",
         "sumra/json-api": "*",
         "sumra/pubsub": "*",
         "vladimir-yuldashev/laravel-queue-rabbitmq": "~11",
-        "phpoffice/phpspreadsheet": "^1.18",
         "zircote/swagger-php": "~3"
     },
     "require-dev": {
