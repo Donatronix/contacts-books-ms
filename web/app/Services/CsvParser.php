@@ -55,13 +55,19 @@ class CsvParser
 //        return $this->getTranformationFromGoogleCSV($data_result);
     }
 
+    /**
+     *  Formats an array from unloading Outlook CSV
+     *
+     * @param $data_array
+     */
     public function getTransformationFromOutlookCSV($data_array)
     {
         $data_result = [];
 
         foreach ($data_array as $k => $value)
         {
-            $data_params = ['cnt_name_key' => 0,];
+            $data_params = ['cnt_name_key' => 0, 'cnt_email_type' => 2, 'cnt_email_value' => 0, 'cnt_phone_key_value'
+                => 0, 'cnt_relation_key_value' => 0, 'cnt_company_info_key' => 0];
             foreach ($value as $key => $item)
             {
                 if($key == 'First Name'){
@@ -96,6 +102,49 @@ class CsvParser
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'suffix';
                     $data_params['cnt_name_key']++;
+                    continue;
+                }
+
+                if($key == 'Birthday'){
+                    $data_result[$k]['birthday'] = $item;
+                    continue;
+                }
+
+                if($key == 'E-mail Address'){
+                    $data_result[$k]['email'][$data_params['cnt_email_value']] = $item;
+                    $data_params['cnt_email_value']++;
+                    continue;
+                }
+
+                if($key == "E-mail {$data_params['cnt_email_type']} Address"){
+                    $data_result[$k]['email'][$data_params['cnt_email_value']] = $item;
+                    $data_params['cnt_email_value']++;
+                    $data_params['cnt_email_type']++;
+                    continue;
+                }
+
+                if($key == "Primary Phone" || $key == "Pager" || $key == 'Other Phone'){
+                    $data_result[$k]['phone'][$data_params['cnt_phone_key_value']] = (string) trim(str_replace(' ', '', $item, ));
+                    $data_params['cnt_phone_key_value']++;
+                    continue;
+                }
+
+                if($key == "Spouse" || $key == "Children" || $key == 'Assistant\'s Name'){
+                    $data_result[$k]['relation'][$data_params['cnt_relation_key_value']]['type'] = strtolower($key);
+                    $data_result[$k]['relation'][$data_params['cnt_relation_key_value']]['value'] = $item;
+                    $data_params['cnt_relation_key_value']++;
+                    continue;
+                }
+
+                if($key == "Company" || $key == "Job Title" || $key == 'Department'){
+                    $data_result[$k]['company_info'][$data_params['cnt_company_info_key']]['type'] = $key;
+                    $data_result[$k]['company_info'][$data_params['cnt_company_info_key']]['value'] = $item;
+                    $data_params['cnt_company_info_key']++;
+                    continue;
+                }
+
+                if($key == 'Notes'){
+                    $data_result[$k]['note'] = $item;
                     continue;
                 }
             }
