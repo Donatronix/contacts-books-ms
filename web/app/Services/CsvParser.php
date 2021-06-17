@@ -47,9 +47,9 @@ class CsvParser
                 }
             }
         }
-        return $this->getTranformation($data_result);
 //        dump($data_result);
 //        die('END');
+        return $this->getTranformation($data_result);
     }
 
     public function getTranformation($data_array)
@@ -239,7 +239,7 @@ class CsvParser
                     continue;
                 }
 
-                if($key == "Address {$data_params['cnt_address_key']} - Region"){
+                /*if($key == "Address {$data_params['cnt_address_key']} - Region"){
                     $data_result[$k]['address'][$data_params['cnt_address_info']]['provinces'] = $item;
                     $data_params['cnt_address_key']++;
                     $data_params['cnt_address_info']++;
@@ -271,7 +271,7 @@ class CsvParser
                     $data_result[$k]['address'][$data_params['cnt_address_info']]['post_office_box_number'] = $item;
                     $data_params['cnt_address_key']++;
                     $data_params['cnt_address_info']++;
-                }
+                }*/
             }
             $data_params['cnt_company_info_key']++;
         }
