@@ -143,6 +143,13 @@ class CsvParser
                     continue;
                 }
 
+                if($key == "Categories"){
+                    $categories = explode(';', $item);
+                    foreach ($categories as $category){
+                        $data_result[$k]['categories'][] = $category;
+                    }
+                }
+
                 if($key == 'Notes'){
                     $data_result[$k]['note'] = $item;
                     continue;
