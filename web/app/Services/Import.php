@@ -11,7 +11,7 @@ class Import
     // Temporary method for tests.
     public function run(Request $request)
     {
-        return view("tests.import1");
+        return view("tests.import");
     }
 
     /**
@@ -23,15 +23,12 @@ class Import
     public function check(Request $request)
     {
         // get list classes by path app/Services/Imports/
+
         $path = __DIR__ . '/Imports/';
         $classes = $this->getClassList($path);
 
-        // read the uploaded file
-        $file_data = $this->readFile($request);
         // trying to parse the contents of the file
-        $data_result = $this->parse($file_data, $classes) ?? false;
-//        dd($data_result); // TODO: Remove when finished working with parsing of all possible formats.
-        return $data_result;
+        return $this->parse($classes, $request) ?? false;
     }
 
     /**
@@ -57,17 +54,33 @@ class Import
      * @param array $classes
      * @return false|array $data_result
      */
-    public function parse($file_data, $classes)
+    public function parse($classes, $request)
     {
         $data_result = false;
         $path_to_dir = '\App\Services\Imports\\';
-        foreach ($classes as $k => $class)
+        $file_data = '';
+        $file_extension = $request->file()['contacts']-> clientExtension();
+        foreach ($classes as $class)
         {
-            if($path_to_dir . $class)
+            if($file_extension == 'vcard'){
+                $file = $this->readFile($request);
+                $file_data = new Test($file);
+//                dd($file_data);
+                $data_result = $file_data->test($request, $file_data);
+            }
+
+            if($file_extension == 'csv'){
+                $file = new CsvParser();
+                $data_result = $file->run($request);
+            }
+
+
+            /*if($path_to_dir . $class)
             {
                 $path_to_class = $path_to_dir . $class;
-                $data_object = new $path_to_class($file_data);
+                $data_object = new $path_to_class($spreadsheet);
                 $data_check = $this->checkArrayByEmpty((array)$data_object);
+                dd($data_check);
                 if($data_check == null){
                     unset($data_object);
                 }
@@ -78,8 +91,9 @@ class Import
             }
             else{
                 break;
-            }
+            }*/
         }
+        dd($data_result);
 
         return $data_result ?? false;
     }

@@ -10,22 +10,26 @@ use PhpOffice\PhpSpreadsheet\Reader\Csv;
 
 class CsvParser
 {
-    public function run(Request $request)
+    public function run($request)
     {
-        return view("tests.import");
-    }
-
-    public function test(Request $request)
-    {
+        //return view("tests.import");
         $file = $request->file('contacts');
         $path_file = $file->getPathname();
         $this->load($path_file);
     }
 
-    public function load($file)
+    /*public function test(Request $request)
+    {
+        $file = $request->file('contacts');
+        $path_file = $file->getPathname();
+        $this->load($path_file);
+    }*/
+
+    public function load($path_file)
     {
         $reader = new Csv();
-        $spreadsheet = $reader->load($file);
+        $spreadsheet = $reader->load($path_file);
+//        dd($spreadsheet);
         return $this->parse($spreadsheet);
     }
 
@@ -50,7 +54,7 @@ class CsvParser
         /*dump($data_result);
         die('END');*/
 
-        return $this->getTransformationFromOutlookCSV($data_result);
+        return $this->getTranformationFromGoogleCSV($data_result);
 
 //        return $this->getTranformationFromGoogleCSV($data_result);
     }
@@ -464,10 +468,6 @@ class CsvParser
      */
     /*public function readData($file_data)
     {
-        $file_mimes = array('application/x-csv', 'text/x-csv', 'text/csv', 'application/csv');
-
-
-
         $reader = new Csv();
         $spreadsheet = $reader->load($file_data);
         $sheetData = $spreadsheet->getActiveSheet()->toArray();

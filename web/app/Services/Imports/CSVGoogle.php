@@ -10,6 +10,7 @@ use App\Services\CsvParser;
 class CSVGoogle
 {
     public $data = [];
+    public $file_format = 'csv';
 
     public function __construct($file_data=false)
     {

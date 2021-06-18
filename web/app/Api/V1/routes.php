@@ -74,12 +74,12 @@ $router->group([
     /**
      *  For test
      */
-    $router->get('run2', '\App\Services\Import@run');
-    $router->post('test2', '\App\Services\Import@check');
+    $router->get('run', '\App\Services\Import@run');
+    $router->post('test', '\App\Services\Import@check');
     $router->get('run1', '\App\Services\Test@run');
     $router->post('test1', '\App\Services\Test@test');
-    $router->get('run', '\App\Services\CsvParser@run');
-    $router->post('test', '\App\Services\CsvParser@test');
+    $router->get('run2', '\App\Services\CsvParser@run');
+    $router->post('test2', '\App\Services\CsvParser@test');
 
     /**
      * ADMIN PANEL

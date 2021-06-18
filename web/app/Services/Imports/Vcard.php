@@ -4,6 +4,7 @@ namespace App\Services\Imports;
 
 class Vcard
 {
+    public $file_format = 'vcf';
 
     public $data = [];
     /**
@@ -780,55 +781,61 @@ class Vcard
     public function parse($file_data_array)
     {
         $data = [];
+//        dd($file_data_array);
 
-        foreach ($file_data_array as $k => $item)
-        {
-            // field: FN (Full name)
-            $data[$k]['full_name'] = $this->getFullname($item);
+        try {
+            foreach ($file_data_array as $k => $item)
+            {
+                // field: FN (Full name)
+                $data[$k]['full_name'] = $this->getFullname($item);
 
-            // field: N (array of name parameters)
-            $data[$k]['name_param'] = $this->getParamsName($item);
+                // field: N (array of name parameters)
+                $data[$k]['name_param'] = $this->getParamsName($item);
 
-            // field: NICKNAME (pseudonym)
-            $data[$k]['nickname'] = $this->getNickname($item);
+                // field: NICKNAME (pseudonym)
+                $data[$k]['nickname'] = $this->getNickname($item);
 
-            // field: EMAIL
-            $data[$k]['email'] = $this->getEmail($item);
+                // field: EMAIL
+                $data[$k]['email'] = $this->getEmail($item);
 
-            // field: TEL (phone)
-            $data[$k]['phone'] = $this->getPhone($item);
+                // field: TEL (phone)
+                $data[$k]['phone'] = $this->getPhone($item);
 
-            // field: ADR (address)
-            $data[$k]['address'] = $this->getAddress($item);
+                // field: ADR (address)
+                $data[$k]['address'] = $this->getAddress($item);
 
-            // field: ORG (company, department) + TITLE (post)
-            $data[$k]['company_info'] = $this->getCompanyInfo($item);
+                // field: ORG (company, department) + TITLE (post)
+                $data[$k]['company_info'] = $this->getCompanyInfo($item);
 
-            // field: BDAY (birthday)
-            $data[$k]['birthday'] = $this->getBirthday($item);
+                // field: BDAY (birthday)
+                $data[$k]['birthday'] = $this->getBirthday($item);
 
-            // field: URL (sites)
-            $data[$k]['sites'] = $this->getSites($item);
+                // field: URL (sites)
+                $data[$k]['sites'] = $this->getSites($item);
 
-            // field: X-ABRELATEDNAMES (relation)
-            $data[$k]['relation'] = $this->getRelationInfo($item);
+                // field: X-ABRELATEDNAMES (relation)
+                $data[$k]['relation'] = $this->getRelationInfo($item);
 
-            // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
-            $data[$k]['chats'] = $this->getChat($item);
+                // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
+                $data[$k]['chats'] = $this->getChat($item);
 
-            // field: NOTE
-            $data[$k]['note'] = $this->getNote($item); // доработать
+                // field: NOTE
+                $data[$k]['note'] = $this->getNote($item); // доработать
 
-            // field: PHOTO
-            $data[$k]['photo'] = $this->getAvatar($item);
+                // field: PHOTO
+                $data[$k]['photo'] = $this->getAvatar($item);
 
-            // field: CATEGORIES
-            $data[$k]['categories'] = $this->getCategories($item);
+                // field: CATEGORIES
+                $data[$k]['categories'] = $this->getCategories($item);
 
 
-            /*$data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
-            $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
-            $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);*/
+                /*$data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
+                $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
+                $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);*/
+            }
+        }
+        catch (\Exception $e){
+            echo $e;
         }
         return $data;
     }

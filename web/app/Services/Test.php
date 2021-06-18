@@ -18,17 +18,16 @@ class Test
         return view("tests.import1");
     }
 
-    public function test(Request $request)
+    public function test(Request $request, $file_data_array)
     {
         /*$request->validate([
             'contacts' => 'file'
         ]);*/
 
-        $file = $request->file('contacts');
+        /*$file = $request->file('contacts');
         $file_data = file_get_contents($file->getPathname());
         $data_object = new Vcard($file_data);
-//        dd($data_object);
-        $file_data_array = (new Vcard())->readData($file_data);
+        $file_data_array = (new Vcard())->readData($file_data);*/
         $data = [];
 
         foreach ($file_data_array as $k => $item)

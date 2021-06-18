@@ -5,6 +5,7 @@ namespace App\Services\Imports;
 class CSVOutlook
 {
     public $data = [];
+    public $file_format = 'csv';
 
     public function __construct($file_data)
     {
