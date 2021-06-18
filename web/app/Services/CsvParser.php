@@ -67,7 +67,7 @@ class CsvParser
         foreach ($data_array as $k => $value)
         {
             $data_params = ['cnt_name_key' => 0, 'cnt_email_type' => 2, 'cnt_email_value' => 0, 'cnt_phone_key_value'
-                => 0, 'cnt_relation_key_value' => 0, 'cnt_company_info_key' => 0];
+                => 0, 'cnt_relation_key_value' => 0, 'cnt_company_info_key' => 0, 'cnt_address_value' => 0];
             foreach ($value as $key => $item)
             {
                 if($key == 'First Name'){
@@ -331,53 +331,44 @@ class CsvParser
                     }
                 }
 
-                if($key == "Address {$data_params['cnt_address_key']} - Country"){
-                    $data_result[$k]['address'][$data_params['cnt_address_info']]['country'] = $item;
-                    $data_params['cnt_address_key']++;
-                    $data_params['cnt_address_info']++;
-                    continue;
-                }
+                if($key == "Address {$data_params['cnt_address_key']} - Country" || $key == "Address {$data_params['cnt_address_key']} - Postal Code" || $key == "Address {$data_params['cnt_address_key']} - Region" || $key == "Address {$data_params['cnt_address_key']} - City" || $key == "Address {$data_params['cnt_address_key']} - Street" || $key == "Address {$data_params['cnt_address_key']} - Extended Address" || $key == "Address {$data_params['cnt_address_key']} - PO Box"){
+                    if($key == "Address {$data_params['cnt_address_key']} - Country"){
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'country';
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
+                    }
 
-                if($key == "Address {$data_params['cnt_address_key']} - Postal Code"){
-                    $data_result[$k]['address'][$data_params['cnt_address_info']]['postcode'] = $item;
-                    $data_params['cnt_address_key']++;
-                    $data_params['cnt_address_info']++;
-                    continue;
-                }
+                    if($key == "Address {$data_params['cnt_address_key']} - Postal Code"){
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'postcode';
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
+                    }
 
-                /*if($key == "Address {$data_params['cnt_address_key']} - Region"){
-                    $data_result[$k]['address'][$data_params['cnt_address_info']]['provinces'] = $item;
-                    $data_params['cnt_address_key']++;
-                    $data_params['cnt_address_info']++;
-                    continue;
-                }
+                    if($key == "Address {$data_params['cnt_address_key']} - Region"){
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'provinces';
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
+                    }
 
-                if($key == "Address {$data_params['cnt_address_key']} - City"){
-                    $data_result[$k]['address'][$data_params['cnt_address_info']]['city'] = $item;
-                    $data_params['cnt_address_key']++;
-                    $data_params['cnt_address_info']++;
-                    continue;
-                }
+                    if($key == "Address {$data_params['cnt_address_key']} - City"){
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'city';
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
+                    }
 
-                if($key == "Address {$data_params['cnt_address_key']} - Street"){
-                    $data_result[$k]['address'][$data_params['cnt_address_info']]['address_string1'] = $item;
-                    $data_params['cnt_address_key']++;
-                    $data_params['cnt_address_info']++;
-                    continue;
-                }
+                    if($key == "Address {$data_params['cnt_address_key']} - Street"){
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'address_string1';
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
+                    }
 
-                if($key == "Address {$data_params['cnt_address_key']} - Extended Address"){
-                    $data_result[$k]['address'][$data_params['cnt_address_info']]['address_string2'] = $item;
-                    $data_params['cnt_address_key']++;
-                    $data_params['cnt_address_info']++;
-                    continue;
-                }
+                    if($key == "Address {$data_params['cnt_address_key']} - Extended Address"){
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'address_string2';
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
+                    }
 
-                if($key == "Address {$data_params['cnt_address_key']} - PO Box"){
-                    $data_result[$k]['address'][$data_params['cnt_address_info']]['post_office_box_number'] = $item;
+                    if($key == "Address {$data_params['cnt_address_key']} - PO Box"){
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'post_office_box_number';
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
+                    }
                     $data_params['cnt_address_key']++;
                     $data_params['cnt_address_info']++;
-                }*/
+                }
             }
             $data_params['cnt_company_info_key']++;
         }
