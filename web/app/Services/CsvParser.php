@@ -148,11 +148,41 @@ class CsvParser
                     foreach ($categories as $category){
                         $data_result[$k]['categories'][] = $category;
                     }
+                    continue;
                 }
 
                 if($key == 'Notes'){
                     $data_result[$k]['note'] = $item;
                     continue;
+                }
+                if($key == 'Other Street' || $key == 'Other Address PO Box' || $key == 'Other City' || $key == 'Other Postal Code' || $key == 'Other Country')
+                {
+                    if($key == 'Other Country') {
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['type'] = 'country';
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['value'] = $item;
+                    }
+
+                    if($key == 'Other City') {
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['type'] = 'city';
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['value'] = $item;
+                    }
+
+                    if($key == 'Other Street') {
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['type'] = 'address_string1';
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['value'] = $item;
+                    }
+
+                    if($key == 'Other Address PO Box') {
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['type'] = 'post_office_box_number';
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['value'] = $item;
+                    }
+
+                    if($key == 'Other Postal Code') {
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['type'] = 'postcode';
+                        $data_result[$k]['address'][$data_params['cnt_address_value']]['value'] = $item;
+                    }
+
+                    $data_params['cnt_address_value']++;
                 }
             }
         }
