@@ -67,9 +67,24 @@ class CsvParser
         foreach ($data_array as $k => $value)
         {
             $data_params = ['cnt_name_key' => 0, 'cnt_email_type' => 2, 'cnt_email_value' => 0, 'cnt_phone_key_value'
-                => 0, 'cnt_relation_key_value' => 0, 'cnt_company_info_key' => 0, 'cnt_address_value' => 0];
+                => 0, 'cnt_relation_key_value' => 0, 'cnt_company_info_key' => 0, 'cnt_address_value' => 0, 'cnt_chat_value' => 0];
             foreach ($value as $key => $item)
             {
+                if($key == 'Notes')
+                {
+                    $data = explode("\n", $item);
+                    foreach ($data as $chat_data)
+                    {
+                        if(strstr($chat_data, 'Чат')){
+                            $chat = explode(": ", substr(trim($chat_data), 3));
+                            $data_result[$k]['chat'][$data_params['cnt_chat_value']]['type'] = $chat[1];
+                            $data_result[$k]['chat'][$data_params['cnt_chat_value']]['value'] = $chat[2];
+                            $data_params['cnt_chat_value']++;
+                        }
+                    }
+                    continue;
+                }
+
                 if($key == 'First Name'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'firstname';
