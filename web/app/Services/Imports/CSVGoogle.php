@@ -41,6 +41,23 @@ class CSVGoogle
 //        print_r($data);
     }
 
+    public function define($data_array)
+    {
+        $data_result = false;
+        $cnt = 1;
+        foreach ($data_array as $k => $value)
+        {
+            foreach ($value as $key => $item)
+            {
+                if($key == "Phone {$cnt} - Value"){
+                    $data_result = true;
+                    break;
+                }
+            }
+            $cnt++;
+        }
+        return $data_result;
+    }
 
     /**
      *  Formats an array from unloading file
