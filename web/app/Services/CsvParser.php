@@ -37,6 +37,7 @@ class CsvParser
     {
         $array_letter = array_shift($data_arr);
         $data_arr = array_values($data_arr);
+        $data_result = [];
 
         foreach ($array_letter as $key => $item)
         {
@@ -53,6 +54,8 @@ class CsvParser
         }
         /*dump($data_result);
         die('END');*/
+
+        if()
 
         return $this->getTranformationFromGoogleCSV($data_result);
 
