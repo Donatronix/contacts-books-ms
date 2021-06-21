@@ -781,10 +781,9 @@ class Vcard
     public function parse($file_data_array)
     {
         $data = [];
-//        dd($file_data_array);
 
         try {
-            foreach ($file_data_array as $k => $item)
+            foreach ($file_data_array->data as $k => $item)
             {
                 // field: FN (Full name)
                 $data[$k]['full_name'] = $this->getFullname($item);
@@ -827,11 +826,6 @@ class Vcard
 
                 // field: CATEGORIES
                 $data[$k]['categories'] = $this->getCategories($item);
-
-
-                /*$data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
-                $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
-                $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);*/
             }
         }
         catch (\Exception $e){
