@@ -72,29 +72,8 @@ class Import
             if($file_extension == 'csv'){
                 $file = new CsvParser();
                 $data_result = $file->run($request);
-//                dd(12345);
             }
-
-
-            /*if($path_to_dir . $class)
-            {
-                $path_to_class = $path_to_dir . $class;
-                $data_object = new $path_to_class($spreadsheet);
-                $data_check = $this->checkArrayByEmpty((array)$data_object);
-                dd($data_check);
-                if($data_check == null){
-                    unset($data_object);
-                }
-                else{
-                    $data_result = $data_object->parse($data_object->data);
-                    break;
-                }
-            }
-            else{
-                break;
-            }*/
         }
-        dd($data_result);
 
         return $data_result ?? false;
     }

@@ -12,35 +12,22 @@ class CSVGoogle
     public $data = [];
     public $file_format = 'csv';
 
-    public function __construct($file_data=false)
-    {
-        $csv_object = new CsvParser();
-        $this->data = $csv_object->readData($file_data);
-
-        dd($this->data);
-        return $this->data ?? false;
-    }
 
     public function readData($file_data)
     {
-        /*$googles = $this->parse_csv($file_data);
-        dd($googles);*/
-        /*$delimiter = ';';
-        $rows = explode(PHP_EOL, $file_data);
-        $data = [];
-        foreach ($rows as $row)
-        {
-            $data[] = explode($delimiter, $row);
-        }*/
         $csv_data = [];
         $lines = explode(PHP_EOL, $file_data);
         foreach ($lines as $line) {
             $csv_data[] = str_getcsv($line);
         }
-        dd($csv_data);
-//        print_r($data);
     }
 
+    /**
+     *  Parse the array into the desired format CSV Google.
+     *
+     * @param $data_array
+     * @return bool $data_result
+     */
     public function define($data_array)
     {
         $data_result = false;
@@ -64,7 +51,7 @@ class CSVGoogle
      *
      * @param $data_array
      */
-    public function getTranformation($data_array)
+    public function getTransformation($data_array)
     {
         $data_result = [];
 
@@ -283,19 +270,11 @@ class CSVGoogle
         die('END');
     }
 
-    public function parse()
-    {
-        return false;
-    }
-
     function parse_csv($str)
     {
         $str = preg_replace_callback('/([^"]*)("((""|[^"])*)"|$)/s',
             function ($matches) {
                 $str = str_replace("\r", "\rR", $matches[3]);
-                //$str = str_replace("\n", "\rN", $str);
-                //$str = str_replace('""', "\rQ", $str);
-                //$str = str_replace(',', "\rC", $str);
 
                 return preg_replace('/\r\n?/', "\n", $matches[1]) . $str;
             },
@@ -322,7 +301,6 @@ class CSVGoogle
     public function readDataTmp($file_data)
     {
         $user_id = (int)Auth::user()->getAuthIdentifier();
-//        $googlecsv = $request['googleexport'];
 
         $googles = $this->parse_csv($file_data);
         dd($googles);

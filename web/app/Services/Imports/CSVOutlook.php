@@ -7,22 +7,12 @@ class CSVOutlook
     public $data = [];
     public $file_format = 'csv';
 
-    public function __construct($file_data)
-    {
-        $this->data = $this->readData($file_data);
-        return $this->data;
-    }
-
-    public function readData($file_data)
-    {
-        return false;
-    }
-
-    public function parse()
-    {
-        return false;
-    }
-
+    /**
+     *  Parse the array into the desired format CSV Outlook.
+     *
+     * @param $data_array
+     * @return bool $data_result
+     */
     public function define($data_array)
     {
         $data_result = false;

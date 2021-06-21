@@ -724,6 +724,12 @@ class Vcard
         return $result ?? false;
     }
 
+    /**
+     *  We receive a note
+     *
+     * @param $data
+     * @return false|string
+     */
     public function getNote($data)
     {
         $tmp = $data["NOTE"][0]["value"][0][0];
@@ -778,6 +784,12 @@ class Vcard
         return false;
     }
 
+    /**
+     *  Parse the array into the desired format.
+     *
+     * @param $file_data_array
+     * @return array
+     */
     public function parse($file_data_array)
     {
         $data = [];
