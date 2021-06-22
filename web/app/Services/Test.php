@@ -18,13 +18,16 @@ class Test
         return view("tests.import1");
     }
 
-    public function test(Request $request, $file_data_array)
+    public function test()
     {
         /*$request->validate([
             'contacts' => 'file'
         ]);*/
+        $path_image = 'https://lh6.googleusercontent.com/-JtoZVa26Fvo/YMBqYcaMcOI/AAAAAAAAAAA/5XIYN8VHfIQL30j4nliVPDkVqtoxFVkaACOQCEAE/photo.jpg';
 
-        dump('END');
+        $result = Import::InsertBase64EncodedImage($path_image);
+        dump($result);
+        die('END');
 
     }
 

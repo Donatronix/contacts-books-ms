@@ -18,6 +18,8 @@ class Contact extends Model
     use UuidTrait;
     use OwnerTrait;
 
+    public $type = '';
+
     /**
      * @var string[]
      */

@@ -2,6 +2,11 @@
 
 namespace App\Services\Imports;
 
+use App\Models\Contact;
+use App\Services\Import;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+
 class Vcard
 {
     public $file_format = 'vcf';
@@ -459,7 +464,7 @@ class Vcard
         $tmp = $data['N'][0]['value'];
         if($tmp){
             $result = [];
-            $arr_type = ['lastname', 'firstname', 'surname', 'prefix', 'suffix'];
+            $arr_type = ['last_name', 'first_name', 'surname', 'user_prefix', 'user_suffix'];
             for($i=0; $i < count($tmp); $i++)
             {
                 $result[$i]['value'] = $this->checkParam($tmp[$i][0]);
@@ -587,7 +592,10 @@ class Vcard
      */
     public function getBirthday($data)
     {
-        return $this->checkParam($data["BDAY"][0]["value"][0][0]);
+        if($birthday = $this->checkParam($data["BDAY"][0]["value"][0][0])){
+            return date("Y-m-d", strtotime($birthday));
+        }
+        return false;
     }
 
     /**
@@ -845,4 +853,60 @@ class Vcard
         }
         return $data;
     }
+
+
+    public function insertContactToBb($data_arr)
+    {
+        /*dd($data_arr);
+        die('END');*/
+//        $user_id = (int)Auth::user()->getAuthIdentifier();
+        $user_id = 10;
+        $data_cnt = ['name_param_cnt' => 0];
+        $contact_info = [];
+
+            foreach ($data_arr as $param)
+            {
+                $user = new Contact();
+                $user_type = $param['name_param'][$data_cnt['name_param_cnt']]['type'];
+                $user_value = $param['name_param'][$data_cnt['name_param_cnt']]['value'];
+
+
+                if($user_type == 'last_name'){
+                    $user->last_name = $user_value;
+                }
+                if($user_type == 'first_name'){
+                    $user->first_name = $user_value;
+                }
+                if($user_type == 'surname'){
+                    $user->surname = $user_value;
+                }
+                if($user_type == 'user_prefix'){
+                    $user->user_prefix = $user_value;
+                }
+                if($user_type == 'last_name'){
+                    $user->user_suffix = $user_value;
+                }
+//                $user->avatar = $param['photo'];
+                $user->birthday = $param['birthday'];
+                $user->nickname = $param['nickname'];
+                $user->user_id = $user_id;
+//                $user->save();
+
+                if($param['photo']){
+                    $contact_info = ['table' => 'contacts', 'id' => $user_id];
+                    $contact_info = Import::searchContact($contact_info);
+
+                    $info_send_rabbitmq[] = ['contact_id' => $contact_info['id'], 'avatar' => $param['photo']];
+                }
+            }
+
+        PubSub::publish('getUrlAvatar', $info_send_rabbitmq, 'files');
+        dump($contact_info);
+            die('END');
+        /*}
+        catch (\Exception $e){
+            echo $e;
+        }*/
+    }
 }
+

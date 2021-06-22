@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Http\Request;
 use App\Services\Imports\Vcard;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 
 class Import
 {
@@ -65,7 +66,8 @@ class Import
             if($file_extension == 'vcard'){
                 $file = $this->readFile($request);
                 $file_data = new Vcard($file);
-                $data_result = $file_data->parse($file_data);
+                $data_parse = $file_data->parse($file_data);
+                $data_result = $file_data->insertContactToBb($data_parse);
                 dd($data_result);
             }
 
@@ -109,5 +111,15 @@ class Import
         foreach ($list as $value){
             return $value;
         }
+    }
+
+    public static function InsertBase64EncodedImage($path_img)
+    {
+        return base64_encode(file_get_contents($path_img));
+    }
+
+    public static function searchContact($data)
+    {
+        return DB::select("SELECT * FROM {$data['table']} WHERE `user_id` = {$data['id']} ORDER BY `user_id` DESC LIMIT 1") ?? false;
     }
 }
