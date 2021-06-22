@@ -6,6 +6,7 @@ use App\Models\Contact;
 use App\Services\Import;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Dotenv\Exception\ValidationException;
 
 class Vcard
 {
@@ -854,22 +855,28 @@ class Vcard
         return $data;
     }
 
-
+    /**
+     *  Adding data from the uploaded file to the database and sending the avatar information to the file microservice.
+     *
+     * @param $data_arr array
+     * @return mixed
+     */
     public function insertContactToBb($data_arr)
     {
-        /*dd($data_arr);
-        die('END');*/
 //        $user_id = (int)Auth::user()->getAuthIdentifier();
-        $user_id = 10;
+        $user_id = 10; // TODO: Remove demo-user id
         $data_cnt = ['name_param_cnt' => 0];
         $contact_info = [];
+        $info_send_rabbitmq = [];
 
+        try
+        {
             foreach ($data_arr as $param)
             {
                 $user = new Contact();
                 $user_type = $param['name_param'][$data_cnt['name_param_cnt']]['type'];
                 $user_value = $param['name_param'][$data_cnt['name_param_cnt']]['value'];
-
+                $avatar = strtolower(substr($param['photo'], -3));
 
                 if($user_type == 'last_name'){
                     $user->last_name = $user_value;
@@ -886,13 +893,13 @@ class Vcard
                 if($user_type == 'last_name'){
                     $user->user_suffix = $user_value;
                 }
-//                $user->avatar = $param['photo'];
                 $user->birthday = $param['birthday'];
                 $user->nickname = $param['nickname'];
                 $user->user_id = $user_id;
-//                $user->save();
+                $user->save();
 
-                if($param['photo']){
+                if($param['photo'] && $avatar == 'jpg' || $avatar == 'gif' || $avatar == 'png' || $avatar == 'bmp' || $avatar == 'jpeg' || $avatar == 'tiff' || $avatar == 'webp')
+                {
                     $contact_info = ['table' => 'contacts', 'id' => $user_id];
                     $contact_info = Import::searchContact($contact_info);
 
@@ -900,13 +907,25 @@ class Vcard
                 }
             }
 
-        PubSub::publish('getUrlAvatar', $info_send_rabbitmq, 'files');
-        dump($contact_info);
-            die('END');
-        /*}
-        catch (\Exception $e){
-            echo $e;
-        }*/
+            if($info_send_rabbitmq){
+                PubSub::publish('getUrlAvatar', $info_send_rabbitmq, 'files');
+            }
+
+            return response()->jsonApi([
+                'status' => 'success',
+                'title' => 'Create was success',
+                'message' => 'The operation to add data to the database was successful',
+            ], 200);
+
+        }
+        catch (\Exception $e)
+        {
+            return response()->jsonApi([
+                'status' => 'danger',
+                'title' => 'Operation not successful',
+                'message' => 'The operation for insert was unsuccessful'
+            ], 404);
+        }
     }
 }
 
