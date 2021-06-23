@@ -151,8 +151,8 @@ class Import
         $contact_info = [];
         $info_send_rabbitmq = [];
 
-        /*try
-        {*/
+        try
+        {
             foreach ($data_arr as $param)
             {
                 $user = new Contact();
@@ -200,12 +200,10 @@ class Import
             }
 
             if($info_send_rabbitmq){
-//                PubSub::publish('getUrlAvatar', $info_send_rabbitmq, 'files');
+                PubSub::publish('getUrlAvatar', $info_send_rabbitmq, 'files');
             }
 
-            dd($user);
-
-            /*return response()->jsonApi([
+            return response()->jsonApi([
                 'status' => 'success',
                 'title' => 'Create was success',
                 'message' => 'The operation to add data to the database was successful',
@@ -219,6 +217,6 @@ class Import
                 'title' => 'Operation not successful',
                 'message' => 'The operation for insert was unsuccessful'
             ], 404);
-        }*/
+        }
     }
 }
