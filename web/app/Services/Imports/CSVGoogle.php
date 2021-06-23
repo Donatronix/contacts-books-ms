@@ -74,14 +74,14 @@ class CSVGoogle
 
                 if($key == 'Given Name'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'firstname';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'first_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
 
                 if($key == 'Family Name'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'lastname';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'last_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
@@ -95,20 +95,15 @@ class CSVGoogle
 
                 if($key == 'Name Prefix'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'prefix';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'user_prefix';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
 
                 if($key == 'Name Suffix'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'suffix';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'user_suffix';
                     $data_params['cnt_name_key']++;
-                    continue;
-                }
-
-                if($key == 'Nickname'){
-                    $data_result[$k]['nickname'] = $item;
                     continue;
                 }
 

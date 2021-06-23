@@ -2,6 +2,10 @@
 
 namespace App\Services\Imports;
 
+use App\Services\Import;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\Contact;
+
 class CSVOutlook
 {
     public $data = [];
@@ -37,7 +41,6 @@ class CSVOutlook
     public function getTransformation($data_array)
     {
         $data_result = [];
-
         foreach ($data_array as $k => $value)
         {
             $data_params = ['cnt_name_key' => 0, 'cnt_email_type' => 2, 'cnt_email_value' => 0, 'cnt_phone_key_value'
@@ -61,14 +64,14 @@ class CSVOutlook
 
                 if($key == 'First Name'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'firstname';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'first_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
 
                 if($key == 'Last Name'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'lastname';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'last_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
@@ -82,14 +85,14 @@ class CSVOutlook
 
                 if($key == 'Title'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'prefix';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'user_prefix';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
 
                 if($key == 'Suffix'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'suffix';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'user_suffix';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
@@ -175,7 +178,100 @@ class CSVOutlook
                 }
             }
         }
-        dump($data_result);
-        die('END');
+        return $data_result ?? false;
+    }
+
+    /**
+     *  Adding data from the downloaded Outlook structure file to the database and sending avatar information to the file microservice.
+     *
+     * @param $data_arr array
+     * @return mixed
+     */
+    public function insertContactToBb($data_arr)
+    {
+        dump($data_arr);
+//        $user_id = (int)Auth::user()->getAuthIdentifier();
+        $user_id = 10; // TODO: Remove demo-user id
+        $data_cnt = ['name_param_cnt' => 0];
+        $contact_info = [];
+        $info_send_rabbitmq = [];
+
+        try
+        {
+            foreach ($data_arr as $k => $param)
+            {
+                $user = new Contact();
+
+                if(isset($param['photo'])){
+                    $file_check_data = Import::checkFileFormat($param['photo']);
+                }
+
+                if(isset($param['name_param']))
+                {
+                    foreach ($param['name_param'] as $key => $item)
+                    {
+                        $user_value = $param['name_param'][$key]['value'];
+
+                        if(!isset($param['name_param'][$key]['type'])){
+                            continue;
+                        }
+
+                        if($param['name_param'][$key]['type'] == 'last_name'){
+                            $user->last_name = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'first_name'){
+                            $user->first_name = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'surname'){
+                            $user->surname = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'user_prefix'){
+                            $user->user_prefix = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'user_suffix'){
+                            $user->user_suffix = $user_value;
+                        }
+                    }
+                }
+
+                if(isset($param['birthday'])){
+                    $user->birthday = $param['birthday'];
+                }
+
+                if(isset($param['nickname'])){
+                    $user->nickname = $param['nickname'];
+                }
+
+                $user->user_id = $user_id;
+    //                $user->save();
+
+                if(isset($param['photo']) && $file_check_data)
+                {
+                    $contact_info = ['table' => 'contacts', 'id' => $user_id];
+                    $contact_info = Import::searchContact($contact_info);
+
+                    $info_send_rabbitmq[] = ['contact_id' => $contact_info[0]->id, 'avatar' => $param['photo']];
+                }
+            }
+
+            if($info_send_rabbitmq){
+                PubSub::publish('getUrlAvatar', $info_send_rabbitmq, 'files');
+            }
+
+            return response()->jsonApi([
+                'status' => 'success',
+                'title' => 'Create was success',
+                'message' => 'The operation to add data to the database was successful',
+            ], 200);
+
+        }
+        catch (\Exception $e)
+        {
+            return response()->jsonApi([
+                'status' => 'danger',
+                'title' => 'Operation not successful',
+                'message' => 'The operation for insert was unsuccessful'
+            ], 404);
+        }
     }
 }

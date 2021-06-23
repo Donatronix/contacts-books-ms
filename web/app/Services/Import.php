@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use App\Services\Imports\Vcard;
 use Illuminate\Http\UploadedFile;
@@ -69,6 +70,7 @@ class Import
                 $file = $this->readFile($request);
                 $file_data = new Vcard($file);
                 $data_parse = $file_data->parse($file_data);
+//                $data_result = $this->test($data_parse);
                 $data_result = $this->insertContactToBb($data_parse);
                 dd($data_result);
             }
@@ -145,6 +147,7 @@ class Import
      */
     public function insertContactToBb($data_arr)
     {
+        dump($data_arr);
 //        $user_id = (int)Auth::user()->getAuthIdentifier();
         $user_id = 10; // TODO: Remove demo-user id
         $data_cnt = ['name_param_cnt' => 0];
@@ -153,42 +156,56 @@ class Import
 
         try
         {
-            foreach ($data_arr as $param)
+            foreach ($data_arr as $k => $param)
             {
                 $user = new Contact();
-                $user_type = $param['name_param'][$data_cnt['name_param_cnt']]['type'];
-                $user_value = $param['name_param'][$data_cnt['name_param_cnt']]['value'];
+
+                if(!$param['full_name'] || !isset($param['full_name'])){
+                    $param['full_name'] = false;
+                }
 
                 if(isset($param['photo'])){
                     $file_check_data = Import::checkFileFormat($param['photo']);
                 }
 
-                if($user_type == 'last_name'){
-                    $user->last_name = $user_value;
-                }
-                if($user_type == 'first_name'){
-                    $user->first_name = $user_value;
-                }
-                if($user_type == 'surname'){
-                    $user->surname = $user_value;
-                }
-                if($user_type == 'user_prefix'){
-                    $user->user_prefix = $user_value;
-                }
-                if($user_type == 'user_suffix'){
-                    $user->user_suffix = $user_value;
+                if(isset($param['name_param']))
+                {
+                    foreach ($param['name_param'] as $key => $item)
+                    {
+                        $user_value = $param['name_param'][$key]['value'];
+
+                        if(!isset($param['name_param'][$key]['type'])){
+                            continue;
+                        }
+
+                        if($param['name_param'][$key]['type'] == 'last_name'){
+                            $user->last_name = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'first_name'){
+                            $user->first_name = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'surname'){
+                            $user->surname = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'user_prefix'){
+                            $user->user_prefix = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'user_suffix'){
+                            $user->user_suffix = $user_value;
+                        }
+                    }
                 }
 
-                if($param['birthday']){
+                if(isset($param['birthday'])){
                     $user->birthday = $param['birthday'];
                 }
 
-                if($param['nickname']){
+                if(isset($param['nickname'])){
                     $user->nickname = $param['nickname'];
                 }
 
                 $user->user_id = $user_id;
-                $user->save();
+//                $user->save();
 
                 if(isset($param['photo']) && $file_check_data)
                 {
