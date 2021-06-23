@@ -189,7 +189,6 @@ class CSVOutlook
      */
     public function insertContactToBb($data_arr)
     {
-        dump($data_arr);
 //        $user_id = (int)Auth::user()->getAuthIdentifier();
         $user_id = 10; // TODO: Remove demo-user id
         $data_cnt = ['name_param_cnt' => 0];
