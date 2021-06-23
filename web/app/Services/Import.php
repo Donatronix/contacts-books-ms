@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Services\Imports\Vcard;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use App\Models\Contact;
+
 
 class Import
 {
@@ -67,7 +69,7 @@ class Import
                 $file = $this->readFile($request);
                 $file_data = new Vcard($file);
                 $data_parse = $file_data->parse($file_data);
-                $data_result = $file_data->insertContactToBb($data_parse);
+                $data_result = $this->insertContactToBb($data_parse);
                 dd($data_result);
             }
 
@@ -121,5 +123,102 @@ class Import
     public static function searchContact($data)
     {
         return DB::select("SELECT * FROM {$data['table']} WHERE `user_id` = {$data['id']} ORDER BY `user_id` DESC LIMIT 1") ?? false;
+    }
+
+    public static function checkFileFormat($file)
+    {
+        $avatar = strtolower(substr($file, -3));
+        $result_file = false;
+
+        if($avatar == 'jpg' || $avatar == 'gif' || $avatar == 'png' || $avatar == 'bmp' || $avatar == 'jpeg' || $avatar == 'tiff' || $avatar == 'webp'){
+            $result_file = true;
+        }
+
+        return $result_file;
+    }
+
+    /**
+     *  Adding data from the uploaded file to the database and sending the avatar information to the file microservice.
+     *
+     * @param $data_arr array
+     * @return mixed
+     */
+    public function insertContactToBb($data_arr)
+    {
+//        $user_id = (int)Auth::user()->getAuthIdentifier();
+        $user_id = 10; // TODO: Remove demo-user id
+        $data_cnt = ['name_param_cnt' => 0];
+        $contact_info = [];
+        $info_send_rabbitmq = [];
+
+        /*try
+        {*/
+            foreach ($data_arr as $param)
+            {
+                $user = new Contact();
+                $user_type = $param['name_param'][$data_cnt['name_param_cnt']]['type'];
+                $user_value = $param['name_param'][$data_cnt['name_param_cnt']]['value'];
+
+                if(isset($param['photo'])){
+                    $file_check_data = Import::checkFileFormat($param['photo']);
+                }
+
+                if($user_type == 'last_name'){
+                    $user->last_name = $user_value;
+                }
+                if($user_type == 'first_name'){
+                    $user->first_name = $user_value;
+                }
+                if($user_type == 'surname'){
+                    $user->surname = $user_value;
+                }
+                if($user_type == 'user_prefix'){
+                    $user->user_prefix = $user_value;
+                }
+                if($user_type == 'user_suffix'){
+                    $user->user_suffix = $user_value;
+                }
+
+                if($param['birthday']){
+                    $user->birthday = $param['birthday'];
+                }
+
+                if($param['nickname']){
+                    $user->nickname = $param['nickname'];
+                }
+
+                $user->user_id = $user_id;
+                $user->save();
+
+                if(isset($param['photo']) && $file_check_data)
+                {
+                    $contact_info = ['table' => 'contacts', 'id' => $user_id];
+                    $contact_info = Import::searchContact($contact_info);
+
+                    $info_send_rabbitmq[] = ['contact_id' => $contact_info[0]->id, 'avatar' => $param['photo']];
+                }
+            }
+
+            if($info_send_rabbitmq){
+//                PubSub::publish('getUrlAvatar', $info_send_rabbitmq, 'files');
+            }
+
+            dd($user);
+
+            /*return response()->jsonApi([
+                'status' => 'success',
+                'title' => 'Create was success',
+                'message' => 'The operation to add data to the database was successful',
+            ], 200);
+
+        }
+        catch (\Exception $e)
+        {
+            return response()->jsonApi([
+                'status' => 'danger',
+                'title' => 'Operation not successful',
+                'message' => 'The operation for insert was unsuccessful'
+            ], 404);
+        }*/
     }
 }

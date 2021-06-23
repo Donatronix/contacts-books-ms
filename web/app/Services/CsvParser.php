@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Services\Imports\CSVGoogle;
 use App\Services\Imports\CSVOutlook;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -49,6 +50,7 @@ class CsvParser
         $array_letter = array_shift($data_arr);
         $data_arr = array_values($data_arr);
         $data_result = [];
+        $import = new Import();
 
         foreach ($array_letter as $key => $item)
         {
@@ -70,6 +72,7 @@ class CsvParser
 
         if($data_result_google){
             $data_result = $data_google->getTransformation($data_result);
+            $import->insertContactToBb($data_result);
         }
 
         if($data_result_outlook){

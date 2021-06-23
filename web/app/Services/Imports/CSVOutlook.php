@@ -95,7 +95,7 @@ class CSVOutlook
                 }
 
                 if($key == 'Birthday'){
-                    $data_result[$k]['birthday'] = $item;
+                    $data_result[$k]['birthday'] = date("Y-m-d", strtotime($item));;
                     continue;
                 }
 

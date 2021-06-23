@@ -3,6 +3,8 @@
 namespace App\Services\Imports;
 
 use App\Models\Contact;
+use App\Services\Import;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\CsvParser;
@@ -116,7 +118,8 @@ class CSVGoogle
                 }
 
                 if($key == 'Birthday'){
-                    $data_result[$k]['birthday'] = $item;
+                    $data_result[$k]['birthday'] = date("Y-m-d", strtotime($item));
+
                     continue;
                 }
 
@@ -266,8 +269,7 @@ class CSVGoogle
             $data_params['cnt_company_info_key']++;
         }
 
-        dump($data_result);
-        die('END');
+        return $data_result ?? false;
     }
 
     function parse_csv($str)
@@ -349,4 +351,5 @@ class CSVGoogle
             'data' => $contacts
         ], 200);
     }
+
 }
