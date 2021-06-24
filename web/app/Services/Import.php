@@ -307,7 +307,7 @@ class Import
             }
 
             $user->user_id = $user_id;
-//                $user->save();
+//            $user->save();
 
             if($user_id){
                 $contact_info = ['table' => 'contacts', 'id' => $user_id];
@@ -324,9 +324,9 @@ class Import
 
     public function insertToOther($data_arr, $data_contact)
     {
-        dump($data_contact[0]->id);
         foreach ($data_arr as $k => $param)
         {
+//            dump($data_contact);
             $info_db = $data_contact[0];
 
             if(isset($param['email']))
@@ -377,6 +377,7 @@ class Import
                     $data->relation_name = $param['relation'][$key]['type'];
                     $data->contact_id = $info_db->id;
 //                    $data->save();
+
                 }
             }
 
@@ -403,8 +404,8 @@ class Import
 
                 foreach ($param['chats'] as $key => $item)
                 {
-                    $data->chat = $param['chats'][$key]['value'];
-                    $data->chat_name = $param['chats'][$key];
+                    $data->chat = $item;
+                    $data->chat_name = $key;
                     $data->contact_id = $info_db->id;
 //                    $data->save();
                 }
@@ -442,7 +443,7 @@ class Import
                         $data_address_path1 = $param['address'][$key]['address_string1'];
                         $data_address_path2 = $param['address'][$key]['address_string2'];
 
-                        $data->address = $data_address_path1 . $data_address_path2;
+                        $data->address = $data_address_path1 . ', ' . $data_address_path2;
                     }
 
 //                    $data->save();
@@ -457,39 +458,40 @@ class Import
                 {
                     $data->contact_id = $info_db->id;
 
-                    if(isset($param['company_info'][$key]['company'])){
-                        $data->company = $param['company_info'][$key]['company'];
+                    if($key == 'company'){
+//                        $data->company = $item;
+                        $data->company = $item;
                     }
 
-                    if(isset($param['company_info'][$key]['department'])){
-                        $data->department = $param['company_info'][$key]['department'];
+                    if($key == 'department'){
+                        $data->department = $param['company_info'][$key];
                     }
 
-                    if(isset($param['company_info'][$key]['post'])){
-                        $data->post = $param['company_info'][$key]['post'];
+                    if($key == 'post'){
+                        $data->post = $item;
                     }
 
 //                    $data->save();
                 }
+
             }
 
             if(isset($param['categories']))
             {
                 $data = new Group();
-
-                foreach ($param['categories'] as $item)
+                $cnt = 0;
+                foreach ($param['categories'] as $key =>  $item)
                 {
                     if(isset($item)){
                         $data->user_id = $info_db->id;
-                        $data->name = $item;
+                        $data->name = $param['categories'][$cnt];
                     }
 
 //                    $data->save();
+                    $cnt++;
                 }
             }
         }
-//        dump($email);
-
 
         die('END');
     }
