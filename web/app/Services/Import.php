@@ -15,6 +15,7 @@ use App\Models\Work;
 use App\Models\Site;
 use App\Models\Relation;
 use App\Models\Chat;
+use App\Models\Group;
 
 
 class Import
@@ -207,8 +208,12 @@ class Import
                     $user->birthday = $param['birthday'];
                 }
 
-                if(isset($param['nickname'])){
-                    $user->nickname = $param['nickname'];
+                if(isset($param['birthday'])){
+                    $user->birthday = $param['birthday'];
+                }
+
+                if(isset($param['note'])){
+                    $user->note = $param['note'];
                 }
 
                 $user->user_id = $user_id;
@@ -392,19 +397,14 @@ class Import
                 }
             }
 
-            // TODO: To finish
             if(isset($param['chats']))
             {
                 $data = new Chat();
 
                 foreach ($param['chats'] as $key => $item)
                 {
-                    if(!isset($param['chats'][$key]['type'])){
-                        continue;
-                    }
-
-                    $data->phone = $param['chats'][$key]['value'];
-                    $data->phone_type = $param['chats'][$key]['type'];
+                    $data->chat = $param['chats'][$key]['value'];
+                    $data->chat_name = $param['chats'][$key];
                     $data->contact_id = $info_db->id;
 //                    $data->save();
                 }
@@ -467,6 +467,21 @@ class Import
 
                     if(isset($param['company_info'][$key]['post'])){
                         $data->post = $param['company_info'][$key]['post'];
+                    }
+
+//                    $data->save();
+                }
+            }
+
+            if(isset($param['categories']))
+            {
+                $data = new Group();
+
+                foreach ($param['categories'] as $item)
+                {
+                    if(isset($item)){
+                        $data->user_id = $info_db->id;
+                        $data->name = $item;
                     }
 
 //                    $data->save();
