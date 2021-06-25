@@ -74,12 +74,14 @@ class CsvParser
 
 //            dd($data_result[2]['Address 1 - Country']);
             $data_result = $data_google->getTransformation($data_result);
-            $import->insertContactToBb($data_result);
+            $import->insertContactToBbTest($data_result);
+//            $import->insertContactToBb($data_result);
         }
 
         if($data_result_outlook){
             $data_result = $data_outlook->getTransformation($data_result);
-            $data_outlook->insertContactToBb($data_result);
+//            $data_outlook->insertContactToBb($data_result);
+            $data_outlook->insertContactToBbTest($data_result);
         }
 
         dump($data_result);

@@ -4,7 +4,17 @@ namespace App\Services\Imports;
 
 use App\Services\Import;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use App\Models\Contact;
+use App\Models\ContactEmail;
+use App\Models\ContactPhone;
+use App\Models\Address;
+use App\Models\Work;
+use App\Models\Site;
+use App\Models\Relation;
+use App\Models\Chat;
+use App\Models\Group;
+use PubSub;
 
 class CSVOutlook
 {
@@ -272,5 +282,251 @@ class CSVOutlook
                 'message' => 'The operation for insert was unsuccessful'
             ], 404);
         }
+    }
+
+    public function insertContactToBbTest($data_arr)
+    {
+        $user_id = 10; // TODO: Remove demo-user id
+        $data_cnt = ['name_param_cnt' => 0];
+        $contact_info = [];
+        $info_send_rabbitmq = [];
+
+        foreach ($data_arr as $k => $param)
+        {
+            $user = new Contact();
+
+            if(array_key_exists('full_name', $param)){
+                $param['full_name'] = false;
+            }
+
+            if(isset($param['photo'])){
+                $file_check_data = Import::checkFileFormat($param['photo']);
+            }
+
+            if(isset($param['name_param']))
+            {
+                foreach ($param['name_param'] as $key => $item)
+                {
+                    $user_value = $param['name_param'][$key]['value'];
+
+                    if(!isset($param['name_param'][$key]['type'])){
+                        continue;
+                    }
+
+                    if($param['name_param'][$key]['type'] == 'last_name'){
+                        $user->last_name = $user_value;
+                    }
+                    if($param['name_param'][$key]['type'] == 'first_name'){
+                        $user->first_name = $user_value;
+                    }
+                    if($param['name_param'][$key]['type'] == 'surname'){
+                        $user->surname = $user_value;
+                    }
+                    if($param['name_param'][$key]['type'] == 'user_prefix'){
+                        $user->user_prefix = $user_value;
+                    }
+                    if($param['name_param'][$key]['type'] == 'user_suffix'){
+                        $user->user_suffix = $user_value;
+                    }
+                }
+            }
+
+            if(isset($param['birthday'])){
+                $user->birthday = $param['birthday'];
+            }
+
+            if(isset($param['nickname'])){
+                $user->nickname = $param['nickname'];
+            }
+
+            if(isset($param['note'])){
+                $user->note = $param['note'];
+            }
+
+            $user->user_id = $user_id;
+//                $user->save();
+
+            if($user_id){
+                $contact_info = ['table' => 'contacts', 'id' => $user_id];
+                $contact_info = Import::searchContact($contact_info);
+
+                $this->insertToOther($data_arr, $contact_info);
+            }
+        }
+    }
+
+    /**
+     *  Adding data to other tables for Outlook
+     *
+     * @param array $data_arr
+     * @param string $data_contact
+     *
+     * @return mixed
+     */
+    public function insertToOther($data_arr, $data_contact)
+    {
+        dump($data_arr);
+        foreach ($data_arr as $k => $param)
+        {
+            $info_db = $data_contact[0];
+            if(isset($param['email']))
+            {
+                $data = new ContactEmail();
+
+                foreach ($param['email'] as $key => $item)
+                {
+                    if(!isset($param['email'][$key])){
+                        continue;
+                    }
+
+                    $data->email = $param['email'][$key];
+                    $data->contact_id = $info_db->id;
+                }
+//                    $data->save();
+            }
+
+            if(isset($param['relation']))
+            {
+                $data = new Relation();
+
+                foreach ($param['relation'] as $key => $item)
+                {
+                    if(!isset($param['relation'][$key]['type'])){
+                        continue;
+                    }
+
+                    $data->relation = $param['relation'][$key]['value'];
+                    $data->relation_name = $param['relation'][$key]['type'];
+                    $data->contact_id = $info_db->id;
+
+                }
+//                    $data->save();
+            }
+
+            if(isset($param['phone']))
+            {
+                $data = new ContactPhone();
+
+                foreach ($param['phone'] as $key => $item)
+                {
+                    if(!isset($param['phone'][$key])){
+                        continue;
+                    }
+
+                    $data->phone = $param['phone'][$key];
+                    $data->contact_id = $info_db->id;
+                }
+//                    $data->save();
+            }
+
+            if(isset($param['chat']))
+            {
+                $data = new Chat();
+
+                foreach ($param['chat'] as $key => $item)
+                {
+                    if(is_array($item)){
+                        $data->chat = $param['chat'][$key]['value'];
+                        $data->chat_name = $param['chat'][$key]['type'];
+                    }
+                    else{
+                        $data->chat = $item;
+                        $data->chat_name = $key;
+                    }
+                    $data->contact_id = $info_db->id;
+
+                }
+//                    $data->save();
+            }
+
+            if(isset($param['address']))
+            {
+                $data = new Address();
+
+                foreach ($param['address'] as $item)
+                {
+//                    dump($item['type']);
+                    $data->contact_id = $info_db->id;
+
+                    if($item['type'] == 'country') {
+                        $data->country = $item['value'];
+                    }
+
+                    if($item['type'] == 'postcode') {
+                        $data->postcode = $item['value'];
+                    }
+
+                    if($item['type'] == 'provinces') {
+                        $data->provinces = $item['value'];
+                    }
+
+                    if($item['type'] == 'city') {
+                        $data->provinces = $item['value'];
+                    }
+
+                    if($item['type'] == 'post_office_box_number') {
+                        $data->post_office_box_number = $item['value'];
+                    }
+
+
+                    if($item['type'] == 'address_string1' || $item['type'] == 'address_string2')
+                    {
+                        if($item['type'] == 'address_string1'){
+                            $data_address_path1 = $item['value'];
+                        }
+
+                        if($item['type'] == 'address_string1'){
+                            $data_address_path2 = $item['value'];
+                        }
+
+                        $data->address = $data_address_path1 . ', ' . $data_address_path2;
+                    }
+
+                }
+//                    $data->save();
+            }
+
+            if(isset($param['company_info']))
+            {
+                $data = new Work();
+
+                foreach ($param['company_info'] as $key => $item)
+                {
+                    $data->contact_id = $info_db->id;
+
+                    if($item['type'] == 'Company'){
+                        $data->company = $item['value'];
+                    }
+
+                    if($item['type'] == 'Department'){
+                        $data->department = $item['value'];
+                    }
+
+                    if($item['type'] == 'Job Title'){
+                        $data->post = $item['value'];
+                    }
+
+//                    $data->save();
+                }
+            }
+
+            if(isset($param['categories']))
+            {
+                $data = new Group();
+                $cnt = 0;
+                foreach ($param['categories'] as $key =>  $item)
+                {
+                    if(isset($item)){
+                        $data->user_id = $info_db->id;
+                        $data->name = $param['categories'][$cnt];
+                    }
+
+//                    $data->save();
+                    $cnt++;
+                }
+            }
+        }
+
+        die('END');
     }
 }

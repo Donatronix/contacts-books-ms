@@ -16,6 +16,7 @@ use App\Models\Site;
 use App\Models\Relation;
 use App\Models\Chat;
 use App\Models\Group;
+use PubSub;
 
 
 class Import
@@ -78,8 +79,7 @@ class Import
                 $file = $this->readFile($request);
                 $file_data = new Vcard($file);
                 $data_parse = $file_data->parse($file_data);
-                $data_result = $this->test($data_parse);
-//                $data_result = $this->insertContactToBb($data_parse);
+                $data_result = $this->insertContactToBb($data_parse);
                 dd($data_result);
             }
 
@@ -223,17 +223,29 @@ class Import
                     $contact_info = ['table' => 'contacts', 'id' => $user_id];
                     $contact_info = Import::searchContact($contact_info);
 
-                    $this->insertToOther($data_arr, $contact_info);
+                    //$this->insertToOther($data_arr, $contact_info);
                 }
 
-                if(isset($param['photo']) && $file_check_data && $contact_info){
-                    $info_send_rabbitmq[] = ['contact_id' => $contact_info[0]->id, 'avatar' => $param['photo']];
+                if(isset($param['photo']) && $file_check_data && $contact_info)
+                {
+                    $info_send_rabbitmq_head = [
+                        'entity' => 'contact',
+                        'user_id' => $user_id,
+                    ];
+
+                    $info_send_rabbitmq_body[] = [
+                        'entity_id' => $contact_info[0]->id,
+                        'url' => $param['photo']
+                    ];
                 }
             }
 
-//            if($info_send_rabbitmq){
-//                PubSub::publish('getUrlAvatar', $info_send_rabbitmq, 'files');
-//            }
+            if($info_send_rabbitmq_body){
+                $info_send_rabbitmq_body = ['avatars' => $info_send_rabbitmq_body];
+                $info_send_rabbitmq = array_merge($info_send_rabbitmq_head, $info_send_rabbitmq_body);
+
+                PubSub::publish('SaveAvatars', $info_send_rabbitmq, 'files');
+            }
 
             return response()->jsonApi([
                 'status' => 'success',
@@ -252,6 +264,81 @@ class Import
         }
     }
 
+
+    public function insertContactToBbTest($data_arr)
+    {
+        $user_id = 10; // TODO: Remove demo-user id
+        $data_cnt = ['name_param_cnt' => 0];
+        $contact_info = [];
+        $info_send_rabbitmq = [];
+
+            foreach ($data_arr as $k => $param)
+            {
+                $user = new Contact();
+
+                if(array_key_exists('full_name', $param)){
+                    $param['full_name'] = false;
+                }
+                /*if(!$param['full_name'] || !isset($param['full_name'])){
+                    $param['full_name'] = false;
+                }*/
+
+                if(isset($param['photo'])){
+                    $file_check_data = Import::checkFileFormat($param['photo']);
+                }
+
+                if(isset($param['name_param']))
+                {
+                    foreach ($param['name_param'] as $key => $item)
+                    {
+                        $user_value = $param['name_param'][$key]['value'];
+
+                        if(!isset($param['name_param'][$key]['type'])){
+                            continue;
+                        }
+
+                        if($param['name_param'][$key]['type'] == 'last_name'){
+                            $user->last_name = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'first_name'){
+                            $user->first_name = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'surname'){
+                            $user->surname = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'user_prefix'){
+                            $user->user_prefix = $user_value;
+                        }
+                        if($param['name_param'][$key]['type'] == 'user_suffix'){
+                            $user->user_suffix = $user_value;
+                        }
+                    }
+                }
+
+                if(isset($param['birthday'])){
+                    $user->birthday = $param['birthday'];
+                }
+
+                if(isset($param['nickname'])){
+                    $user->nickname = $param['nickname'];
+                }
+
+                if(isset($param['note'])){
+                    $user->note = $param['note'];
+                }
+
+                $user->user_id = $user_id;
+//                $user->save();
+
+                if($user_id){
+                    $contact_info = ['table' => 'contacts', 'id' => $user_id];
+                    $contact_info = Import::searchContact($contact_info);
+
+                    $this->insertToOther($data_arr, $contact_info);
+                }
+            }
+    }
+
     /**
      *  Adding data to other tables.
      *
@@ -262,7 +349,7 @@ class Import
      */
     public function insertToOther($data_arr, $data_contact)
     {
-//            dump($data_contact);
+        dump($data_arr);
         foreach ($data_arr as $k => $param)
         {
             $info_db = $data_contact[0];
