@@ -193,6 +193,7 @@ class CSVOutlook
 
     /**
      *  Adding data from the downloaded Outlook structure file to the database and sending avatar information to the file microservice.
+     *  There is no link to the avatar in the Outlоok structure!!!!
      *
      * @param $data_arr array
      * @return mixed
@@ -254,17 +255,6 @@ class CSVOutlook
                 $user->user_id = $user_id;
     //                $user->save();
 
-                if(isset($param['photo']) && $file_check_data)
-                {
-                    $contact_info = ['table' => 'contacts', 'id' => $user_id];
-                    $contact_info = Import::searchContact($contact_info);
-
-                    $info_send_rabbitmq[] = ['contact_id' => $contact_info[0]->id, 'avatar' => $param['photo']];
-                }
-            }
-
-            if($info_send_rabbitmq){
-                PubSub::publish('getUrlAvatar', $info_send_rabbitmq, 'files');
             }
 
             return response()->jsonApi([
@@ -272,7 +262,6 @@ class CSVOutlook
                 'title' => 'Create was success',
                 'message' => 'The operation to add data to the database was successful',
             ], 200);
-
         }
         catch (\Exception $e)
         {
