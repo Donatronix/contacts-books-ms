@@ -222,11 +222,8 @@ class CSVGoogle
                     }
                 }
 
-                // TODO: does not work
-                if($value == "Address {$data_params['cnt_address_key']} - Country" || $value == "Address {$data_params['cnt_address_key']} - Postal Code" || $value == "Address {$data_params['cnt_address_key']} - Region" || $value == "Address {$data_params['cnt_address_key']} - City" || $value == "Address {$data_params['cnt_address_key']} - Street" || $value == "Address {$data_params['cnt_address_key']} - Extended Address" || $value == "Address {$data_params['cnt_address_key']} - PO Box")
-                {
-echo 111;
-                    if($value == "Address {$data_params['cnt_address_key']} - Country"){
+                if($key == "Address {$data_params['cnt_address_key']} - Country" || $key == "Address {$data_params['cnt_address_key']} - Postal Code" || $key == "Address {$data_params['cnt_address_key']} - Region" || $key == "Address {$data_params['cnt_address_key']} - City" || $key == "Address {$data_params['cnt_address_key']} - Street" || $key == "Address {$data_params['cnt_address_key']} - Extended Address" || $key == "Address {$data_params['cnt_address_key']} - PO Box"){
+                    if($key == "Address {$data_params['cnt_address_key']} - Country"){
                         $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'country';
                         $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
                     }
@@ -260,7 +257,6 @@ echo 111;
                         $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'post_office_box_number';
                         $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
                     }
-
                     $data_params['cnt_address_key']++;
                     $data_params['cnt_address_info']++;
                 }
