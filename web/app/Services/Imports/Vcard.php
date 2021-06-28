@@ -34,6 +34,7 @@ class Vcard
     public function __construct($file_data=false)
     {
         $this->data = $this->readData($file_data);
+
         return $this->data;
     }
 
@@ -594,7 +595,8 @@ class Vcard
     public function getBirthday($data)
     {
         if($birthday = $this->checkParam($data["BDAY"][0]["value"][0][0])){
-            return date("Y-m-d", strtotime($birthday));
+            $birthday = strtotime(str_replace('/', '-', $birthday));
+            return $birthday ? date("Y-m-d", $birthday) : NULL;
         }
         return false;
     }

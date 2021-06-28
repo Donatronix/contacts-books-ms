@@ -73,21 +73,21 @@ class Import
         $path_to_dir = '\App\Services\Imports\\';
         $file_data = '';
         $file_extension = $request->file()['contacts']-> clientExtension();
-        foreach ($classes as $class)
-        {
+//        foreach ($classes as $class)
+//        {
             if($file_extension == 'vcard'){
                 $file = $this->readFile($request);
+
                 $file_data = new Vcard($file);
                 $data_parse = $file_data->parse($file_data);
                 $data_result = $this->insertContactToBb($data_parse);
-//                dd($data_result);
             }
 
             if($file_extension == 'csv'){
                 $file = new CsvParser();
                 $data_result = $file->run($request);
             }
-        }
+//        }
 
         return $data_result ?? false;
     }
@@ -161,6 +161,7 @@ class Import
         $data_cnt = ['name_param_cnt' => 0];
         $contact_info = [];
         $info_send_rabbitmq = [];
+        $info_send_rabbitmq_body = [];
 
         try
         {
@@ -180,25 +181,27 @@ class Import
                 {
                     foreach ($param['name_param'] as $key => $item)
                     {
-                        $user_value = $param['name_param'][$key]['value'];
+                        $user_value = $item['value'];
 
-                        if(!isset($param['name_param'][$key]['type'])){
+                        if(!$user_value){
                             continue;
                         }
 
-                        if($param['name_param'][$key]['type'] == 'last_name'){
+                        $user_type = $param['name_param'][$key]['type'];
+
+                        if($user_type == 'last_name'){
                             $user->last_name = $user_value;
                         }
-                        if($param['name_param'][$key]['type'] == 'first_name'){
+                        if($user_type == 'first_name'){
                             $user->first_name = $user_value;
                         }
-                        if($param['name_param'][$key]['type'] == 'surname'){
+                        if($user_type == 'surname'){
                             $user->surname = $user_value;
                         }
-                        if($param['name_param'][$key]['type'] == 'user_prefix'){
+                        if($user_type == 'user_prefix'){
                             $user->user_prefix = $user_value;
                         }
-                        if($param['name_param'][$key]['type'] == 'user_suffix'){
+                        if($user_type == 'user_suffix'){
                             $user->user_suffix = $user_value;
                         }
                     }
@@ -217,7 +220,6 @@ class Import
                 }
 
                 $user->user_id = $user_id;
-                $user->save();
 
                 if($user_id){
                     $contact_info = ['table' => 'contacts', 'id' => $user_id];
@@ -237,13 +239,16 @@ class Import
                         'url' => $param['photo']
                     ];
                 }
+
+
+                $user->save();
             }
 
             if($info_send_rabbitmq_body){
                 $info_send_rabbitmq_body = ['avatars' => $info_send_rabbitmq_body];
                 $info_send_rabbitmq = array_merge($info_send_rabbitmq_head, $info_send_rabbitmq_body);
 
-                PubSub::publish('SaveAvatars', $info_send_rabbitmq, 'files');
+//                PubSub::publish('SaveAvatars', $info_send_rabbitmq, 'files');
             }
 
             $this->insertToOther($data_arr, $contact_info);
@@ -265,7 +270,6 @@ class Import
         }
     }
 
-
     /**
      *  Adding data to other tables.
      *
@@ -276,7 +280,7 @@ class Import
      */
     public function insertToOther($data_arr, $data_contact)
     {
-//        dump($data_arr);
+//        dd('END');
         foreach ($data_arr as $k => $param)
         {
             $info_db = $data_contact[0];

@@ -72,7 +72,6 @@ class CsvParser
 
         if($data_result_google){
 
-//            dd($data_result[2]['Address 1 - Country']);
             $data_result = $data_google->getTransformation($data_result);
             $import->insertContactToBbTest($data_result);
 //            $import->insertContactToBb($data_result);
