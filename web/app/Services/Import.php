@@ -287,10 +287,9 @@ class Import
 
             if(isset($param['email']))
             {
-                $data = new ContactEmail();
-
                 foreach ($param['email'] as $key => $item)
                 {
+                    $data = new ContactEmail();
                     if(!isset($param['email'][$key]['type'])){
                         continue;
                     }
@@ -304,10 +303,9 @@ class Import
 
             if(isset($param['sites']))
             {
-                $data = new Site();
-
                 foreach ($param['sites'] as $key => $item)
                 {
+                    $data = new Site();
                     if(!isset($param['sites'][$key]['type'])){
                         continue;
                     }
@@ -321,10 +319,10 @@ class Import
 
             if(isset($param['relation']))
             {
-                $data = new Relation();
 
                 foreach ($param['relation'] as $key => $item)
                 {
+                    $data = new Relation();
                     if(!isset($param['relation'][$key]['type'])){
                         continue;
                     }
@@ -332,17 +330,16 @@ class Import
                     $data->relation = $param['relation'][$key]['value'];
                     $data->relation_name = $param['relation'][$key]['type'];
                     $data->contact_id = $info_db->id;
-
                     $data->save();
                 }
             }
 
             if(isset($param['phone']))
             {
-                $data = new ContactPhone();
 
                 foreach ($param['phone'] as $key => $item)
                 {
+                    $data = new ContactPhone();
                     if(!isset($param['phone'][$key]['type'])){
                         continue;
                     }
@@ -356,10 +353,9 @@ class Import
 
             if(isset($param['chats']))
             {
-                $data = new Chat();
-
                 foreach ($param['chats'] as $key => $item)
                 {
+                    $data = new Chat();
                     if(is_array($item)){
                         $data->chat = $param['chats'][$key]['value'];
                         $data->chat_name = $param['chats'][$key]['type'];
@@ -369,18 +365,17 @@ class Import
                         $data->chat_name = $key;
                     }
                     $data->contact_id = $info_db->id;
-
                     $data->save();
                 }
             }
 
             if(isset($param['address']))
             {
-                $data = new Address();
                 $cnt = 0;
 
                 foreach ($param['address'] as $key => $item)
                 {
+                    $data = new Address();
                     $data->contact_id = $info_db->id;
                     if(isset($param['address'][$key]['country'])){
                         $data->country = $param['address'][$key]['country'];
@@ -410,7 +405,6 @@ class Import
 
                         $data->address = $data_address_path1 . ', ' . $data_address_path2;
                     }
-
                     $data->save();
                 }
             }
@@ -435,29 +429,26 @@ class Import
                     if($key == 'post'){
                         $data->post = $item;
                     }
-
-                    $data->save();
                 }
-
+                $data->save();
             }
 
             if(isset($param['categories']))
             {
-                $data = new Group();
                 $cnt = 0;
                 foreach ($param['categories'] as $key =>  $item)
                 {
+                    $data = new Group();
                     if(isset($item)){
                         $data->user_id = $info_db->id;
                         $data->name = $param['categories'][$cnt];
                     }
 
-                    $data->save();
                     $cnt++;
+                    $data->save();
                 }
             }
         }
         return true;
-//        die('END');
     }
 }
