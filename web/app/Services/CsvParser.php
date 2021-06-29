@@ -79,11 +79,7 @@ class CsvParser
         if($data_result_outlook){
             $data_result = $data_outlook->getTransformation($data_result);
             $data_outlook->insertContactToBb($data_result);
-//            $data_outlook->insertContactToBbTest($data_result);
         }
-
-        dump($data_result);
-        die('END');
     }
 
     /**

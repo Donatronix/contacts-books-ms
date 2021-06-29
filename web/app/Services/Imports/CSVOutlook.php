@@ -108,7 +108,8 @@ class CSVOutlook
                 }
 
                 if($key == 'Birthday'){
-                    $data_result[$k]['birthday'] = date("Y-m-d", strtotime($item));;
+                    $birthday = strtotime(str_replace('/', '-', $item)) ?: NULL;
+                    $data_result[$k]['birthday'] = $birthday == NULL ? NULL : date("Y-m-d", $birthday);
                     continue;
                 }
 
@@ -253,9 +254,16 @@ class CSVOutlook
                 }
 
                 $user->user_id = $user_id;
-    //                $user->save();
+
+                if($user_id){
+                    $contact_info = ['table' => 'contacts', 'id' => $user_id];
+                    $contact_info = Import::searchContact($contact_info);
+
+                }
+                $user->save();
 
             }
+            $this->insertToOther($data_arr, $contact_info);
 
             return response()->jsonApi([
                 'status' => 'success',
@@ -273,77 +281,6 @@ class CSVOutlook
         }
     }
 
-    public function insertContactToBbTest($data_arr)
-    {
-        $user_id = 10; // TODO: Remove demo-user id
-        $data_cnt = ['name_param_cnt' => 0];
-        $contact_info = [];
-        $info_send_rabbitmq = [];
-
-        foreach ($data_arr as $k => $param)
-        {
-            $user = new Contact();
-
-            if(array_key_exists('full_name', $param)){
-                $param['full_name'] = false;
-            }
-
-            if(isset($param['photo'])){
-                $file_check_data = Import::checkFileFormat($param['photo']);
-            }
-
-            if(isset($param['name_param']))
-            {
-                foreach ($param['name_param'] as $key => $item)
-                {
-                    $user_value = $param['name_param'][$key]['value'];
-
-                    if(!isset($param['name_param'][$key]['type'])){
-                        continue;
-                    }
-
-                    if($param['name_param'][$key]['type'] == 'last_name'){
-                        $user->last_name = $user_value;
-                    }
-                    if($param['name_param'][$key]['type'] == 'first_name'){
-                        $user->first_name = $user_value;
-                    }
-                    if($param['name_param'][$key]['type'] == 'surname'){
-                        $user->surname = $user_value;
-                    }
-                    if($param['name_param'][$key]['type'] == 'user_prefix'){
-                        $user->user_prefix = $user_value;
-                    }
-                    if($param['name_param'][$key]['type'] == 'user_suffix'){
-                        $user->user_suffix = $user_value;
-                    }
-                }
-            }
-
-            if(isset($param['birthday'])){
-                $user->birthday = $param['birthday'];
-            }
-
-            if(isset($param['nickname'])){
-                $user->nickname = $param['nickname'];
-            }
-
-            if(isset($param['note'])){
-                $user->note = $param['note'];
-            }
-
-            $user->user_id = $user_id;
-//                $user->save();
-
-            if($user_id){
-                $contact_info = ['table' => 'contacts', 'id' => $user_id];
-                $contact_info = Import::searchContact($contact_info);
-
-                $this->insertToOther($data_arr, $contact_info);
-            }
-        }
-    }
-
     /**
      *  Adding data to other tables for Outlook
      *
@@ -352,34 +289,32 @@ class CSVOutlook
      *
      * @return mixed
      */
-    public function insertToOther($data_arr, $data_contact)
+    public function insertToOther($data_arr, $contact_info)
     {
-        dump($data_arr);
+        $info_db = $contact_info[0];
         foreach ($data_arr as $k => $param)
         {
-            $info_db = $data_contact[0];
             if(isset($param['email']))
             {
-                $data = new ContactEmail();
-
                 foreach ($param['email'] as $key => $item)
                 {
+                    $data = new ContactEmail();
                     if(!isset($param['email'][$key])){
                         continue;
                     }
 
                     $data->email = $param['email'][$key];
                     $data->contact_id = $info_db->id;
+                    $data->save();
                 }
-//                    $data->save();
             }
 
             if(isset($param['relation']))
             {
-                $data = new Relation();
 
                 foreach ($param['relation'] as $key => $item)
                 {
+                    $data = new Relation();
                     if(!isset($param['relation'][$key]['type'])){
                         continue;
                     }
@@ -388,32 +323,31 @@ class CSVOutlook
                     $data->relation_name = $param['relation'][$key]['type'];
                     $data->contact_id = $info_db->id;
 
+                    $data->save();
                 }
-//                    $data->save();
             }
 
             if(isset($param['phone']))
             {
-                $data = new ContactPhone();
-
                 foreach ($param['phone'] as $key => $item)
                 {
+                    $data = new ContactPhone();
                     if(!isset($param['phone'][$key])){
                         continue;
                     }
 
                     $data->phone = $param['phone'][$key];
                     $data->contact_id = $info_db->id;
+                    $data->save();
                 }
-//                    $data->save();
             }
 
             if(isset($param['chat']))
             {
-                $data = new Chat();
 
                 foreach ($param['chat'] as $key => $item)
                 {
+                    $data = new Chat();
                     if(is_array($item)){
                         $data->chat = $param['chat'][$key]['value'];
                         $data->chat_name = $param['chat'][$key]['type'];
@@ -424,16 +358,16 @@ class CSVOutlook
                     }
                     $data->contact_id = $info_db->id;
 
+                    $data->save();
                 }
-//                    $data->save();
             }
 
             if(isset($param['address']))
             {
-                $data = new Address();
 
                 foreach ($param['address'] as $item)
                 {
+                    $data = new Address();
 //                    dump($item['type']);
                     $data->contact_id = $info_db->id;
 
@@ -470,17 +404,16 @@ class CSVOutlook
 
                         $data->address = $data_address_path1 . ', ' . $data_address_path2;
                     }
+                    $data->save();
 
                 }
-//                    $data->save();
             }
 
             if(isset($param['company_info']))
             {
-                $data = new Work();
-
                 foreach ($param['company_info'] as $key => $item)
                 {
+                    $data = new Work();
                     $data->contact_id = $info_db->id;
 
                     if($item['type'] == 'Company'){
@@ -493,29 +426,26 @@ class CSVOutlook
 
                     if($item['type'] == 'Job Title'){
                         $data->post = $item['value'];
+                    $data->save();
                     }
-
-//                    $data->save();
                 }
             }
 
             if(isset($param['categories']))
             {
-                $data = new Group();
                 $cnt = 0;
                 foreach ($param['categories'] as $key =>  $item)
                 {
+                    $data = new Group();
                     if(isset($item)){
                         $data->user_id = $info_db->id;
                         $data->name = $param['categories'][$cnt];
+                    $data->save();
                     }
 
-//                    $data->save();
                     $cnt++;
                 }
             }
         }
-
-        die('END');
     }
 }
