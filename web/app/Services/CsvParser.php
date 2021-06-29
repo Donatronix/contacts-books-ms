@@ -73,8 +73,7 @@ class CsvParser
         if($data_result_google){
 
             $data_result = $data_google->getTransformation($data_result);
-            $import->insertContactToBbTest($data_result);
-//            $import->insertContactToBb($data_result);
+            $import->insertContactToBb($data_result);
         }
 
         if($data_result_outlook){

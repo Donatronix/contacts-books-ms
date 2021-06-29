@@ -155,7 +155,6 @@ class Import
      */
     public function insertContactToBb($data_arr)
     {
-        dump($data_arr);
 //        $user_id = (int)Auth::user()->getAuthIdentifier();
         $user_id = 10; // TODO: Remove demo-user id
         $data_cnt = ['name_param_cnt' => 0];
@@ -244,11 +243,12 @@ class Import
                 $user->save();
             }
 
-            if($info_send_rabbitmq_body){
+            if($info_send_rabbitmq_body)
+            {
                 $info_send_rabbitmq_body = ['avatars' => $info_send_rabbitmq_body];
                 $info_send_rabbitmq = array_merge($info_send_rabbitmq_head, $info_send_rabbitmq_body);
 
-//                PubSub::publish('SaveAvatars', $info_send_rabbitmq, 'files');
+                PubSub::publish('SaveAvatars', $info_send_rabbitmq, 'files');
             }
 
             $this->insertToOther($data_arr, $contact_info);
@@ -280,7 +280,6 @@ class Import
      */
     public function insertToOther($data_arr, $data_contact)
     {
-//        dd('END');
         foreach ($data_arr as $k => $param)
         {
             $info_db = $data_contact[0];
@@ -344,7 +343,7 @@ class Import
                         continue;
                     }
 
-                    $data->phone = $param['phone'][$key]['value'];
+                    $data->phone = str_replace(' ', '', $param['phone'][$key]['value']);
                     $data->phone_type = $param['phone'][$key]['type'];
                     $data->contact_id = $info_db->id;
                     $data->save();
