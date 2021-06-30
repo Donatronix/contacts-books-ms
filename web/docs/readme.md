@@ -215,3 +215,13 @@ contact_id | The uuid of the contact's | char(36) | 93ca3bee-46c8-4950-b0e1-7c54
     },
 }
 ```
+
+## *05. Contact group*
+
+==== Parameters ====
+
+Parameter  | Description | Type | Example | Required
+---------  | ----------- | ---- | ------- | --------
+contact_id | Contact UUID  | char(36) | 93ca3bee-46c8-4950-b0e1-7c54b51a80d8 | Y
+group_id | Group UUID | char(36) | 93ca3bee-46c8-4950-b0e1-7c54b51a80d8 | Y
+
