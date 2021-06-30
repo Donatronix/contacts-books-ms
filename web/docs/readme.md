@@ -292,3 +292,16 @@ contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
     },
 }
 ```
+
+## *10. Sites*
+
+==== Parameters ====
+
+Parameter  | Description | Type | Example | Required
+---------  | ----------- | ---- | ------- | --------
+id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
+site | Site name | varchar(255) | gen-ka.gs | N
+is_default | Default site | tinyint(1) | 1 | N
+site_type | Site type for grouping | varchar(30) | homepage | N
+contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
+
