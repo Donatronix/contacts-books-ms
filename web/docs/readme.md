@@ -123,3 +123,19 @@ note | The user writes that he will climb into his head | text | Matyuki some | 
 }
 ```
 
+## *02. Addresses*
+
+==== Parameters ====
+
+Parameter  | Description | Type | Example | Required
+---------  | ----------- | ---- | ------- | --------
+id         | Contact ID  | char (36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
+country | Country of contact | varchar(100) | UA | N
+provinces | Region, state, province where the contact resides | varchar(100) | Ivano-Frankivs'ka oblast | N
+city | City of residence | varchar(50) | Київ| N
+address | Residence address. **Consists of two parameters**: *address string1* - street and *address_string2* - house number | text | Apollonia St, 44 | N
+address_type | The type of address to be grouped, such as home. if not specified, another is specified by default | varchar(30) | another | N
+postcode | The zip code of the contact | varchar(10) | 02000 | N
+post_office_box_number | User PO Box | varchar(10) | 123456 | N
+is_default | Default contact | tinyint(1) | 1 | N
+contact_id | The uuid of the user who uploaded the contact | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
