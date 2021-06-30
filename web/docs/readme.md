@@ -202,3 +202,16 @@ email | User e-mail | varchar(255) | buk@suk.com | Y
 email_type | The type of email field, for example: home, work, etc. | varchar(30) | Home | N
 is_default | Default e-mail | tinyint(1) | 1 | N
 contact_id | The uuid of the contact's | char(36) | 93ca3bee-46c8-4950-b0e1-7c54b51a80d8 | Y
+
+=== Request body ===
+
+```
+{
+    'email': {
+        0: {
+            'type': 'home',
+            'value': 'buk@suk.com'
+        },
+    },
+}
+```
