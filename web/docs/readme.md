@@ -269,3 +269,16 @@ user_id | Contact UUID | char(36) | 93ca3bee-7612-42fe-9fee-58620860f026 | N
     },
 }
 ```
+## *09. Relations*
+
+==== Parameters ====
+
+Parameter  | Description | Type | Example | Required
+---------  | ----------- | ---- | ------- | --------
+id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
+is_default | Default relation | tinyint(1) | 1 | N
+relation | A description of the relationship by the user | varchar(255) | gog | N
+relation_name | Types of relationships from the google contacts service | varchar(30) | father | N
+contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
+
+
