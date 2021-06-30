@@ -191,7 +191,7 @@ contact_id | The uuid of the user's chat who uploaded the contact | char(36) | 9
 }
 ```
 
-## *04. Contact emails*
+## *05. Contact emails*
 
 ==== Parameters ====
 
@@ -216,7 +216,7 @@ contact_id | The uuid of the contact's | char(36) | 93ca3bee-46c8-4950-b0e1-7c54
 }
 ```
 
-## *05. Contact group*
+## *06. Contact group*
 
 ==== Parameters ====
 
@@ -225,7 +225,7 @@ Parameter  | Description | Type | Example | Required
 contact_id | Contact UUID  | char(36) | 93ca3bee-46c8-4950-b0e1-7c54b51a80d8 | Y
 group_id | Group UUID | char(36) | 93ca3bee-46c8-4950-b0e1-7c54b51a80d8 | Y
 
-## *06. Contact phones*
+## *07. Contact phones*
 
 ==== Parameters ====
 
@@ -249,7 +249,7 @@ contact_id | Contact UUID | char(36) | 93ca3bee-5fac-4e21-96d6-8ca627618918 | Y
 }
 ```
 
-## *06. Groups*
+## *08. Groups*
 
 ==== Parameters ====
 
@@ -259,3 +259,13 @@ id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
 name | Name group | varchar(255) | Home | N
 user_id | Contact UUID | char(36) | 93ca3bee-7612-42fe-9fee-58620860f026 | N
 
+=== Request body ===
+
+```
+{
+    'categories': {
+        0: 'Work',
+        1: 'myContacts'
+    },
+}
+```
