@@ -157,3 +157,14 @@ contact_id | The uuid of the user who uploaded the contact | char(36) | 93ca1f66
     },
 }
 ```
+
+## *03. Сategories*
+
+==== Parameters ====
+
+Parameter  | Description | Type | Example | Required
+---------  | ----------- | ---- | ------- | --------
+id         | Contact ID  | bigint | 100 | Y
+parent_id | Parent ID | bigint | 200 | Y
+name | Name | varchar(255) | Vasya | Y
+
