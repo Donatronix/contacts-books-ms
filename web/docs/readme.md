@@ -329,3 +329,15 @@ id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
 'is_default' | Default site | tinyint(1) | 1 | N
 'post' | User position at work | varchar(50) | nothing too | N
 'contact_id' | Contact UUID | char(36) | 993ca3bee-71b3-492c-a440-7aca1e8321a8 | Y
+
+=== Request body ===
+
+```
+{
+    'company_info':{
+        'company': 'kettle',
+        'department': 'best',
+        'post': 'nothing too'
+    },
+}
+```
