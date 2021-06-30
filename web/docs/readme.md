@@ -236,3 +236,15 @@ phone | Contact phone | varchar(255) | 0681221212 | Y
 phone_type | A field type for a phone that denotes a group, such as home | varchar(30) | home | N
 is_default | Default phone | tinyint(1) | 1 | N
 contact_id | Contact UUID | char(36) | 93ca3bee-5fac-4e21-96d6-8ca627618918 | Y
+
+=== Request body ===
+```
+{
+    'phone': {
+        0: {
+            'value': '+430665782389',
+            'type': 'work'
+        },
+    },
+}
+```
