@@ -168,3 +168,14 @@ id         | Contact ID  | bigint | 100 | Y
 parent_id | Parent ID | bigint | 200 | Y
 name | Name | varchar(255) | Vasya | Y
 
+## *04. Chats*
+
+==== Parameters ====
+
+Parameter  | Description | Type | Example | Required
+---------  | ----------- | ---- | ------- | --------
+id         | Contact ID  | char(36) | 100 | Y
+chat | Chat name | text | chat_name | N
+is_default | Default chat name | tinyint(1) | 1 | N
+chat_name | The name of the chat provided by Google contacts | varchar(30) | skype | N
+contact_id | The uuid of the user's chat who uploaded the contact | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
