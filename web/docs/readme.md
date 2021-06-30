@@ -305,3 +305,15 @@ is_default | Default site | tinyint(1) | 1 | N
 site_type | Site type for grouping | varchar(30) | homepage | N
 contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 
+=== Request body ===
+```
+{
+    'sites': {
+        0: {
+            'type': 'homepage',
+            'value': 'gen-ka.gs'
+        },
+    },
+}
+```
+
