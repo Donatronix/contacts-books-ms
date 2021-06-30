@@ -222,6 +222,7 @@ class ContactController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
+        dd(1234);
         // Validate input
         $input = (object) $this->validate($request, $this->rules());
 

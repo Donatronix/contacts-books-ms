@@ -80,6 +80,7 @@ class Import
 
                 $file_data = new Vcard($file);
                 $data_parse = $file_data->parse($file_data);
+                dd($data_parse);
                 $data_result = $this->insertContactToBb($data_parse);
             }
 

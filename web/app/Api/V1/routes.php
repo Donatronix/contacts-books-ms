@@ -72,6 +72,11 @@ $router->group([
     });
 
     /**
+     *  For Remote
+     */
+    $router->get('/remote', 'RemoteController@remote');
+
+    /**
      *  For test
      */
     $router->get('run', '\App\Services\Import@run');
