@@ -317,3 +317,15 @@ contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 }
 ```
 
+## *11. Works*
+
+==== Parameters ====
+
+Parameter  | Description | Type | Example | Required
+---------  | ----------- | ---- | ------- | --------
+id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
+'company' | Company contact | varchar(100) | kettle | N
+'department' | Department of the company where the contact works | varchar(100) | best | N
+'is_default' | Default site | tinyint(1) | 1 | N
+'post' | User position at work | varchar(50) | nothing too | N
+'contact_id' | Contact UUID | char(36) | 993ca3bee-71b3-492c-a440-7aca1e8321a8 | Y
