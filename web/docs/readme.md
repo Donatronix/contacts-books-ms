@@ -10,26 +10,26 @@ Storing information about the user's contacts.
 {
     'full_name': '',
     'name_param': {
-        {0}: {
+        0: {
             'value': '',
             'type': '',
         },
     },
     'nickname': '',
     'email': {
-        {0}: {
+        0: {
             'value': '',
             'type': '',
         },
     },
     'phone': {
-        {0}: {
+        0: {
             'value': '',
             'type': '',
         },
     },
     'address': {
-        {0}: {
+        0: {
             'type': '',
             'country': '',
             'postcode': '',
@@ -47,13 +47,13 @@ Storing information about the user's contacts.
     },
     'birthday': '',
     'sites': {
-        {0}: {
+        0: {
             'value': '',
             'type': '',
         },
     },
     'relation': {
-        {0}: {
+        0: {
             'value': '',
             'type': ''
         },
@@ -65,8 +65,8 @@ Storing information about the user's contacts.
     'note': '',
     'photo': '',
     'categories': {
-        {0}: '',
-        {1}: ''
+        0: '',
+        1: ''
     }
 }
 ```
@@ -95,7 +95,7 @@ note | The user writes that he will climb into his head | text | Matyuki some | 
 ```
 {
     'name_param': {
-        {0}: {
+        0: {
             'value': 'Vasya',
             'type': 'first_name'
         },
@@ -145,7 +145,7 @@ contact_id | The uuid of the user who uploaded the contact | char(36) | 93ca1f66
 ```
 {
     'address': {
-        {0}: {
+        0: {
             'country': 'UA',
             'postcode': '02000',
             'provinces': 'Ivano-Frankivs'ka oblast',
@@ -287,7 +287,8 @@ contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
     'relation': {
         0: {
             'type': 'spouse',
-            'value': 'gog'
+            'value': 'gog',
+            'contact_id': [user_id]
         }, 
     },
 }
@@ -311,7 +312,8 @@ contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
     'sites': {
         0: {
             'type': 'homepage',
-            'value': 'gen-ka.gs'
+            'value': 'gen-ka.gs',
+            'contact_id': [user_id]
         },
     },
 }
@@ -337,7 +339,8 @@ id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
     'company_info':{
         'company': 'kettle',
         'department': 'best',
-        'post': 'nothing too'
+        'post': 'nothing too',
+        'contact_id': [user_id]
     },
 }
 ```
