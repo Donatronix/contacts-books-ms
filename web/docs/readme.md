@@ -281,4 +281,14 @@ relation | A description of the relationship by the user | varchar(255) | gog | 
 relation_name | Types of relationships from the google contacts service | varchar(30) | father | N
 contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 
-
+=== Request body ===
+```
+{
+    'relation': {
+        0: {
+            'type': 'spouse',
+            'value': 'gog'
+        }, 
+    },
+}
+```
