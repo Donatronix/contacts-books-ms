@@ -248,3 +248,14 @@ contact_id | Contact UUID | char(36) | 93ca3bee-5fac-4e21-96d6-8ca627618918 | Y
     },
 }
 ```
+
+## *06. Groups*
+
+==== Parameters ====
+
+Parameter  | Description | Type | Example | Required
+---------  | ----------- | ---- | ------- | --------
+id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
+name | Name group | varchar(255) | Home | N
+user_id | Contact UUID | char(36) | 93ca3bee-7612-42fe-9fee-58620860f026 | N
+
