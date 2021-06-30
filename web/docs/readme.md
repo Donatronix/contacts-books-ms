@@ -185,8 +185,20 @@ contact_id | The uuid of the user's chat who uploaded the contact | char(36) | 9
 ```
 {
     'chats': {
-        'skype' => 'chat_name'
-    }
+        'skype': 'chat_name',
+        'type': 'value'
+    },
 }
 ```
 
+## *04. Contact emails*
+
+==== Parameters ====
+
+Parameter  | Description | Type | Example | Required
+---------  | ----------- | ---- | ------- | --------
+id         | User ID  | char(36) | 100 | Y
+email | User e-mail | varchar(255) | buk@suk.com | Y
+email_type | The type of email field, for example: home, work, etc. | varchar(30) | Home | N
+is_default | Default e-mail | tinyint(1) | 1 | N
+contact_id | The uuid of the contact's | char(36) | 93ca3bee-46c8-4950-b0e1-7c54b51a80d8 | Y
