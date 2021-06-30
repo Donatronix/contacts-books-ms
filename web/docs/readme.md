@@ -71,7 +71,7 @@ Storing information about the user's contacts.
 }
 ```
 
-##*01. Contacts
+## *01. Contacts*
 
 ==== Parameters ====
 
@@ -90,4 +90,36 @@ is_favorite | User favorite | tinyint(1) | 1 | N
 user_id | The ID of the user who uploaded the contact | bigint | 10 | Y
 note | The user writes that he will climb into his head | text | Matyuki some | N
 
+=== Request body ===
+
+```
+{
+    'name_param': {
+        {0}: {
+            'value': 'Vasya',
+            'type': 'first_name'
+        },
+        {1}: {
+            'value': 'Pupkin',
+            'type': 'last_name'
+        },
+        {2}: {
+            'value': 'Sydorovich',
+            'type': 'surname'
+        },
+        {3}: {
+            'value': 'dr.',
+            'type': 'user_prefix',
+        },
+        {4}: {
+            'value': '-san',
+            'type': 'user_suffix'
+        }
+    },
+    'photo': 'http://...',
+    'birthday': '2000-12-12',
+    'nickname': 'Ded Hasan',
+    'note': "Matyuki some"
+}
+```
 
