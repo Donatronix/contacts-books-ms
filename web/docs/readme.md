@@ -179,3 +179,14 @@ chat | Chat name | text | chat_name | N
 is_default | Default chat name | tinyint(1) | 1 | N
 chat_name | The name of the chat provided by Google contacts | varchar(30) | skype | N
 contact_id | The uuid of the user's chat who uploaded the contact | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
+
+=== Request body ===
+
+```
+{
+    'chats': {
+        'skype' => 'chat_name'
+    }
+}
+```
+
