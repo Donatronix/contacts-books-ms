@@ -139,3 +139,21 @@ postcode | The zip code of the contact | varchar(10) | 02000 | N
 post_office_box_number | User PO Box | varchar(10) | 123456 | N
 is_default | Default contact | tinyint(1) | 1 | N
 contact_id | The uuid of the user who uploaded the contact | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
+
+=== Request body ===
+
+```
+{
+    'address': {
+        {0}: {
+            'country': 'UA',
+            'postcode': '02000',
+            'provinces': 'Ivano-Frankivs'ka oblast',
+            'city': 'Kiev',
+            'address_string1': 'Drum Street',
+            'address_string2': 1,
+            'post_office_box_number': '123456'
+        },
+    },
+}
+```
