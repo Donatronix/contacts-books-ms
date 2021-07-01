@@ -80,7 +80,7 @@ class Import
 
                 $file_data = new Vcard($file);
                 $data_parse = $file_data->parse($file_data);
-                dd($data_parse);
+//                dd($data_parse);
                 $data_result = $this->insertContactToBb($data_parse);
             }
 
@@ -133,7 +133,7 @@ class Import
 
     public static function searchContact($data)
     {
-        return DB::select("SELECT * FROM {$data['table']} WHERE `user_id` = {$data['id']} ORDER BY `user_id` DESC LIMIT 1") ?? false;
+        return DB::select("SELECT * FROM {$data['table']} ORDER BY `updated_at` DESC LIMIT 1") ?: false;
     }
 
     public static function checkFileFormat($file)
@@ -167,7 +167,7 @@ class Import
         {
             foreach ($data_arr as $k => $param)
             {
-                $user = new Contact();
+                $contact = new Contact();
 
                 if(!$param['full_name'] || !isset($param['full_name'])){
                     $param['full_name'] = false;
@@ -190,58 +190,54 @@ class Import
                         $user_type = $param['name_param'][$key]['type'];
 
                         if($user_type == 'last_name'){
-                            $user->last_name = $user_value;
+                            $contact->last_name = $user_value;
                         }
                         if($user_type == 'first_name'){
-                            $user->first_name = $user_value;
+                            $contact->first_name = $user_value;
                         }
                         if($user_type == 'surname'){
-                            $user->surname = $user_value;
+                            $contact->surname = $user_value;
                         }
                         if($user_type == 'user_prefix'){
-                            $user->user_prefix = $user_value;
+                            $contact->user_prefix = $user_value;
                         }
                         if($user_type == 'user_suffix'){
-                            $user->user_suffix = $user_value;
+                            $contact->user_suffix = $user_value;
                         }
                     }
                 }
 
                 if(isset($param['birthday'])){
-                    $user->birthday = $param['birthday'];
+                    $contact->birthday = $param['birthday'];
                 }
 
                 if(isset($param['nickname'])){
-                    $user->nickname = $param['nickname'];
+                    $contact->nickname = $param['nickname'];
                 }
 
                 if(isset($param['note'])){
-                    $user->note = $param['note'];
+                    $contact->note = $param['note'];
                 }
 
-                $user->user_id = $user_id;
+                $contact->user_id = $user_id;
+                $contact->save();
 
-                if($user_id){
-                    $contact_info = ['table' => 'contacts', 'id' => $user_id];
-                    $contact_info = Import::searchContact($contact_info);
-
-                }
-
-                if(isset($param['photo']) && $file_check_data && $contact_info)
+                if(isset($param['photo']) && $file_check_data)
                 {
+                    $photo = preg_replace( '/[^[:print:]]+/', '', $param['photo']);
+
                     $info_send_rabbitmq_head = [
                         'entity' => 'contact',
                         'user_id' => $user_id,
                     ];
 
                     $info_send_rabbitmq_body[] = [
-                        'entity_id' => $contact_info[0]->id,
-                        'url' => $param['photo']
+                        'entity_id' => $contact->id,
+                        'url' => $photo
                     ];
                 }
 
-
-                $user->save();
+                $data_contact_id[] = $contact->id;
             }
 
             if($info_send_rabbitmq_body)
@@ -252,7 +248,7 @@ class Import
                 PubSub::publish('SaveAvatars', $info_send_rabbitmq, 'files');
             }
 
-            $this->insertToOther($data_arr, $contact_info);
+            $this->insertToOther($data_arr, $data_contact_id);
 
             return response()->jsonApi([
                 'status' => 'success',
@@ -266,7 +262,7 @@ class Import
             return response()->jsonApi([
                 'status' => 'danger',
                 'title' => 'Operation not successful',
-                'message' => 'The operation for insert was unsuccessful'
+                'message' => 'The operation for insert was unsuccessful. ' .$e->getMessage()
             ], 404);
         }
     }
@@ -279,11 +275,11 @@ class Import
      *
      * @return mixed
      */
-    public function insertToOther($data_arr, $data_contact)
+
+    public function insertToOther($data_arr, $info_id)
     {
         foreach ($data_arr as $k => $param)
         {
-            $info_db = $data_contact[0];
 
             if(isset($param['email']))
             {
@@ -296,7 +292,7 @@ class Import
 
                     $data->email = $param['email'][$key]['value'];
                     $data->email_type = $param['email'][$key]['type'];
-                    $data->contact_id = $info_db->id;
+                    $data->contact_id = $info_id[$k];
                     $data->save();
                 }
             }
@@ -312,7 +308,7 @@ class Import
 
                     $data->site = $param['sites'][$key]['value'];
                     $data->site_type = $param['sites'][$key]['type'];
-                    $data->contact_id = $info_db->id;
+                    $data->contact_id = $info_id[$k];
                     $data->save();
                 }
             }
@@ -329,7 +325,7 @@ class Import
 
                     $data->relation = $param['relation'][$key]['value'];
                     $data->relation_name = $param['relation'][$key]['type'];
-                    $data->contact_id = $info_db->id;
+                    $data->contact_id = $info_id[$k];
                     $data->save();
                 }
             }
@@ -346,7 +342,7 @@ class Import
 
                     $data->phone = str_replace(' ', '', $param['phone'][$key]['value']);
                     $data->phone_type = $param['phone'][$key]['type'];
-                    $data->contact_id = $info_db->id;
+                    $data->contact_id = $info_id[$k];
                     $data->save();
                 }
             }
@@ -364,7 +360,7 @@ class Import
                         $data->chat = $item;
                         $data->chat_name = $key;
                     }
-                    $data->contact_id = $info_db->id;
+                    $data->contact_id = $info_id[$k];
                     $data->save();
                 }
             }
@@ -376,7 +372,7 @@ class Import
                 foreach ($param['address'] as $key => $item)
                 {
                     $data = new Address();
-                    $data->contact_id = $info_db->id;
+                    $data->contact_id = $info_id[$k];
                     if(isset($param['address'][$key]['country'])){
                         $data->country = $param['address'][$key]['country'];
                     }
@@ -415,7 +411,7 @@ class Import
 
                 foreach ($param['company_info'] as $key => $item)
                 {
-                    $data->contact_id = $info_db->id;
+                    $data->contact_id = $info_id[$k];
 
                     if($key == 'company'){
 //                        $data->company = $item;
@@ -440,7 +436,7 @@ class Import
                 {
                     $data = new Group();
                     if(isset($item)){
-                        $data->user_id = $info_db->id;
+                        $data->user_id = $info_id[$k];
                         $data->name = $param['categories'][$cnt];
                     }
 

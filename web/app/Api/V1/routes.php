@@ -12,6 +12,7 @@ $router->group([
      * Contacts
      */
     $router->get('/', 'ContactController@index');
+    $router->get('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@show');
     $router->post('/', 'ContactController@store');
     $router->delete('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@destroy');
     $router->post('merge', 'ContactController@merge');

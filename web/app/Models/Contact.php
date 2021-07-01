@@ -143,28 +143,4 @@ class Contact extends Model
     {
         return $this->attributes['display_name'] = $this->first_name . ' ' . $this->last_name;
     }
-
-    public function getImagesFromRemote($query, $uuid)
-    {
-        $images = [];
-        $query->id = '';
-        $client = new Client(['base_uri' => env('FILES_MICROSERVICE_HOST')]);
-        $entityWithId = '?entity=contact&contact_id=' . $query->id;
-        $contactImages = $client->request('GET', env('API_FILES', '/v1') . '/files' . $entityWithId);
-        $contactImages = json_decode($contactImages->getBody(), JSON_OBJECT_AS_ARRAY);
-        foreach ($contactImages['data'] as $image) {
-            $images[] = $image['attributes']['path'];
-        }
-        $this->images = $images;
-
-        if ($includes = $query->get('include')) {
-            foreach (explode(',', $includes) as $include) {
-                if (method_exists($this, $include) && $this->{$include}() instanceof Relation) {
-                    $this->{$include};
-                }
-            }
-        }
-
-        return $this->toArray();
-    }
 }
