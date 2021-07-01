@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 class Contact extends Model
 {
@@ -19,6 +21,7 @@ class Contact extends Model
     use OwnerTrait;
 
     public $type = '';
+    public $images = [];
 
     /**
      * @var string[]
@@ -143,8 +146,25 @@ class Contact extends Model
 
     public function getImagesFromRemote($query, $uuid)
     {
-        $data_contacts = self::where(['id', $uuid]);
+        $images = [];
+        $query->id = '';
+        $client = new Client(['base_uri' => env('FILES_MICROSERVICE_HOST')]);
+        $entityWithId = '?entity=contact&contact_id=' . $query->id;
+        $contactImages = $client->request('GET', env('API_FILES', '/v1') . '/files' . $entityWithId);
+        $contactImages = json_decode($contactImages->getBody(), JSON_OBJECT_AS_ARRAY);
+        foreach ($contactImages['data'] as $image) {
+            $images[] = $image['attributes']['path'];
+        }
+        $this->images = $images;
 
+        if ($includes = $query->get('include')) {
+            foreach (explode(',', $includes) as $include) {
+                if (method_exists($this, $include) && $this->{$include}() instanceof Relation) {
+                    $this->{$include};
+                }
+            }
+        }
 
+        return $this->toArray();
     }
 }
