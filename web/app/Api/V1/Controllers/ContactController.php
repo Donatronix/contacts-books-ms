@@ -163,14 +163,11 @@ class ContactController extends Controller
 
     public function show($id)
     {
-        //$uuid_contact = ['93bbc06b-7453-4d14-ac67-e24ad297d079', '93bbc06b-7453-4d14-ac67-e24ff297ee67'];
-
         $contact = Contact::with(['phones', 'emails', 'groups'])->where('id', $id)->first();
 
-        $contact->avatar = $this->getImagesFromRemote($id);
+        $contact->setAttribute('avatar', $this->getImagesFromRemote($id)[0]);
 
         return response()->jsonApi($contact, 200);
-
     }
 
     /**
@@ -719,22 +716,14 @@ class ContactController extends Controller
     private function getImagesFromRemote($id)
     {
         $images = [];
-        $entityWithId = [];
-
-        $user_data = Contact::where('user_id', $id);
-
-        /*$builder->with(['favorites' => function ($query) {
-            $query->where('user_id', Auth::user()->getAuthIdentifier());
-        }]);*/
 
         $client = new Client(['base_uri' => env('FILES_MICROSERVICE_HOST')]);
-        foreach ($user_data as $item){
-            $contact_image = $client->request('GET', env('API_FILES', '/v1') . '/files' . "?entity=contact&entity_id={$item->id}");
-            $contact_image = json_decode($contact_image->getBody(), JSON_OBJECT_AS_ARRAY);
 
-            foreach ($contact_image['data'] as $image) {
-                $images[] = $image['attributes']['path'];
-            }
+        $contact_image = $client->request('GET', env('API_FILES', '/v1') . '/files' . "?entity=contact&entity_id={$id}");
+        $contact_image = json_decode($contact_image->getBody(), JSON_OBJECT_AS_ARRAY);
+
+        foreach ($contact_image['data'] as $image) {
+            $images[] = $image['attributes']['path'];
         }
 
         return $images;
