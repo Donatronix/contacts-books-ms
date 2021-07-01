@@ -140,4 +140,11 @@ class Contact extends Model
     {
         return $this->attributes['display_name'] = $this->first_name . ' ' . $this->last_name;
     }
+
+    public function getImagesFromRemote($query, $uuid)
+    {
+        $data_contacts = self::where(['id', $uuid]);
+
+
+    }
 }

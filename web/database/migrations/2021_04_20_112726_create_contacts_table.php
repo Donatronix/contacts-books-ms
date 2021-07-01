@@ -19,7 +19,7 @@ class CreateContactsTable extends Migration
             $table->string('first_name', 50)->default('');
             $table->string('last_name', 50)->default('');
             $table->string('surname', 50)->default('');
-            $table->text('avatar')->nullable();
+            $table->boolean('avatar')->default(0);
             $table->date('birthday')->nullable();
             $table->string('nickname', 50)->nullable()->comment('user alias');
             $table->string('user_prefix', 20)->nullable()->comment('prefix user name');

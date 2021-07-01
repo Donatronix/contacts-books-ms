@@ -63,7 +63,7 @@ Storing information about the user's contacts.
         'skype': '',
     },
     'note': '',
-    'photo': '',
+    'photo': 1,
     'categories': {
         0: '',
         1: ''
@@ -81,7 +81,7 @@ id         | Contact ID  | char (36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 first_name | First name user | varchar (50) | Vasya | Y
 last_name | Last name user | varchar (50) | Pupkin | Y
 surname | Surname user | varchar (50) | Sydorovich | N
-avatar | Image uploaded by the user | text | Example? | N
+avatar | Image uploaded by the user | tinyint(1) | 1 | N
 birthday | User's date of birth | date | 2011-11-22 | N
 nickname | Username | varchar(50) | Ded Hasan | N
 user_prefix | User prefix | varchar(20) | dr. | N
@@ -116,7 +116,7 @@ note | The user writes that he will climb into his head | text | Matyuki some | 
             'type': 'user_suffix'
         }
     },
-    'photo': 'http://...',
+    'photo': 1,
     'birthday': '2000-12-12',
     'nickname': 'Ded Hasan',
     'note': "Matyuki some"
