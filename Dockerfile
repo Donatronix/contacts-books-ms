@@ -27,9 +27,7 @@ RUN rm -rf .idea
 RUN composer -v install
 RUN composer -v update
 
-
 # 2. The second part creates a final Docker image with an Apache web server to serve the application
-
 
 FROM php:8.0.6-apache-buster
 
@@ -68,10 +66,6 @@ RUN apt install -y \
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd
-
-#RUN docker-php-ext-configure gd --with-gd --with-webp-dir --with-jpeg-dir \
-#    --with-png-dir --with-zlib-dir --with-xpm-dir --with-freetype-dir \
-#    --enable-gd-native-ttf
 
 RUN docker-php-ext-install pdo_mysql intl sockets bcmath gmp zip # mbstring
 

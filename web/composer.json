@@ -5,11 +5,11 @@
     "private": true,
     "require": {
         "php": "^7.4|^8.0",
+        "darkaonline/swagger-lume": "~8",
+        "doctrine/dbal": "~3",
         "ext-bcmath": "*",
         "ext-json": "*",
         "ext-openssl": "*",
-        "darkaonline/swagger-lume": "~8",
-        "doctrine/dbal": "~3",
         "guzzlehttp/guzzle": "~7",
         "laravel/lumen-framework": "~8",
         "phpoffice/phpspreadsheet": "~1",

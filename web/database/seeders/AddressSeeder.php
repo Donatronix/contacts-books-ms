@@ -10,7 +10,7 @@ use App\Models\Address;
 class AddressSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Run the database seeders.
      *
      * @return void
      */
