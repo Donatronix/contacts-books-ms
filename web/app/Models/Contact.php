@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 class Contact extends Model
 {
@@ -17,6 +19,9 @@ class Contact extends Model
     use SoftDeletes;
     use UuidTrait;
     use OwnerTrait;
+
+    public $type = '';
+    public $images = [];
 
     /**
      * @var string[]

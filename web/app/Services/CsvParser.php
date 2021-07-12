@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Services\Imports\CSVGoogle;
+use App\Services\Imports\CSVOutlook;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -10,23 +13,44 @@ use PhpOffice\PhpSpreadsheet\Reader\Csv;
 
 class CsvParser
 {
-    public function run(Request $request)
-    {
-        return view("tests.import");
-    }
-
-    public function test(Request $request)
+    /**
+     *  Loads a file, gets and returns its path.
+     *
+     * @param $request
+     * @return array $path_file
+     */
+    public function run($request)
     {
         $file = $request->file('contacts');
         $path_file = $file->getPathname();
-        $this->test2($path_file);
+        $this->load($path_file);
     }
 
-    public function parse($data_arr)
+    /**
+     *  We get the parsed array from Excel after we load the file of the required structure.
+     *
+     * @param $path_file
+     * @return array|false
+     */
+    public function load($path_file)
     {
+        $reader = new Csv();
+        $spreadsheet = $reader->load($path_file);
+        return $this->parse($spreadsheet);
+    }
 
+    /**
+     *  Get the array by letter, define the file structure and parse the results
+     *
+     * @param array $data_arr
+     * @return array $data_result | false
+     */
+    public function parseByLetter($data_arr)
+    {
         $array_letter = array_shift($data_arr);
         $data_arr = array_values($data_arr);
+        $data_result = [];
+        $import = new Import();
 
         foreach ($array_letter as $key => $item)
         {
@@ -41,16 +65,33 @@ class CsvParser
                 }
             }
         }
-        dump($data_result);
-        die('END');
+        $data_google = new CSVGoogle();
+        $data_result_google = $data_google->define($data_result);
+        $data_outlook = new CSVOutlook();
+        $data_result_outlook = $data_outlook->define($data_result);
+
+        if($data_result_google){
+
+            $data_result = $data_google->getTransformation($data_result);
+            $import->insertContactToBb($data_result);
+        }
+
+        if($data_result_outlook){
+            $data_result = $data_outlook->getTransformation($data_result);
+            $data_outlook->insertContactToBb($data_result);
+        }
     }
 
-    public function test2($file)
+    /**
+     *  From the Excel file format, we get an array, where the keys are the letters of the column.
+     *
+     * @param array | false
+     */
+    public function parse($spreadsheet)
     {
-        $reader = new Csv();
-        $spreadsheet = $reader->load($file);
         $objWorksheet = $spreadsheet->getActiveSheet();
-        $worksheet = $spreadsheet->setActiveSheetIndex(0); // Выбираем первый лист
+        // Selecting the first sheet
+        $worksheet = $spreadsheet->setActiveSheetIndex(0);
 
         $i = 0;
         $arrLevel = [];
@@ -60,7 +101,7 @@ class CsvParser
             // Determine the nesting level
             $arrLevel[$i]['level'] = $rowDimension->getOutlineLevel();
         }
-        $highestColumn = $worksheet->getHighestColumn();
+        $worksheet->getHighestColumn();
 
         foreach ($objWorksheet->getRowIterator() as $row) {
             $cellIterator = $row->getCellIterator();
@@ -71,47 +112,6 @@ class CsvParser
                 $arrLevel[$row->getRowIndex()][$cell->getColumn()] = $cell->getValue();
             }
         }
-//        dd($arrLevel);
-        return $this->parse($arrLevel);
+        return $this->parseByLetter($arrLevel) ?? false;
     }
-
-    /**
-     *   Parses and converts a string to an array
-     *
-     * @param string $file_data
-     * @return array $csv_arr
-     */
-    /*public function readData($file_data)
-    {
-        $file_mimes = array('application/x-csv', 'text/x-csv', 'text/csv', 'application/csv');
-
-
-
-        $reader = new Csv();
-        $spreadsheet = $reader->load($file_data);
-        $sheetData = $spreadsheet->getActiveSheet()->toArray();
-        dd($spreadsheet);
-        return true;
-    }*/
-
-
-
-    /**
-     *   Parses and converts a string to an array
-     *
-     * @param string $file_data
-     * @return array $csv_arr
-     */
-    /*public function readDataTmp($file_data)
-    {
-        $csv_data = [];
-        $lines = explode(PHP_EOL, $file_data);
-        foreach ($lines as $line) {
-            $csv_arr[] = str_getcsv($line);
-        }
-        dump($file_data);
-        dump($csv_arr);
-        dd('END');
-        return $csv_arr;
-    }*/
 }

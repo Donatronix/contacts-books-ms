@@ -2,8 +2,15 @@
 
 namespace App\Services\Imports;
 
+use App\Models\Contact;
+use App\Services\Import;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use Dotenv\Exception\ValidationException;
+
 class Vcard
 {
+    public $file_format = 'vcf';
 
     public $data = [];
     /**
@@ -27,6 +34,7 @@ class Vcard
     public function __construct($file_data=false)
     {
         $this->data = $this->readData($file_data);
+
         return $this->data;
     }
 
@@ -458,7 +466,7 @@ class Vcard
         $tmp = $data['N'][0]['value'];
         if($tmp){
             $result = [];
-            $arr_type = ['lastname', 'firstname', 'surname', 'prefix', 'suffix'];
+            $arr_type = ['last_name', 'first_name', 'surname', 'user_prefix', 'user_suffix'];
             for($i=0; $i < count($tmp); $i++)
             {
                 $result[$i]['value'] = $this->checkParam($tmp[$i][0]);
@@ -586,7 +594,11 @@ class Vcard
      */
     public function getBirthday($data)
     {
-        return $this->checkParam($data["BDAY"][0]["value"][0][0]);
+        if($birthday = $this->checkParam($data["BDAY"][0]["value"][0][0])){
+            $birthday = strtotime(str_replace('/', '-', $birthday));
+            return $birthday ? date("Y-m-d", $birthday) : NULL;
+        }
+        return false;
     }
 
     /**
@@ -723,6 +735,12 @@ class Vcard
         return $result ?? false;
     }
 
+    /**
+     *  We receive a note
+     *
+     * @param $data
+     * @return false|string
+     */
     public function getNote($data)
     {
         $tmp = $data["NOTE"][0]["value"][0][0];
@@ -777,59 +795,67 @@ class Vcard
         return false;
     }
 
+    /**
+     *  Parse the array into the desired format.
+     *
+     * @param $file_data_array
+     * @return array
+     */
     public function parse($file_data_array)
     {
         $data = [];
 
-        foreach ($file_data_array as $k => $item)
-        {
-            // field: FN (Full name)
-            $data[$k]['full_name'] = $this->getFullname($item);
+        try {
+            foreach ($file_data_array->data as $k => $item)
+            {
+                // field: FN (Full name)
+                $data[$k]['full_name'] = $this->getFullname($item);
 
-            // field: N (array of name parameters)
-            $data[$k]['name_param'] = $this->getParamsName($item);
+                // field: N (array of name parameters)
+                $data[$k]['name_param'] = $this->getParamsName($item);
 
-            // field: NICKNAME (pseudonym)
-            $data[$k]['nickname'] = $this->getNickname($item);
+                // field: NICKNAME (pseudonym)
+                $data[$k]['nickname'] = $this->getNickname($item);
 
-            // field: EMAIL
-            $data[$k]['email'] = $this->getEmail($item);
+                // field: EMAIL
+                $data[$k]['email'] = $this->getEmail($item);
 
-            // field: TEL (phone)
-            $data[$k]['phone'] = $this->getPhone($item);
+                // field: TEL (phone)
+                $data[$k]['phone'] = $this->getPhone($item);
 
-            // field: ADR (address)
-            $data[$k]['address'] = $this->getAddress($item);
+                // field: ADR (address)
+                $data[$k]['address'] = $this->getAddress($item);
 
-            // field: ORG (company, department) + TITLE (post)
-            $data[$k]['company_info'] = $this->getCompanyInfo($item);
+                // field: ORG (company, department) + TITLE (post)
+                $data[$k]['company_info'] = $this->getCompanyInfo($item);
 
-            // field: BDAY (birthday)
-            $data[$k]['birthday'] = $this->getBirthday($item);
+                // field: BDAY (birthday)
+                $data[$k]['birthday'] = $this->getBirthday($item);
 
-            // field: URL (sites)
-            $data[$k]['sites'] = $this->getSites($item);
+                // field: URL (sites)
+                $data[$k]['sites'] = $this->getSites($item);
 
-            // field: X-ABRELATEDNAMES (relation)
-            $data[$k]['relation'] = $this->getRelationInfo($item);
+                // field: X-ABRELATEDNAMES (relation)
+                $data[$k]['relation'] = $this->getRelationInfo($item);
 
-            // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
-            $data[$k]['chats'] = $this->getChat($item);
+                // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
+                $data[$k]['chats'] = $this->getChat($item);
 
-            // field: NOTE
-            $data[$k]['note'] = $this->getNote($item); // доработать
+                // field: NOTE
+                $data[$k]['note'] = $this->getNote($item); // доработать
 
-            // field: PHOTO
-            $data[$k]['photo'] = $this->getAvatar($item);
+                // field: PHOTO
+                $data[$k]['photo'] = $this->getAvatar($item);
 
-            // field: CATEGORIES
-            $data[$k]['categories'] = $this->getCategories($item);
-
-
-            /*$data[$k]['X-PHONETIC-FIRST-NAME'] = $this->checkParam($item['X-PHONETIC-FIRST-NAME'][0]['value'][0][0]);
-            $data[$k]['X-PHONETIC-MIDDLE-NAME'] = $this->checkParam($item['X-PHONETIC-MIDDLE-NAME'][0]['value'][0][0]);
-            $data[$k]['X-PHONETIC-LAST-NAME'] = $this->checkParam($item['X-PHONETIC-LAST-NAME'][0]['value'][0][0]);*/
+                // field: CATEGORIES
+                $data[$k]['categories'] = $this->getCategories($item);
+            }
+        }
+        catch (\Exception $e){
+            echo $e;
         }
         return $data;
     }
+
 }
+

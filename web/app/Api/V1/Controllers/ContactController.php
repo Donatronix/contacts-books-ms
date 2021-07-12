@@ -8,6 +8,7 @@ use App\Models\ContactEmail;
 use App\Models\ContactPhone;
 use App\Models\Work;
 use Exception;
+use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -160,6 +161,15 @@ class ContactController extends Controller
         }
     }
 
+    public function show($id)
+    {
+        $contact = Contact::with(['phones', 'emails', 'groups'])->where('id', $id)->first();
+
+        $contact->setAttribute('avatar', $this->getImagesFromRemote($id)[0]);
+
+        return response()->jsonApi($contact, 200);
+    }
+
     /**
      * Save user's contacts data
      *
@@ -222,6 +232,7 @@ class ContactController extends Controller
      */
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
+        dd(1234);
         // Validate input
         $input = (object) $this->validate($request, $this->rules());
 
@@ -700,5 +711,21 @@ class ContactController extends Controller
                 'message' => "Contact's group #{$id} not found"
             ], 404);
         }
+    }
+
+    private function getImagesFromRemote($id)
+    {
+        $images = [];
+
+        $client = new Client(['base_uri' => env('FILES_MICROSERVICE_HOST')]);
+
+        $contact_image = $client->request('GET', env('API_FILES', '/v1') . '/files' . "?entity=contact&entity_id={$id}");
+        $contact_image = json_decode($contact_image->getBody(), JSON_OBJECT_AS_ARRAY);
+
+        foreach ($contact_image['data'] as $image) {
+            $images[] = $image['attributes']['path'];
+        }
+
+        return $images;
     }
 }
