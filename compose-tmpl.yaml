@@ -7,7 +7,7 @@ networks:
 
 services:
   apache:
-    container_name: {{DEPLOY_NAME}}-ms
+    container_name: {{DEPLOY_NAME}}
 #    hostname: nginx
     image: {{DOCKER_IMAGE}}
     networks:
