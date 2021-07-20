@@ -4,7 +4,7 @@
 
 FROM composer:latest as build
 
-LABEL maintainer "Ihor Porokhnenko <ihor.porokhnenko@gmail.com>"
+LABEL maintainer="Ihor Porokhnenko <ihor.porokhnenko@gmail.com>"
 
 RUN apk update && apk add --no-cache \
         php8-intl \
@@ -14,7 +14,13 @@ RUN apk update && apk add --no-cache \
         libpng-dev
 
 #RUN docker-php-ext-configure intl
-RUN docker-php-ext-install intl sockets bcmath gmp gd && apk del libpng-dev
+RUN docker-php-ext-install \
+    intl \
+    sockets \
+    bcmath \
+    gmp \
+    gd \
+    && apk del libpng-dev
 #libjpeg-turbo-dev libwebp-dev zlib-dev libxpm-dev
 
 COPY ./web      /app
@@ -36,8 +42,6 @@ COPY --from=build /pubsub /var/www/pubsub
 COPY --from=build /json-api /var/www/json-api
 
 COPY conf/vhost.conf /etc/apache2/sites-available/000-default.conf
-#COPY conf/laravel-echo-server.json /var/www/html
-#RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && apt install -y npm && npm i -g laravel-echo-server
 
 RUN chown -R www-data:www-data /var/www/html \
     && a2enmod rewrite ssl headers
@@ -61,15 +65,21 @@ RUN apt install -y \
         libfreetype6-dev \
         libgmp-dev \
         libzip-dev
-#       libonig-dev
-#       composer
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
-RUN docker-php-ext-install pdo_mysql intl sockets bcmath gmp zip # mbstring
+RUN docker-php-ext-install -j$(nproc) \
+    gd \
+    pdo_mysql \
+    intl \
+    sockets \
+    bcmath \
+    gmp \
+    zip \
+    mbstring
 
 RUN pecl install xdebug-3.0.3
+
 #RUN docker-php-ext-configure xdebug
 RUN docker-php-ext-enable xdebug
 

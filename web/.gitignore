@@ -1,5 +1,5 @@
-/vendor
-/.idea
-/storage/api-docs/*
+.idea/*
 .env
 .phpunit.result.cache
+storage/api-docs/*
+vendor/*
