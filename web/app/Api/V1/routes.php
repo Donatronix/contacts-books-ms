@@ -75,7 +75,7 @@ $router->group([
     /**
      *  For Remote
      */
-    $router->get('/remote', 'RemoteController@remote');
+    //$router->get('/remote', 'RemoteController@remote');
 
     /**
      *  For test

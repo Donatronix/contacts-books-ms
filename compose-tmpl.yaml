@@ -19,12 +19,14 @@ services:
 #      - ./conf/mime.types:/opt/sumra/nginx/conf/mime.types:ro
 #      - ./web/public:/web/public:ro
 #      - ./conf/server_blocks.conf:/opt/sumra/nginx/conf/server_blocks/server_blocks.conf:ro
+
       - ./conf/vhost.conf:/etc/apache2/sites-enabled/000-default.conf:ro
+#      - ./conf/.env:/var/www/html/.env:rw
       - ./certs/dev.sumra.net.crt:/certs/dev.sumra.net.crt:ro
       - ./certs/dev.sumra.net.key:/certs/dev.sumra.net.key:ro
       - ./web:/var/www/html:rw
       - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:rw
-#      - ./conf/.env_local:/var/www/html/.env:rw
+
 #  redis:
 #    container_name: sumra-kv-dev-redis-cache
 #    hostname: sumra-kv-dev-redis-cache
@@ -39,6 +41,7 @@ services:
 #      - '6379:6379'
 #    volumes:
 #      - './redis-data:/opt/sumra/redis/data'
+
 #  php-fpm:
 #    container_name: {{DEPLOY_NAME}}-php-fpm
 #    hostname: {{DEPLOY_NAME}}-php-fpm
