@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Auth;
  */
 class ImportController extends Controller
 {
-
     /**
      * import user contacts
      *
@@ -156,10 +155,8 @@ class ImportController extends Controller
      */
     public function addvcard(Request $request)
     {
-
         $user_id = (int)Auth::user()->getAuthIdentifier();
 
-        dd($request->vcards);
         $cards = (new Vcard())->readData($request->vcards);
 
         $contacts = [];

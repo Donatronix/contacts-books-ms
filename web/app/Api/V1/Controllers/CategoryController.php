@@ -63,8 +63,6 @@ class CategoryController extends Controller
         try {
             $categories = Category::structure()->get();
 
-            dd($categories);
-
             // Return response
             return response()->jsonApi($categories->toArray(), 200);
         } catch (Exception $e) {

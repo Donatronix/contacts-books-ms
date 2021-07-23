@@ -69,7 +69,7 @@ class Category extends Model
     public function scopeStructure($query)
     {
         return $query->with([
-            'children.children'
-        ]);
+            'children'
+        ])->where('parent_id', '=', '0');
     }
 }
