@@ -19,7 +19,7 @@ COPY ./pubsub /var/www/pubsub
 COPY ./json-api /var/www/json-api
 RUN rm -rf .idea
 
-#RUN php artisan l5-swagger:generate
+#RUN php artisan swagger-lume:generate
 
 # Configure Apache
 COPY conf/vhost.conf /etc/apache2/sites-available/000-default.conf

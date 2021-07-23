@@ -1,5 +1,5 @@
 {
-    "name": "sumra/contacts",
+    "name": "kus/contacts-book",
     "description": "Contacts Book Microservice",
     "type": "project",
     "private": true,

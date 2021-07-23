@@ -26,6 +26,7 @@ services:
       - ./certs/dev.sumra.net.key:/certs/dev.sumra.net.key:ro
       - ./web:/var/www/html:rw
       - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:rw
+    command: /bin/bash -c "php artisan swagger-lume:generate && php artisan queue:listen rabbitmq --queue=ContactsBookMS --timeout=0 > /dev/null & apache2-foreground"
 
 #  redis:
 #    container_name: sumra-kv-dev-redis-cache
