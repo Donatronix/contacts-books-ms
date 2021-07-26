@@ -33,7 +33,7 @@ class Import
      * @param Request $request
      * @return array $data_result | false
      */
-    public function check(Request $request)
+    public function exec(Request $request)
     {
         // get list classes by path app/Services/Imports/
 

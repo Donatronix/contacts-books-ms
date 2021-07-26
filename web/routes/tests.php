@@ -8,7 +8,6 @@
 | Here is where you can register all of the routes for an application.
 | It is a breeze. Simply tell Lumen the URIs it should respond to
 | and give it the Closure to call when that URI is requested.
-|
 */
 
 /*-------------------------
@@ -26,12 +25,16 @@ Route::group(
 
         $router->get('contacts', 'PagesController@index');
 
-        $router->get('contacts/contacts/store', function () {
-            return TestController::viewMake("tests.contacts.store");
-        });
+        /**
+         *  For test
+         */
+        $router->get('run', '\App\Services\Import@run');
+        $router->post('test', '\App\Services\Import@exec');
 
-        $router->get('contacts/contacts/destroy', function () {
-            return TestController::viewMake("tests.contacts.destroy");
-        });
+        $router->get('run1', '\App\Services\Test@run');
+        $router->get('test1', '\App\Services\Test@test');
+
+        $router->get('run2', '\App\Services\CsvParser@run');
+        $router->post('test2', '\App\Services\CsvParser@test');
     }
 );

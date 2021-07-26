@@ -27,15 +27,7 @@ class Test
 
         $result = Import::InsertBase64EncodedImage($path_image);
         dump($result);
+
         die('END');
-
-    }
-
-    private function checkParam($param)
-    {
-        if($param){
-            return $param;
-        }
-        return false;
     }
 }
