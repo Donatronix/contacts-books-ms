@@ -20,7 +20,7 @@ class CategoryController extends Controller
      *     path="/v1/contacts/categories",
      *     summary="Load categories list",
      *     description="Load user's categories list",
-     *     tags={"Contact Categories"},
+     *     tags={"Categories"},
      *
      *     security={{
      *         "default": {

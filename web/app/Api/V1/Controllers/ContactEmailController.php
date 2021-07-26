@@ -17,13 +17,28 @@ use Illuminate\Validation\Rule;
 class ContactEmailController extends Controller
 {
     /**
-     * Store a newly client email in storage.
+     * Store a newly contact email in storage.
      *
      * @OA\Post(
      *     path="/v1/contacts/emails",
-     *     summary="Add client email",
+     *     summary="Add contact email",
      *     tags={"Contact Emails"},
-     *     security={{"bearerAuth":{}}},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
      *
      *     @OA\RequestBody(
      *         @OA\JsonContent(
@@ -32,13 +47,13 @@ class ContactEmailController extends Controller
      *             @OA\Property(
      *                 property="contact_id",
      *                 type="integer",
-     *                 description="Client ID",
+     *                 description="Contact ID",
      *                 example="2"
      *             ),
      *             @OA\Property(
      *                 property="email",
      *                 type="string",
-     *                 description="Email of client",
+     *                 description="Email of contact",
      *                 example="test@tes.com"
      *             ),
      *             @OA\Property(
@@ -77,17 +92,17 @@ class ContactEmailController extends Controller
      *     )
      * )
      *
-     * @param $request
+     * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         $contact = Contact::find($request->get('contact_id', 0));
 
         if (!$contact) {
-            return response()->json([
-                'error' => Config::get('constants.errors.ClientNotFound')
+            return response()->jsonApi([
+                'error' => Config::get('constants.errors.ContactNotFound')
             ], 404);
         }
 
@@ -109,9 +124,9 @@ class ContactEmailController extends Controller
             $email->is_default = $is_default;
             $email->save();
 
-            return response()->json($email);
+            return response()->jsonApi($email);
         } catch (Exception $e) {
-            return response()->json([
+            return response()->jsonApi([
                 'error' => [
                     'code' => $e->getCode(),
                     'message' => $e->getMessage()
@@ -121,14 +136,29 @@ class ContactEmailController extends Controller
     }
 
     /**
-     * Update email of client
+     * Update email of contact
      *
      * @OA\Put(
      *     path="/v1/contacts/emails/{id}",
-     *     summary="Update email of client",
+     *     summary="Update email of contact",
      *     description="Can send one parameter",
      *     tags={"Contact Emails"},
-     *     security={{"bearerAuth":{}}},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
      *
      *     @OA\Parameter(
      *         name="id",
@@ -146,7 +176,7 @@ class ContactEmailController extends Controller
      *             @OA\Property(
      *                 property="email",
      *                 type="string",
-     *                 description="Email of client",
+     *                 description="Email of contact",
      *                 example="test@tes.com"
      *             ),
      *             @OA\Property(
@@ -184,14 +214,17 @@ class ContactEmailController extends Controller
      *     )
      * )
      *
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): \Illuminate\Http\JsonResponse
     {
-        $email = ContactEmail::with(['client'])->where('id', $id)->first();
+        $email = ContactEmail::with(['contact'])->where('id', $id)->first();
 
         if (!$email) {
-            return response()->json([
+            return response()->jsonApi([
                 'error' => Config::get('constants.errors.ContactEmailNotFound')
             ], 404);
         }
@@ -201,8 +234,8 @@ class ContactEmailController extends Controller
                 $is_default = $request->get('is_default', 'false');
 
                 // Reset is_default for other emails
-                if ($is_default && $email->client) {
-                    foreach ($email->client->emails as $old_email) {
+                if ($is_default && $email->contact) {
+                    foreach ($email->contact->emails as $old_email) {
                         $old_email->is_default = false;
                         $old_email->save();
                     }
@@ -217,9 +250,9 @@ class ContactEmailController extends Controller
 
             $email->save();
 
-            return response()->json($email);
+            return response()->jsonApi($email);
         } catch (Exception $e) {
-            return response()->json([
+            return response()->jsonApi([
                 'error' => [
                     'code' => $e->getCode(),
                     'message' => $e->getMessage()
@@ -229,14 +262,28 @@ class ContactEmailController extends Controller
     }
 
     /**
-     * Delete client email
-     * Remove the client email from storage.
+     * Delete contact email from storage.
      *
      * @OA\Delete(
      *     path="/v1/contacts/emails/{id}",
-     *     summary="Delete client email",
+     *     summary="Delete contact email",
      *     tags={"Contact Emails"},
-     *     security={{"bearerAuth":{}}},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
      *
      *     @OA\Parameter(
      *         name="id",
@@ -259,14 +306,14 @@ class ContactEmailController extends Controller
      *                 @OA\Property(
      *                     property="message",
      *                     type="string",
-     *                     example="Client email with id: 123 was deleted"
+     *                     example="Contact email with id: 123 was deleted"
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response="404",
-     *         description="Client email not found",
+     *         description="Contact email not found",
      *
      *         @OA\JsonContent(
      *             type="object",
@@ -287,39 +334,34 @@ class ContactEmailController extends Controller
      *         )
      *     )
      * )
+     *
+     * @param $id
+     *
+     * @return mixed
      */
     public function destroy($id)
     {
         $email = ContactEmail::find($id);
 
         if (!$email) {
-            return response()->json([
+            return response()->jsonApi([
                 'error' => Config::get('constants.errors.ContactEmailNotFound')
             ], 404);
         }
         $email->delete();
 
-        return response()->json([
+        return response()->jsonApi([
             'success' => [
-                'message' => 'Client\'s email with id: ' . $id . ' was deleted'
+                'message' => 'Contact\'s email with id: ' . $id . ' was deleted'
             ]
         ]);
     }
 
-    private function rules()
+    /**
+     * @param $id
+     */
+    private function getObject($id)
     {
-        return [
-            'email' => [
-                'required',
-                'regex:/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}/',
-                Rule::unique('contact_emails')->where(function ($query) {
-                    return $query->where('contact_id', $this->request->get('contact_id'));
-                })
-            ]
-        ];
-    }
-
-    private function getObject($id){
 
     }
 }

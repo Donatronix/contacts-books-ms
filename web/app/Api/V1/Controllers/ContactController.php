@@ -9,9 +9,12 @@ use App\Models\ContactPhone;
 use App\Models\Work;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Sumra\JsonApi\JsonApiResponse;
 
 /**
  * Class ContactController
@@ -79,6 +82,14 @@ class ContactController extends Controller
      *         )
      *     ),
      *     @OA\Parameter(
+     *         name="isRecently",
+     *         in="query",
+     *         description="Show recently added contacts",
+     *         @OA\Schema(
+     *             type="boolean"
+     *         )
+     *     ),
+     *     @OA\Parameter(
      *         name="sort[by]",
      *         in="query",
      *         description="Sort by field",
@@ -123,14 +134,12 @@ class ContactController extends Controller
                     'emails',
                     'groups',
                 ])
-
                 ->when($request->has('search'), function ($q) use ($request) {
                     $search = $request->get('search');
 
                     return $q->where('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%")
                         ->orWhere('note', 'like', "%{$search}%")
-
                         ->orWhereHas('emails', function ($q) use ($search) {
                             return $q->where('email', 'like', "%{$search}%");
                         })
@@ -138,20 +147,21 @@ class ContactController extends Controller
                             return $q->where('phone', 'like', "%{$search}%");
                         });
                 })
-
                 ->when($request->has('isFavorite'), function ($q) use ($request) {
-                    return $q->where('is_favorite',  $request->get('isFavorite'));
+                    return $q->where('is_favorite', $request->get('isFavorite'));
                 })
-
                 ->when($request->has('isRecently'), function ($q) use ($request) {
-                    return $q->where('is_favorite',  $request->get('isFavorite'));
+                    return $q->sortBy('created_at', 'desc');
                 })
-
                 ->byOwner()
                 ->get();
 
+            $contacts->map(function($object){
+                $object->setAttribute('avatar', $this->getImagesFromRemote($object->id)[0]);
+            });
+
             // Return response
-            return response()->jsonApi($contacts->toArray(), 200);
+            return response()->jsonApi($contacts, 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'error',
@@ -161,22 +171,13 @@ class ContactController extends Controller
         }
     }
 
-    public function show($id)
-    {
-        $contact = Contact::with(['phones', 'emails', 'groups'])->where('id', $id)->first();
-
-        $contact->setAttribute('avatar', $this->getImagesFromRemote($id)[0]);
-
-        return response()->jsonApi($contact, 200);
-    }
-
     /**
-     * Save user's contacts data
+     * Save user's contacts in JSON format
      *
      * @OA\Post(
      *     path="/v1/contacts",
-     *     summary="Save user's contacts data",
-     *     description="Save user's contacts data",
+     *     summary="Save user's contacts in JSON format",
+     *     description="Save user's contacts in JSON format",
      *     tags={"Contacts"},
      *
      *     security={{
@@ -230,14 +231,13 @@ class ContactController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        dd(1234);
         // Validate input
-        $input = (object) $this->validate($request, $this->rules());
+        $input = (object)$this->validate($request, Contact::rules());
 
         try {
-            foreach($input->contacts as $item){
+            foreach ($input->contacts as $item) {
                 // First, Create contact
                 $contact = Contact::create([
                     'first_name' => $item['first_name'],
@@ -252,7 +252,7 @@ class ContactController extends Controller
                 ]);
 
                 // Save contact's phones
-                if(isset($item['phones']) && count($item['phones']) > 0){
+                if (isset($item['phones']) && count($item['phones']) > 0) {
                     foreach ($item['phones'] as $x => $phone) {
                         ContactPhone::create([
                             'phone' => $phone,
@@ -264,8 +264,7 @@ class ContactController extends Controller
                 }
 
                 // Save contact's emails
-                if(isset($item['emails']) && count($item['emails']) > 0)
-                {
+                if (isset($item['emails']) && count($item['emails']) > 0) {
                     foreach ($item['emails'] as $x => $email) {
                         ContactEmail::create([
                             'email' => $email,
@@ -276,8 +275,7 @@ class ContactController extends Controller
                     }
                 }
 
-                if(isset($item['works']) && count($item['works']) > 0)
-                {
+                if (isset($item['works']) && count($item['works']) > 0) {
                     foreach ($item['works'] as $x => $company) {
                         Work::create([
                             'company' => $company,
@@ -289,8 +287,7 @@ class ContactController extends Controller
                     }
                 }
 
-                if(isset($item['addresses']) && count($item['addresses']) > 0)
-                {
+                if (isset($item['addresses']) && count($item['addresses']) > 0) {
                     foreach ($item['addresses'] as $x => $country) {
                         Work::create([
                             'country' => $country,
@@ -306,8 +303,7 @@ class ContactController extends Controller
                     }
                 }
 
-                if(isset($item['sites']) && count($item['sites']) > 0)
-                {
+                if (isset($item['sites']) && count($item['sites']) > 0) {
                     foreach ($item['sites'] as $x => $site) {
                         Work::create([
                             'site' => $site,
@@ -318,8 +314,7 @@ class ContactController extends Controller
                     }
                 }
 
-                if(isset($item['chats']) && count($item['chats']) > 0)
-                {
+                if (isset($item['chats']) && count($item['chats']) > 0) {
                     foreach ($item['chats'] as $x => $chat) {
                         Work::create([
                             'site' => $chat,
@@ -330,8 +325,7 @@ class ContactController extends Controller
                     }
                 }
 
-                if(isset($item['relation']) && count($item['relation']) > 0)
-                {
+                if (isset($item['relation']) && count($item['relation']) > 0) {
                     foreach ($item['relation'] as $x => $relation) {
                         Work::create([
                             'relation' => $relation,
@@ -343,17 +337,229 @@ class ContactController extends Controller
                 }
             }
 
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'success',
                 'title' => "Upload user's contacts",
                 'message' => "User's contacts successfully saved"
             ], 200);
         } catch (Exception $e) {
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'error',
                 'title' => "Upload user's contacts",
                 'message' => $e->getMessage()
             ], 400);
+        }
+    }
+
+    /**
+     * Get detail info about contact
+     *
+     * @OA\Get(
+     *     path="/v1/contacts/{id}",
+     *     summary="Get detail info about contact",
+     *     description="Get detail info about contact",
+     *     tags={"Contacts"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
+     *
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Contacts ID",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *          response="200",
+     *          description="Data of contact"
+     *     ),
+     *     @OA\Response(
+     *          response="404",
+     *          description="Contact not found",
+     *
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(
+     *                  property="error",
+     *                  type="object",
+     *                  @OA\Property(
+     *                      property="code",
+     *                      type="string",
+     *                      description="code of error"
+     *                  ),
+     *                  @OA\Property(
+     *                      property="message",
+     *                      type="string",
+     *                      description="error message"
+     *                  )
+     *              )
+     *          )
+     *     )
+     * )
+     *
+     * @param $id
+     *
+     * @return mixed
+     */
+    public function show($id)
+    {
+        // Get contact model
+        try {
+            $contact = Contact::with(['phones', 'emails', 'groups'])
+                ->where('id', $id)
+                ->first();
+
+            $contact->setAttribute('avatar', $this->getImagesFromRemote($id)[0]);
+
+            return response()->jsonApi($contact, 200);
+        } catch (ModelNotFoundException | GuzzleException $e) {
+            return response()->jsonApi([
+                'type' => 'error',
+                'title' => 'Contact not found',
+                'message' => "Contact with #{$id} not found: {$e}"
+            ], 404);
+        }
+    }
+
+    /**
+     * Update contact
+     *
+     * @OA\Put(
+     *     path="/v1/contacts/{id}",
+     *     summary="Update contact",
+     *     description="Update contact",
+     *     tags={"Contact Emails"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
+     *
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Email Id",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(
+     *             type="object",
+     *
+     *             @OA\Property(
+     *                 property="email",
+     *                 type="string",
+     *                 description="Email of client",
+     *                 example="test@tes.com"
+     *             ),
+     *             @OA\Property(
+     *                 property="is_default",
+     *                 type="boolean",
+     *                 description="Communication prefernce",
+     *                 example="true"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *          response="200",
+     *          description="Successfully save"
+     *     ),
+     *     @OA\Response(
+     *         response="500",
+     *         description="Unknown error",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="code",
+     *                     type="string",
+     *                     description="code of error"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="message",
+     *                     type="string",
+     *                     description="error message"
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(Request $request, $id): JsonResponse
+    {
+        $email = ContactEmail::with(['client'])->where('id', $id)->first();
+
+        if (!$email) {
+            return response()->jsonApi([
+                'error' => Config::get('constants.errors.ContactEmailNotFound')
+            ], 404);
+        }
+
+        try {
+            if ($request->has('is_default')) {
+                $is_default = $request->get('is_default', 'false');
+
+                // Reset is_default for other emails
+                if ($is_default && $email->client) {
+                    foreach ($email->client->emails as $old_email) {
+                        $old_email->is_default = false;
+                        $old_email->save();
+                    }
+                }
+
+                $email->is_default = $is_default;
+            }
+
+            if ($request->has('email')) {
+                $email->email = $request->get('email');
+            }
+
+            $email->save();
+
+            return response()->jsonApi($email);
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'error' => [
+                    'code' => $e->getCode(),
+                    'message' => $e->getMessage()
+                ]
+            ], 500);
         }
     }
 
@@ -384,7 +590,7 @@ class ContactController extends Controller
      *
      *     @OA\Parameter(
      *         name="userID",
-     *         description="user id",
+     *         description="Contacts ID",
      *         required=true,
      *         in="query",
      *          @OA\Schema (
@@ -424,22 +630,33 @@ class ContactController extends Controller
      */
     public function destroy($id)
     {
+        // Get object
+        $contact = $this->getObject($id);
+
+        if ($contact instanceof JsonApiResponse) {
+            return $contact;
+        }
+
         try {
-            return response()->json([
+            $contact->delete();
+
+            return response()->jsonApi([
                 'status' => 'success',
-                'title' => 'Contacts are deleted',
-                'message' => 'Contacts are deleted'
+                'title' => 'Contact are deleted',
+                'message' => 'Contact are deleted'
             ], 200);
         } catch (Exception $e) {
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'error',
-                'title' => 'Contacts are not saved',
+                'title' => 'Contact are not saved',
                 'message' => $e->getMessage()
             ], 400);
         }
     }
 
     /**
+     * Merge 2 contacts to 1
+     *
      * @OA\Post(
      *     path="/v1/contacts/merge",
      *     summary="Merge 2 contacts to 1",
@@ -506,23 +723,21 @@ class ContactController extends Controller
      *     )
      * )
      *
+     * @param \Illuminate\Http\Request $request
+     *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function merge(Request $request): \Illuminate\Http\JsonResponse
+    public function merge(Request $request): JsonResponse
     {
         // Check exist contacts
-        $contact_from = Contact::find($request->contact_id_from);
-        if (!$contact_from) {
-            return response()->json([
-                'error' => Config::get('constants.errors.ClientNotFound')
-            ], 404);
+        $contact_from = $this->getObject($request->get('contact_id_from'));
+        if ($contact_from instanceof JsonApiResponse) {
+            return $contact_from;
         }
 
-        $contact_to = Contact::find($request->contact_id_to);
-        if (!$contact_to) {
-            return response()->json([
-                'error' => Config::get('constants.errors.ClientNotFound')
-            ], 404);
+        $contact_to = $this->getObject($request->get('contact_id_to'));
+        if ($contact_to instanceof JsonApiResponse) {
+            return $contact_to;
         }
 
         try {
@@ -537,23 +752,6 @@ class ContactController extends Controller
                 // Merge contacts tags
                 'tags' => array_unique(array_merge($contact_to->tags, $contact_from->tags))
             ]);
-
-            // Merge associations
-            foreach ($contact_from->clientAssociations as $association) {
-                // Check client, don't association with self
-                if ($association->association_contact_id == $contact_to->id) {
-                    continue;
-                }
-
-                $association->contact()->associate($contact_to);
-                $association->save();
-            }
-
-            // Merge properties
-            foreach ($contact_from->clientProperties as $property) {
-                $property->contact()->associate($contact_to);
-                $property->save();
-            }
 
             // Merge contacts phones
             foreach ($contact_from->phones as $phone) {
@@ -583,29 +781,17 @@ class ContactController extends Controller
                 $email->save();
             }
 
-            // Merge contacts feedbacks
-            foreach ($contact_from->feedbacks as $feedback) {
-                $feedback->contact()->associate($contact_to);
-                $feedback->save();
-            }
-
-            // Merge contacts reviews
-            foreach ($contact_from->reviews as $review) {
-                $review->contact()->associate($contact_to);
-                $review->save();
-            }
-
             // Delete donor client
             $contact_from->delete();
 
             // Return response
-            return response()->json([
+            return response()->jsonApi([
                 'success' => [
                     'message' => 'Contacts was merged successfully'
                 ]
             ]);
         } catch (Exception $e) {
-            return response()->json([
+            return response()->jsonApi([
                 'error' => [
                     'code' => $e->getCode(),
                     'message' => $e->getMessage()
@@ -657,11 +843,12 @@ class ContactController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function favorite($id)
+    public function favorite($id): JsonResponse
     {
         // Get object
         $contact = $this->getObject($id);
-        if(!$contact instanceof Contact){
+
+        if ($contact instanceof JsonApiResponse) {
             return $contact;
         }
 
@@ -685,37 +872,34 @@ class ContactController extends Controller
     }
 
     /**
-     * @return string[]
-     */
-    private function rules(): array
-    {
-        return [
-            'contacts' => 'required|array'
-        ];
-    }
-
-    /**
      * Contact's group not found
      *
      * @param $id
      *
      * @return mixed
      */
-    private function getObject($id){
+    private function getObject($id)
+    {
         try {
             return Contact::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
                 'type' => 'error',
-                'title' => "Get contact's group",
-                'message' => "Contact's group #{$id} not found"
+                'title' => "Get contact object",
+                'message' => "Contact with #{$id} not found"
             ], 404);
         }
     }
 
-    private function getImagesFromRemote($id)
+    /**
+     * @param $id
+     *
+     * @return array|null
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    private function getImagesFromRemote($id): array
     {
-        $images = [];
+        $images = null;
 
         $client = new Client(['base_uri' => env('FILES_MICROSERVICE_HOST')]);
 
@@ -723,7 +907,7 @@ class ContactController extends Controller
         $contact_image = json_decode($contact_image->getBody(), JSON_OBJECT_AS_ARRAY);
 
         foreach ($contact_image['data'] as $image) {
-            $images[] = $image['attributes']['path'];
+            $images = $image['attributes']['path'];
         }
 
         return $images;

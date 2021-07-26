@@ -22,16 +22,16 @@ class Category extends Model
      * @var string[]
      */
     protected $fillable = [
-        'name',
-        'user_id'
+        'parent_id',
+        'name'
     ];
 
     /**
      * @var string[]
      */
-//    protected $with = [
-//        'children',
-//    ];
+    protected $hidden = [
+        'parent_id'
+    ];
 
     /**
      * Reload model boot
@@ -68,8 +68,6 @@ class Category extends Model
      */
     public function scopeStructure($query)
     {
-        return $query->with([
-            'children'
-        ])->where('parent_id', '=', '0');
+        return $query->with('children')->where('parent_id', '0');
     }
 }

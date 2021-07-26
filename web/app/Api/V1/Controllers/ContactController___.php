@@ -3,11 +3,9 @@
 namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Contact;
 use Exception;
 use GraphAware\Neo4j\Client\ClientBuilder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * Class ContactController
@@ -89,7 +87,7 @@ class ContactController___ extends Controller
         $errors = $this->validation($request, $userID, $json, $deleteAbsent);
 
         if (count($errors) > 0)
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'error',
                 'title' => 'Data is not valid',
                 'message' => implode(', ', $errors)
@@ -98,13 +96,13 @@ class ContactController___ extends Controller
         $result = $this->save($userID, $json, $deleteAbsent);
 
         if ($result == 'Ok')
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'success',
                 'title' => 'Contacts are saved',
                 'message' => 'Contacts are saved'
             ], 200);
         else {
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'error',
                 'title' => 'Contacts are not saved',
                 'message' => $result
@@ -293,7 +291,7 @@ RETURN person";
         $errors = $this->validation($request, $userID, $json);
 
         if (count($errors) > 0)
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'error',
                 'title' => 'Data is not valid',
                 'message' => implode(', ', $errors)
@@ -316,13 +314,13 @@ RETURN person";
                 }
             }
 
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'success',
                 'title' => 'Contacts are deleted',
                 'message' => 'Contacts are deleted'
             ], 200);
         } catch (Exception $e) {
-            return response()->json([
+            return response()->jsonApi([
                 'status' => 'error',
                 'title' => 'Contacts are not saved',
                 'message' => $e->getMessage()

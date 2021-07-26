@@ -21,6 +21,7 @@ class Contact extends Model
     use OwnerTrait;
 
     public $type = '';
+
     public $images = [];
 
     /**
@@ -47,10 +48,23 @@ class Contact extends Model
         'is_favorite'
     ];
 
+    /**
+     * @var string[]
+     */
     protected $hidden = [
         'created_at',
         'updated_at'
     ];
+
+    /**
+     * @return string[]
+     */
+    public static function rules(): array
+    {
+        return [
+            'contacts' => 'required|array'
+        ];
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany

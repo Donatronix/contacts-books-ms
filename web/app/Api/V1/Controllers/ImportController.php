@@ -2,9 +2,9 @@
 
 namespace App\Api\V1\Controllers;
 
-use App\Services\Imports\Vcard;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
+use App\Services\Imports\Vcard;
 use Exception;
 use GraphAware\Neo4j\Client\ClientBuilder;
 use Illuminate\Http\Request;
@@ -89,7 +89,6 @@ class ImportController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse|mixed
      */
-
     public function create(Request $request)
     {
         $cards = (new Vcard())->readData($request->vcards);
@@ -186,14 +185,14 @@ class ImportController extends Controller
                 $contacts[] = $contact;
             }
         } catch (Exception $e) {
-            return response()->json([
+            return response()->jsonApi([
                 'success' => false,
                 'error' => $e->getMessage()
             ], 400);
         }
 
         // Return response
-        return response()->json([
+        return response()->jsonApi([
             'success' => true,
             'data' => $contacts
         ], 200);
@@ -261,7 +260,7 @@ class ImportController extends Controller
         $user_id = (int)Auth::user()->getAuthIdentifier();
 
         // Return response
-        return response()->json([
+        return response()->jsonApi([
             'success' => true,
             'data' => $contacts
         ], 200);

@@ -24,14 +24,14 @@ Route::group(
             }
         });
 
-        $router->get('contacts', '\App\Http\Controllers\PagesController@index');
+        $router->get('contacts', 'PagesController@index');
 
         $router->get('contacts/contacts/store', function () {
-            return \App\Http\Controllers\TestController::viewMake("tests.contacts.store");
+            return TestController::viewMake("tests.contacts.store");
         });
 
         $router->get('contacts/contacts/destroy', function () {
-            return \App\Http\Controllers\TestController::viewMake("tests.contacts.destroy");
+            return TestController::viewMake("tests.contacts.destroy");
         });
     }
 );

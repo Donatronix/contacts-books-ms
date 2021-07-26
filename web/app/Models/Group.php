@@ -23,6 +23,16 @@ class Group extends Model
     ];
 
     /**
+     * @return string[]
+     */
+    public static function rules(): array
+    {
+        return [
+            'name' => 'required|min:3|string'
+        ];
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function contacts(): BelongsToMany

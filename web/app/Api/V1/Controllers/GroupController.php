@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Group;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -137,9 +138,9 @@ class GroupController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        $this->validate($request, $this->rules());
+        $this->validate($request, Group::rules());
 
         try {
             $group = Group::create([
@@ -152,7 +153,7 @@ class GroupController extends Controller
                 'title' => 'Group creating',
                 'message' => "Group {$group->name} successfully added"
             ], 200);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return response()->jsonApi([
                 'status' => 'error',
                 'title' => 'Group creating',
@@ -169,7 +170,22 @@ class GroupController extends Controller
      *     summary="Update user's group data",
      *     description="Update user's group data",
      *     tags={"Contact Groups"},
-     *     security={{"bearerAuth":{}}},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
      *
      *     @OA\Parameter(
      *         name="id",
@@ -219,16 +235,20 @@ class GroupController extends Controller
      *     )
      * )
      *
+     * @param \Illuminate\Http\Request $request
+     * @param                          $id
+     *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
      */
-    public function update(Request $request, $id): \Illuminate\Http\JsonResponse
+    public function update(Request $request, $id): JsonResponse
     {
         // Validate input
-        $this->validate($request, $this->rules());
+        $this->validate($request, Group::rules());
 
         // Get payment order model
         $group = $this->getObject($id);
-        if(!$group instanceof Group){
+        if (!$group instanceof Group) {
             return $group;
         }
 
@@ -241,12 +261,32 @@ class GroupController extends Controller
                 'title' => 'Group updating',
                 'message' => "Group {$group->name} successfully updated"
             ], 200);
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return response()->jsonApi([
                 'status' => 'error',
                 'title' => 'Group updating',
                 'message' => $e->getMessage()
             ], 400);
+        }
+    }
+
+    /**
+     * Contact's group not found
+     *
+     * @param $id
+     *
+     * @return mixed
+     */
+    private function getObject($id)
+    {
+        try {
+            return Group::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->jsonApi([
+                'type' => 'error',
+                'title' => "Get contact's group",
+                'message' => "Contact's group #{$id} not found"
+            ], 404);
         }
     }
 
@@ -306,11 +346,11 @@ class GroupController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id): \Illuminate\Http\JsonResponse
+    public function destroy($id): JsonResponse
     {
         // Check group model
         $group = $this->getObject($id);
-        if(!$group instanceof Group){
+        if (!$group instanceof Group) {
             return $group;
         }
 
@@ -328,35 +368,6 @@ class GroupController extends Controller
                 'title' => "Delete of contact's group",
                 'message' => $e->getMessage()
             ], 400);
-        }
-    }
-
-    /**
-     * @return string[]
-     */
-    private function rules(): array
-    {
-        return [
-            'name' => 'required|min:3|string'
-        ];
-    }
-
-    /**
-     * Contact's group not found
-     *
-     * @param $id
-     *
-     * @return mixed
-     */
-    private function getObject($id){
-        try {
-            return Group::findOrFail($id);
-        } catch (ModelNotFoundException $e) {
-            return response()->jsonApi([
-                'type' => 'error',
-                'title' => "Get contact's group",
-                'message' => "Contact's group #{$id} not found"
-            ], 404);
         }
     }
 }
