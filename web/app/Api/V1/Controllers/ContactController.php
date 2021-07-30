@@ -71,8 +71,7 @@ class ContactController extends Controller
      *         description="Search keywords",
      *         @OA\Schema(
      *             type="string"
-     *         ),
-     *         style="form"
+     *         )
      *     ),
      *     @OA\Parameter(
      *         name="isFavorite",
@@ -94,6 +93,14 @@ class ContactController extends Controller
      *         name="byLetter",
      *         in="query",
      *         description="Show contacts by letter",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="groupId",
+     *         in="query",
+     *         description="Get contacts by group id",
      *         @OA\Schema(
      *             type="string"
      *         )
@@ -141,17 +148,23 @@ class ContactController extends Controller
     public function index(Request $request)
     {
         try {
-            $contacts = Contact::with([
-                'phones',
-                'emails',
-                'groups',
-            ])
+            $contacts = Contact::byOwner()
+                ->with([
+                    'phones' => function ($q) use ($request){
+                        return $q->where('is_default', true);
+                    },
+                    'emails' => function ($q) use ($request){
+                        return $q->where('is_default', true);
+                    },
+                    'groups',
+                ])
                 ->when($request->has('search'), function ($q) use ($request) {
                     $search = $request->get('search');
 
                     return $q->where('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%")
                         ->orWhere('note', 'like', "%{$search}%")
+
                         ->orWhereHas('emails', function ($q) use ($search) {
                             return $q->where('email', 'like', "%{$search}%");
                         })
@@ -159,11 +172,17 @@ class ContactController extends Controller
                             return $q->where('phone', 'like', "%{$search}%");
                         });
                 })
+
                 ->when($request->has('isFavorite'), function ($q) use ($request) {
                     return $q->where('is_favorite', $request->get('isFavorite'));
                 })
                 ->when($request->has('isRecently'), function ($q) use ($request) {
                     return $q->sortBy('created_at', 'desc');
+                })
+                ->when($request->has('groupId'), function ($q) use ($request) {
+                    return $q->whereHas('groups', function ($q) use ($request) {
+                        return $q->where('group_id', $request->get('groupId'));
+                    });
                 })
                 ->when($request->has('byLetter'), function ($q) use ($request) {
                     $letter = $request->get('byLetter', '');
@@ -171,22 +190,57 @@ class ContactController extends Controller
                     return $q->where('first_name', 'like', "{$letter}%")
                         ->orWhere('last_name', 'like', "{$letter}%");
                 })
-                ->byOwner()
-                ->paginate($request->get('limit', 10));
+                ->when($request->has('sort'), function ($q) use ($request) {
+                    $sort = request()->get('sort', null);
 
+//                    if($sort['by'] === 'email'){
+//                        return $q->whereHas('emails', function ($q) use ($sort) {
+//                            return $q->orderBy('emails.email', $sort['order'] ?? 'asc');
+//                        });
+//                    }
+
+//                    if($sort['by'] === 'phone'){
+//                        return $q->whereHas('emails', function ($q) use ($sort) {
+//                            return $q->orderBy($sort['by'], $sort['order'] ?? 'asc');
+//                        });
+//                    }
+//
+//                    return $q->when((!is_null($sort) && $sort['by'] === 'email'), function ($q) use ($sort) {
+//                        return $q->join('emails', 'users.role_id', '=', 'roles.id')->orderBy('emails.email', $sort['order'] ?? 'asc');
+//                    });
+                })
+                ->paginate($request->get('limit', 1000));
+
+            // Transform collection objects
             $contacts->map(function ($object) {
                 $object->setAttribute('avatar', $this->getImagesFromRemote($object->id));
+
+                $email = $object->emails->first();
+                $object->setAttribute('email', $email ? $email->email : null);
+
+                $phone = $object->phones->first();
+                $object->setAttribute('phone', $phone ? sprintf('%s (%s)', $phone->phone, $phone->type) : null);
+
+                unset($object->phones, $object->emails);
             });
 
             // Get first letters
-            $letters = Contact::selectRaw('substr(first_name,1,1) as letter')->distinct()->orderBy('letter')->get()->pluck('letter')->toArray();
+            $letters = Contact::selectRaw('substr(first_name,1,1) as letter')
+                ->when($request->has('isFavorite'), function ($q) use ($request) {
+                    return $q->where('is_favorite', $request->get('isFavorite'));
+                })
+                ->distinct()
+                ->orderBy('letter')
+                ->get()
+                ->pluck('letter')
+                ->toArray();
             $letters = array_values(array_unique($letters, SORT_LOCALE_STRING));
 
             // Return response
             return response()->jsonApi(array_merge(['letters' => $letters], $contacts->toArray()), 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'error',
+                'type' => 'danger',
                 'title' => "Get contacts list",
                 'message' => $e->getMessage()
             ], 400);
@@ -278,7 +332,7 @@ class ContactController extends Controller
                     foreach ($item['phones'] as $x => $phone) {
                         ContactPhone::create([
                             'phone' => $phone,
-                            'phone_type' => $item['phone_type'],
+                            'type' => $item['type'],
                             'is_default' => $x === 0,
                             'contact_id' => $contact->id
                         ]);
@@ -290,7 +344,7 @@ class ContactController extends Controller
                     foreach ($item['emails'] as $x => $email) {
                         ContactEmail::create([
                             'email' => $email,
-                            'email_type' => $item['email_type'],
+                            'type' => $item['type'],
                             'is_default' => $x === 0,
                             'contact_id' => $contact->id
                         ]);
@@ -360,13 +414,13 @@ class ContactController extends Controller
             }
 
             return response()->jsonApi([
-                'status' => 'success',
+                'type' => 'success',
                 'title' => "Upload user's contacts",
                 'message' => "User's contacts successfully saved"
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => "Upload user's contacts",
                 'message' => $e->getMessage()
             ], 400);
@@ -453,7 +507,7 @@ class ContactController extends Controller
             return response()->jsonApi($contact, 200);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'error',
+                'type' => 'danger',
                 'title' => 'Contact not found',
                 'message' => "Contact with #{$id} not found: {$e}"
             ], 404);
@@ -622,13 +676,13 @@ class ContactController extends Controller
             $contact->delete();
 
             return response()->jsonApi([
-                'status' => 'success',
+                'type' => 'success',
                 'title' => 'Contact are deleted',
                 'message' => 'Contact are deleted'
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => 'Contact are not saved',
                 'message' => $e->getMessage()
             ], 400);
@@ -839,13 +893,13 @@ class ContactController extends Controller
             ]);
 
             return response()->jsonApi([
-                'status' => 'success',
+                'type' => 'success',
                 'title' => 'Favorites list',
                 'message' => sprintf("%s was successfully %s favorites", $contact->display_name, $contact->is_favorite ? 'added to' : 'removed from')
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'error',
+                'type' => 'danger',
                 'title' => "Favorites list",
                 'message' => "Can't change status for contacts {$contact->display_name}"
             ], 404);
@@ -853,12 +907,12 @@ class ContactController extends Controller
     }
 
     /**
-     * Import user contacts
+     * Batch Import user contacts using saved file (Google CSV, Outlook CSV, vCard, etc)
      *
      * @OA\Post(
-     *     path="/v1/contacts/import",
-     *     summary="Import contacts from saved files (Google CSV, Outlook CSV, vCard, etc)",
-     *     description="Import contacts from saved files (Google CSV, Outlook CSV, vCard, etc)",
+     *     path="/v1/contacts/import/file",
+     *     summary="Batch Import user contacts using saved file (Google CSV, Outlook CSV, vCard, etc)",
+     *     description="Batch Import user contacts using saved file (Google CSV, Outlook CSV, vCard, etc)",
      *     tags={"Contacts"},
      *
      *     security={{
@@ -882,9 +936,15 @@ class ContactController extends Controller
      *             @OA\Schema(
      *                 type="object",
      *                 @OA\Property(
-     *                     type="file",
      *                     property="contacts",
+     *                     type="file",
      *                     description="Selected media files"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="group_id",
+     *                     type="string",
+     *                     description="Input Group ID",
+     *                     example="3d9319c9-59ee-3efc-900f-eec98811c96b"
      *                 ),
      *             )
      *          )
@@ -927,7 +987,7 @@ class ContactController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function import(Request $request)
+    public function importFile(Request $request)
     {
         $user_id = (int)Auth::user()->getAuthIdentifier();
 
@@ -949,6 +1009,160 @@ class ContactController extends Controller
     }
 
     /**
+     * Batch Import contacts using json data
+     *
+     * @OA\Post(
+     *     path="/v1/contacts/import/json",
+     *     summary="Batch import user's contacts using json data",
+     *     description="Batch save user's contacts using json data",
+     *     tags={"Contacts"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
+     *
+     *     @OA\Parameter(
+     *         name="id",
+     *         description="user id",
+     *         required=true,
+     *         in="query",
+     *         @OA\Schema (
+     *             type="integer"
+     *         )
+     *     ),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             type="array",
+     *
+     *             @OA\Items(
+     *                 type="object",
+     *
+     *                 @OA\Property(
+     *                     property="display_name",
+     *                     type="string",
+     *                     description="Display name data in string",
+     *                     example=""
+     *                 ),
+     *                 @OA\Property(
+     *                     property="avatar",
+     *                     type="string",
+     *                     description="Photo body in base64 format",
+     *                     example=""
+     *                 ),
+     *                 @OA\Property(
+     *                     property="phones",
+     *                     type="array",
+     *                     description="Contacts phones / Msisdns data in JSON",
+     *
+     *                     @OA\Items(
+     *                         type="string",
+     *                         example="+3521234562545"
+     *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="emails",
+     *                     type="array",
+     *                     description="Contacts emails",
+     *
+     *                     @OA\Items(
+     *                         type="string",
+     *                         example="client1@client.com"
+     *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="is_shared",
+     *                     type="boolean",
+     *                     description="Need shared contacts data (1, 0, true, false)",
+     *                     example="false"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response="200",
+     *         description="Success send data"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid request"
+     *     ),
+     *     @OA\Response(
+     *          response="404",
+     *          description="Not found",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(
+     *                  property="message",
+     *                  type="string",
+     *                  description="Error message"
+     *              )
+     *          )
+     *     )
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return mixed
+     */
+    public function importJson(Request $request)
+    {
+        try {
+            $json = json_decode($request, true);
+
+            $result = [];
+            foreach ($json as $k => $item) {
+                if (isset($json['display_name'])) {
+                    $result[$k]['name_param'] = $json['display_name'];
+                }
+
+                if (isset($json['msisdns'])) {
+                    $result[$k]['phone'] = $json['msisdns'];
+                }
+
+                if (isset($json['emails'])) {
+                    $result[$k]['email'] = $json['emails'];
+                }
+
+                if (isset($json['photo_uri'])) {
+                    $result[$k]['photo'] = $json['photo_uri'];
+                }
+            }
+
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => "Get data was success",
+                'message' => "Get data from remote server was successfully"
+            ], 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'status' => 'danger',
+                'title' => "Get data from remote server was unsuccessful",
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
      * Contact's group not found
      *
      * @param $id
@@ -961,7 +1175,7 @@ class ContactController extends Controller
             return Contact::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'error',
+                'type' => 'danger',
                 'title' => "Get contact object",
                 'message' => "Contact with #{$id} not found"
             ], 404);
@@ -1000,40 +1214,5 @@ class ContactController extends Controller
         }
 
         return $images;
-    }
-
-    public function remote(Request $request)
-    {
-        try {
-            $json = json_decode($request, true);
-            $result = [];
-
-            foreach ($json as $k => $item) {
-                if (isset($json['display_name'])) {
-                    $result[$k]['name_param'] = $json['display_name'];
-                }
-                if (isset($json['msisdns'])) {
-                    $result[$k]['phone'] = $json['msisdns'];
-                }
-                if (isset($json['emails'])) {
-                    $result[$k]['email'] = $json['emails'];
-                }
-                if (isset($json['photo_uri'])) {
-                    $result[$k]['photo'] = $json['photo_uri'];
-                }
-            }
-
-            return response()->jsonApi([
-                'status' => 'success',
-                'title' => "Get data was success",
-                'message' => "Get data from remote server was successfully"
-            ], 200);
-        } catch (Exception $e) {
-            return response()->jsonApi([
-                'status' => 'danger',
-                'title' => "Get data from remote server was unsuccessful",
-                'message' => $e->getMessage()
-            ], 400);
-        }
     }
 }

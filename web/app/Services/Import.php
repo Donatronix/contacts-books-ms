@@ -251,7 +251,7 @@ class Import
             $this->insertToOther($data_arr, $data_contact_id);
 
             return response()->jsonApi([
-                'status' => 'success',
+                'type' => 'success',
                 'title' => 'Create was success',
                 'message' => 'The operation to add data to the database was successful',
             ], 200);
@@ -291,7 +291,7 @@ class Import
                     }
 
                     $data->email = $param['email'][$key]['value'];
-                    $data->email_type = $param['email'][$key]['type'];
+                    $data->type = $param['email'][$key]['type'];
                     $data->contact_id = $info_id[$k];
                     $data->save();
                 }
@@ -341,7 +341,7 @@ class Import
                     }
 
                     $data->phone = str_replace(' ', '', $param['phone'][$key]['value']);
-                    $data->phone_type = $param['phone'][$key]['type'];
+                    $data->type = $param['phone'][$key]['type'];
                     $data->contact_id = $info_id[$k];
                     $data->save();
                 }

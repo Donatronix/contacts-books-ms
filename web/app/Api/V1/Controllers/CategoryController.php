@@ -67,7 +67,7 @@ class CategoryController extends Controller
             return response()->jsonApi($categories->toArray(), 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'error',
+                'type' => 'danger',
                 'title' => "Get categories list",
                 'message' => $e->getMessage()
             ], 400);

@@ -21,26 +21,44 @@ class ContactEmail extends Model
     /**
      * @var string[]
      */
+    protected $casts = [
+        'is_default' => 'boolean'
+    ];
+
+    /**
+     * @var string[]
+     */
     protected $fillable = [
         'email',
-        'email_type',
-        'is_default',
-        'contact_id'
+        'type',
+        'is_default'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'pivot'
     ];
 
     /**
      * @return array[]
      */
-    private function rules()
+    public static function validationRules(): array
     {
         return [
             'email' => [
                 'required',
+                'max:200',
                 'regex:/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}/',
-                Rule::unique('contact_emails')->where(function ($query) {
-                    return $query->where('contact_id', $this->request->get('contact_id'));
+                Rule::unique('contact_emails')->where(function ($q) {
+                    return $q->where('contact_id', request()->get('contact_id'));
                 })
-            ]
+            ],
+            'type' => 'string|max:30',
+            'is_default' => 'boolean',
         ];
     }
 

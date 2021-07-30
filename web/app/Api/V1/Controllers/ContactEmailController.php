@@ -5,7 +5,9 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\ContactEmail;
+use App\Models\ContactPhone;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +23,7 @@ class ContactEmailController extends Controller
      *
      * @OA\Post(
      *     path="/v1/contacts/emails",
-     *     summary="Add contact email",
+     *     summary="Save a new email for current contact",
      *     tags={"Contact Emails"},
      *
      *     security={{
@@ -41,15 +43,10 @@ class ContactEmailController extends Controller
      *     },
      *
      *     @OA\RequestBody(
+     *         required=true,
      *         @OA\JsonContent(
      *             type="object",
      *
-     *             @OA\Property(
-     *                 property="contact_id",
-     *                 type="integer",
-     *                 description="Contact ID",
-     *                 example="2"
-     *             ),
      *             @OA\Property(
      *                 property="email",
      *                 type="string",
@@ -57,91 +54,101 @@ class ContactEmailController extends Controller
      *                 example="test@tes.com"
      *             ),
      *             @OA\Property(
+     *                 property="type",
+     *                 type="string",
+     *                 description="Email type (home, work, cell, etc)",
+     *                 enum={"home", "work", "cell", "other", "main","googlevoice"}
+     *             ),
+     *             @OA\Property(
      *                 property="is_default",
      *                 type="boolean",
-     *                 description="Communication prefernce",
+     *                 description="Email by default. Accept 1, 0, true, false",
      *                 example="true"
+     *             ),
+     *             @OA\Property(
+     *                 property="contact_id",
+     *                 type="string",
+     *                 description="Contact ID",
+     *                 example="9406d5e9-2273-4807-8761-d5397205112b3"
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *          response="200",
      *          description="Successfully save"
      *     ),
      *     @OA\Response(
      *         response="500",
-     *         description="Unknown error",
-     *         @OA\JsonContent(
-     *             type="object",
-     *
-     *             @OA\Property(
-     *                 property="error",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="code",
-     *                     type="string",
-     *                     description="code of error"
-     *                 ),
-     *                 @OA\Property(
-     *                     property="message",
-     *                     type="string",
-     *                     description="error message"
-     *                 )
-     *             )
-     *         )
+     *         description="Unknown error"
      *     )
      * )
      *
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
-        $contact = Contact::find($request->get('contact_id', 0));
+        // Validate input
+        $this->validate($request, ContactEmail::validationRules());
 
-        if (!$contact) {
+        $contactId = $request->get('contact_id', null);
+        try {
+            $contact = Contact::findOrFail($contactId);
+        } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'error' => Config::get('constants.errors.ContactNotFound')
+                'type' => 'danger',
+                'title' => "Get contact object",
+                'message' => "Contact with id #{$contactId} not found: " . $e->getMessage(),
+                'data' => []
             ], 404);
         }
 
+        // Try to add new email
         try {
-            $is_default = $request->get('is_default', null);
-
             // Reset is_default for other emails
-            if ($is_default) {
-                foreach ($contact->emails as $email) {
-                    $email->is_default = false;
-                    $email->save();
+            if ($request->boolean('is_default')) {
+                foreach ($contact->emails as $oldEmail) {
+                    $oldEmail->is_default = false;
+                    $oldEmail->save();
                 }
             }
 
             // Create new
             $email = new ContactEmail();
+            $email->fill($request->all());
             $email->contact()->associate($contact);
-            $email->email = $request->get('email');
-            $email->is_default = $is_default;
             $email->save();
 
-            return response()->jsonApi($email);
+            // Remove contact object from response
+            unset($email->contact);
+
+            // Return response to client
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => 'Adding new email',
+                'message' => "Contact's email {$email->email} successfully added",
+                'data' => $email->toArray()
+            ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'error' => [
-                    'code' => $e->getCode(),
-                    'message' => $e->getMessage()
-                ]
-            ], 500);
+                'type' => 'danger',
+                'title' => 'Adding new email',
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 400);
         }
     }
 
     /**
-     * Update email of contact
+     * Update email for current contact
      *
      * @OA\Put(
      *     path="/v1/contacts/emails/{id}",
-     *     summary="Update email of contact",
-     *     description="Can send one parameter",
+     *     summary="Update email for current contact",
+     *     description="Update email for current contact",
      *     tags={"Contact Emails"},
      *
      *     security={{
@@ -169,7 +176,9 @@ class ContactEmailController extends Controller
      *             type="string"
      *         )
      *     ),
+     *
      *     @OA\RequestBody(
+     *         required=true,
      *         @OA\JsonContent(
      *             type="object",
      *
@@ -180,16 +189,23 @@ class ContactEmailController extends Controller
      *                 example="test@tes.com"
      *             ),
      *             @OA\Property(
+     *                 property="type",
+     *                 type="string",
+     *                 description="Email type (home, work, cell, etc)",
+     *                 enum={"home", "work", "cell", "other", "main","googlevoice"}
+     *             ),
+     *             @OA\Property(
      *                 property="is_default",
      *                 type="boolean",
-     *                 description="Communication prefernce",
+     *                 description="Email by default. Accept 1, 0, true, false",
      *                 example="true"
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
-     *          response="200",
-     *          description="Successfully save"
+     *         response="200",
+     *         description="Successfully save"
      *     ),
      *     @OA\Response(
      *         response="500",
@@ -218,46 +234,50 @@ class ContactEmailController extends Controller
      * @param                          $id
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function update(Request $request, $id): \Illuminate\Http\JsonResponse
     {
-        $email = ContactEmail::with(['contact'])->where('id', $id)->first();
+        // Validate input
+        $this->validate($request, ContactEmail::validationRules());
 
-        if (!$email) {
-            return response()->jsonApi([
-                'error' => Config::get('constants.errors.ContactEmailNotFound')
-            ], 404);
+        // Read contact group model
+        $email = $this->getObject($id);
+        if (is_a($email, 'Sumra\JsonApi\JsonApiResponse')) {
+            return $email;
         }
 
+        // Try update email data
         try {
-            if ($request->has('is_default')) {
-                $is_default = $request->get('is_default', 'false');
-
-                // Reset is_default for other emails
-                if ($is_default && $email->contact) {
-                    foreach ($email->contact->emails as $old_email) {
-                        $old_email->is_default = false;
-                        $old_email->save();
-                    }
+            // Reset is_default for other emails
+            if ($request->boolean('is_default') && $email->contact) {
+                foreach ($email->contact->emails as $oldEmail) {
+                    $oldEmail->is_default = false;
+                    $oldEmail->save();
                 }
-
-                $email->is_default = $is_default;
             }
 
-            if ($request->has('email')) {
-                $email->email = $request->get('email');
-            }
-
+            // Update data
+            $email->fill($request->all());
             $email->save();
 
-            return response()->jsonApi($email);
+            // Remove contact object from response
+            unset($email->contact);
+
+            // Return response to client
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => 'Changing contact email',
+                'message' => "Contact email {$email->email} successfully updated",
+                'data' => $email->toArray()
+            ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'error' => [
-                    'code' => $e->getCode(),
-                    'message' => $e->getMessage()
-                ]
-            ], 500);
+                'type' => 'danger',
+                'title' => 'Changing contact email',
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 400);
         }
     }
 
@@ -266,7 +286,8 @@ class ContactEmailController extends Controller
      *
      * @OA\Delete(
      *     path="/v1/contacts/emails/{id}",
-     *     summary="Delete contact email",
+     *     summary="Delete contact email from storage",
+     *     description="Delete contact email from storage",
      *     tags={"Contact Emails"},
      *
      *     security={{
@@ -288,80 +309,72 @@ class ContactEmailController extends Controller
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Email Id",
      *         required=true,
+     *         description="Email Id",
      *         @OA\Schema(
      *             type="string"
      *         )
      *     ),
      *     @OA\Response(
      *         response="200",
-     *         description="Successfully delete",
-     *
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(
-     *                 type="object",
-     *                 property="success",
-     *                 @OA\Property(
-     *                     property="message",
-     *                     type="string",
-     *                     example="Contact email with id: 123 was deleted"
-     *                 )
-     *             )
-     *         )
+     *         description="Successfully delete"
      *     ),
      *     @OA\Response(
      *         response="404",
-     *         description="Contact email not found",
-     *
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(
-     *                 property="error",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="code",
-     *                     type="string",
-     *                     description="code of error"
-     *                 ),
-     *                 @OA\Property(
-     *                     property="message",
-     *                     type="string",
-     *                     description="error message"
-     *                 )
-     *             )
-     *         )
+     *         description="Contact email not found"
      *     )
      * )
      *
      * @param $id
      *
-     * @return mixed
+     * @return mixed|\Sumra\JsonApi\JsonApiResponse
      */
     public function destroy($id)
     {
-        $email = ContactEmail::find($id);
-
-        if (!$email) {
-            return response()->jsonApi([
-                'error' => Config::get('constants.errors.ContactEmailNotFound')
-            ], 404);
+        // Read contact group model
+        $phone = $this->getObject($id);
+        if (is_a($phone, 'Sumra\JsonApi\JsonApiResponse')) {
+            return $phone;
         }
-        $email->delete();
 
-        return response()->jsonApi([
-            'success' => [
-                'message' => 'Contact\'s email with id: ' . $id . ' was deleted'
-            ]
-        ]);
+        // Try to delete email
+        try {
+            $phone->delete();
+
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => "Delete of contact's email",
+                'message' => 'Email of contacts is successfully deleted',
+                'data' => []
+            ], 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'type' => 'danger',
+                'title' => "Delete of contact's email",
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 400);
+        }
     }
 
     /**
+     * Get contact's email object
+     *
      * @param $id
+     *
+     * @return mixed
      */
     private function getObject($id)
     {
-
+        try {
+            return ContactEmail::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->jsonApi([
+                'type' => 'danger',
+                'title' => "Get contact's email",
+                'message' => "Contact's email with id #{$id} not found",
+                'data' => []
+            ], 404);
+        }
     }
 }

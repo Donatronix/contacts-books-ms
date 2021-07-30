@@ -5,7 +5,9 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\ContactPhone;
+use App\Models\Group;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -17,11 +19,11 @@ use Illuminate\Validation\Rule;
 class ContactPhoneController extends Controller
 {
     /**
-     * Store a newly contact phone in storage.
+     * Save a new phone number for current contact
      *
      * @OA\Post(
      *     path="/v1/contacts/phones",
-     *     summary="Add contact phone",
+     *     summary="Save a new phone number for current contact",
      *     tags={"Contact Phones"},
      *
      *     security={{
@@ -41,99 +43,112 @@ class ContactPhoneController extends Controller
      *     },
      *
      *     @OA\RequestBody(
+     *         required=true,
      *         @OA\JsonContent(
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="contact_id",
-     *                 type="integer",
-     *                 description="contact ID",
-     *                 example="2"
-     *             ),
-     *             @OA\Property(
      *                 property="phone",
      *                 type="string",
-     *                 description="Phone of contact",
+     *                 description="Phone number of contact",
      *                 example="(555)-777-1234"
      *             ),
      *             @OA\Property(
-     *                 property="is_default",
+     *                 property="type",
      *                 type="string",
-     *                 description="Phone is_default (text, voice or nothing)",
-     *                 enum={"text","voice",""}
+     *                 description="Phone type (home, work, cell, etc)",
+     *                 enum={"home", "work", "cell", "other", "main", "homefax", "workfax", "googlevoice", "pager"}
+     *             ),
+     *             @OA\Property(
+     *                 property="is_default",
+     *                 type="boolean",
+     *                 description="Phone by default. Accept 1, 0, true, false",
+     *                 example="false"
+     *             ),
+     *             @OA\Property(
+     *                 property="contact_id",
+     *                 type="string",
+     *                 description="Contact ID",
+     *                 example="9406d5e9-2273-4807-8761-d5397205112b3"
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *          response="200",
      *          description="Successfully save"
      *     ),
      *     @OA\Response(
      *         response="500",
-     *         description="Unknown error",
-     *         @OA\JsonContent(
-     *             type="object",
-     *
-     *             @OA\Property(
-     *                 property="error",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="code",
-     *                     type="string",
-     *                     description="code of error"
-     *                 ),
-     *                 @OA\Property(
-     *                     property="message",
-     *                     type="string",
-     *                     description="error message"
-     *                 )
-     *             )
-     *         )
+     *         description="Unknown error"
      *     )
      * )
      *
      * @param \Illuminate\Http\Request $request
      *
      * @return mixed
+     * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
-        $contact = Contact::find($request->get('contact_id', 0));
+        // Validate input
+        $this->validate($request, ContactPhone::validationRules());
 
-        if (!$contact) {
+        $contactId = $request->get('contact_id', null);
+        try {
+            $contact = Contact::findOrFail($contactId);
+        } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'error' => Config::get('constants.errors.contactNotFound')
+                'type' => 'danger',
+                'title' => "Get contact object",
+                'message' => "Contact with id #{$contactId} not found: " . $e->getMessage(),
+                'data' => []
             ], 404);
         }
 
+        // Try to add new phone number
         try {
+            // Reset is_default for other emails
+            if ($request->boolean('is_default')) {
+                foreach ($contact->phones as $oldPhone) {
+                    $oldPhone->is_default = false;
+                    $oldPhone->save();
+                }
+            }
+
+            // Create new
             $phone = new ContactPhone();
+            $phone->fill($request->all());
             $phone->contact()->associate($contact);
-
-            $phone->phone = $request->get('phone');
-
-            $phone->is_default = $request->get('is_default', false);
-
             $phone->save();
 
-            return response()->jsonApi($phone);
+            // Remove contact object from response
+            unset($phone->contact);
+
+            // Return response to client
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => 'Adding new phone number',
+                'message' => "Contact's phone number {$phone->phone} successfully added",
+                'data' => $phone->toArray()
+            ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'error' => [
-                    'code' => $e->getCode(),
-                    'message' => $e->getMessage()
-                ]
-            ], 500);
+                'type' => 'danger',
+                'title' => 'Adding new phone number',
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 400);
         }
     }
 
     /**
-     * Update phone of contact
+     * Update phone number for current contact
      *
      * @OA\Put(
      *     path="/v1/contacts/phones/{id}",
-     *     summary="Update phone of contact",
-     *     description="Can send one parameter",
+     *     summary="Update phone number for current contact",
+     *     description="Update phone number for current contact",
      *     tags={"Contact Phones"},
      *
      *     security={{
@@ -155,33 +170,42 @@ class ContactPhoneController extends Controller
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Phone Id",
+     *         description="Phone number Id",
      *         required=true,
      *         @OA\Schema(
      *             type="string"
      *         )
      *     ),
+     *
      *     @OA\RequestBody(
+     *         required=true,
      *         @OA\JsonContent(
      *             type="object",
      *
      *             @OA\Property(
      *                 property="phone",
      *                 type="string",
-     *                 description="Phone of contact",
+     *                 description="Phone number of contact",
      *                 example="(555)-777-1234"
      *             ),
      *             @OA\Property(
-     *                 property="is_default",
+     *                 property="type",
      *                 type="string",
-     *                 description="Phone is_default (text, voice or nothing)",
-     *                 enum={"text","voice",""}
+     *                 description="Phone type (home, work, cell, etc)",
+     *                 enum={"home", "work", "cell", "other", "main", "homefax", "workfax", "googlevoice", "pager"}
+     *             ),
+     *             @OA\Property(
+     *                 property="is_default",
+     *                 type="boolean",
+     *                 description="Phone by default. Accept 1, 0, true, false",
+     *                 example="false"
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
-     *          response="200",
-     *          description="Successfully save"
+     *         response="200",
+     *         description="Successfully save"
      *     ),
      *     @OA\Response(
      *         response="500",
@@ -210,43 +234,60 @@ class ContactPhoneController extends Controller
      * @param                          $id
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function update(Request $request, $id): \Illuminate\Http\JsonResponse
     {
-        $phone = ContactPhone::find($id);
+        // Validate input
+        $this->validate($request, ContactPhone::validationRules());
 
-        if (!$phone) {
-            return response()->jsonApi([
-                'error' => Config::get('constants.errors.ContactPhoneNotFound')
-            ], 404);
+        // Read contact group model
+        $phone = $this->getObject($id);
+        if (is_a($phone, 'Sumra\JsonApi\JsonApiResponse')) {
+            return $phone;
         }
 
+        // Try update phone number data
         try {
-            if ($request->has('phone')) {
-                $phone->phone = $request->get('phone');
+            // Reset is_default for other phones
+            if ($request->boolean('is_default') && $phone->contact) {
+                foreach ($phone->contact->phones as $oldPhone) {
+                    $oldPhone->is_default = false;
+                    $oldPhone->save();
+                }
             }
 
-            $phone->is_default = $request->get('is_default', false);
-
+            // Update data
+            $phone->fill($request->all());
             $phone->save();
 
-            return response()->jsonApi($phone);
+            // Remove contact object from response
+            unset($phone->contact);
+
+            // Return response to client
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => 'Changing phone number',
+                'message' => "Phone number {$phone->phone} successfully updated",
+                'data' => $phone->toArray()
+            ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'error' => [
-                    'code' => $e->getCode(),
-                    'message' => $e->getMessage()
-                ]
-            ], 500);
+                'type' => 'danger',
+                'title' => 'Change a contact group',
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 400);
         }
     }
 
     /**
-     * Delete contact phone from storage.
+     * Delete contact phone number from storage
      *
      * @OA\Delete(
      *     path="/v1/contacts/phones/{id}",
-     *     summary="Delete contact phone",
+     *     summary="Delete contact phone number from storage",
+     *     description="Delete contact phone number from storage",
      *     tags={"Contact Phones"},
      *
      *     security={{
@@ -268,72 +309,72 @@ class ContactPhoneController extends Controller
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Phone Id",
      *         required=true,
+     *         description="Phone number Id",
      *         @OA\Schema(
      *             type="string"
      *         )
      *     ),
      *     @OA\Response(
      *         response="200",
-     *         description="Successfully delete",
-     *
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(
-     *                 type="object",
-     *                 property="success",
-     *                 @OA\Property(
-     *                     property="message",
-     *                     type="string",
-     *                     example="contact's phone with id: 123 was deleted"
-     *                 )
-     *             )
-     *         )
+     *         description="Successfully delete"
      *     ),
      *     @OA\Response(
      *         response="404",
-     *         description="contact phone not found",
-     *
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(
-     *                 property="error",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="code",
-     *                     type="string",
-     *                     description="code of error"
-     *                 ),
-     *                 @OA\Property(
-     *                     property="message",
-     *                     type="string",
-     *                     description="error message"
-     *                 )
-     *             )
-     *         )
+     *         description="Contact phone not found"
      *     )
      * )
      *
      * @param $id
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return mixed|\Sumra\JsonApi\JsonApiResponse
      */
-    public function destroy($id): \Illuminate\Http\JsonResponse
+    public function destroy($id)
     {
-        $phone = ContactPhone::find($id);
+        // Read contact group model
+        $phone = $this->getObject($id);
+        if (is_a($phone, 'Sumra\JsonApi\JsonApiResponse')) {
+            return $phone;
+        }
 
-        if (!$phone) {
+        // Try to delete phome
+        try {
+            $phone->delete();
+
             return response()->jsonApi([
-                'error' => Config::get('constants.errors.ContactPhoneNotFound')
+                'type' => 'success',
+                'title' => "Delete of contact's phone",
+                'message' => 'Phone of contacts is successfully deleted',
+                'data' => []
+            ], 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'type' => 'danger',
+                'title' => "Delete of contact's phone",
+                'message' => $e->getMessage(),
+                'data' => []
+            ], 400);
+        }
+    }
+
+    /**
+     * Get contact's phone number object
+     *
+     * @param $id
+     *
+     * @return mixed
+     */
+    private function getObject($id)
+    {
+        try {
+            return ContactPhone::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->jsonApi([
+                'type' => 'danger',
+                'title' => "Get Contact's phone number",
+                'message' => "Contact's phone number with id #{$id} not found",
+                'data' => []
             ], 404);
         }
-        $phone->delete();
-
-        return response()->jsonApi([
-            'success' => [
-                'message' => 'contact\'s phone with id: ' . $id . ' was deleted'
-            ]
-        ]);
     }
 }

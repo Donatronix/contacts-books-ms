@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateContactPhonesTable extends Migration
 {
@@ -13,15 +13,16 @@ class CreateContactPhonesTable extends Migration
      */
     public function up(): void
     {
-        $table_name = 'contact_phones';
-        Schema::create($table_name, function (Blueprint $table) {
+        Schema::create('contact_phones', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('phone');
-            $table->string('phone_type', 30)->nullable()->comment('a field type for a phone that denotes a group, such as home');
+            $table->string('type', 30)->nullable()->comment('a field type for a phone that denotes a group, such as home');
             $table->boolean('is_default')->default(false);
+
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
+
             $table->dateTime('created_at');
         });
     }

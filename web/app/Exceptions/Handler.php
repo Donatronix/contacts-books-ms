@@ -19,7 +19,7 @@ class Handler extends ExceptionHandler
     protected $dontReport = [
         AuthorizationException::class,
         HttpException::class,
-        ModelNotFoundException::class,
+      //  ModelNotFoundException::class,
         ValidationException::class,
     ];
 
@@ -49,6 +49,13 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+        if ($exception instanceof ModelNotFoundException) {
+            $classFullName = $exception->getModel();
+            $className = substr($classFullName, strrpos($classFullName, '\\') + 1);
+
+            return response()->json(config('constants.errors.' . $className . 'NotFound'), 404);
+        }
+
         return parent::render($request, $exception);
     }
 }

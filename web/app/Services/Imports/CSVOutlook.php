@@ -266,7 +266,7 @@ class CSVOutlook
             $this->insertToOther($data_arr, $contact_info);
 
             return response()->jsonApi([
-                'status' => 'success',
+                'type' => 'success',
                 'title' => 'Create was success',
                 'message' => 'The operation to add data to the database was successful',
             ], 200);

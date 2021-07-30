@@ -199,7 +199,7 @@ Parameter  | Description | Type | Example | Required
 ---------  | ----------- | ---- | ------- | --------
 id         | User ID  | char(36) | 100 | Y
 email | User e-mail | varchar(255) | buk@suk.com | Y
-email_type | The type of email field, for example: home, work, etc. | varchar(30) | Home | N
+type | The type of email field, for example: home, work, etc. | varchar(30) | Home | N
 is_default | Default e-mail | tinyint(1) | 1 | N
 contact_id | The uuid of the contact's | char(36) | 93ca3bee-46c8-4950-b0e1-7c54b51a80d8 | Y
 
@@ -232,8 +232,8 @@ group_id | Group UUID | char(36) | 93ca3bee-46c8-4950-b0e1-7c54b51a80d8 | Y
 Parameter  | Description | Type | Example | Required
 ---------  | ----------- | ---- | ------- | --------
 id         | User UUID  | char(36) | 93ca1f66-503b-41ff-b785-e8335d365e6e | Y
-phone | Contact phone | varchar(255) | 0681221212 | Y
-phone_type | A field type for a phone that denotes a group, such as home | varchar(30) | home | N
+phone      | Contact phone | varchar(255) | 0681221212 | Y
+type       | A field type for a phone that denotes a group, such as home | varchar(30) | home | N
 is_default | Default phone | tinyint(1) | 1 | N
 contact_id | Contact UUID | char(36) | 93ca3bee-5fac-4e21-96d6-8ca627618918 | Y
 

@@ -23,12 +23,22 @@ class Group extends Model
     ];
 
     /**
+     * @var string[]
+     */
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'pivot',
+        'user_id'
+    ];
+
+    /**
      * @return string[]
      */
-    public static function rules(): array
+    public static function validationRules(): array
     {
         return [
-            'name' => 'required|min:3|string'
+            'name' => 'string|required|min:2|max:50'
         ];
     }
 

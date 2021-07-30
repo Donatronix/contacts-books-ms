@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -18,12 +19,12 @@ use Illuminate\Support\Facades\Auth;
 class GroupController extends Controller
 {
     /**
-     * List of user's groups
+     * List of contact's groups
      *
      * @OA\Get(
      *     path="/v1/contacts/groups",
-     *     summary="Load user's groups list",
-     *     description="Load user's groups list",
+     *     summary="Load contact's groups list",
+     *     description="Load contact's groups list",
      *     tags={"Contact Groups"},
      *
      *     security={{
@@ -65,26 +66,32 @@ class GroupController extends Controller
     public function index()
     {
         try {
+            // Get groups list
             $groups = Group::byOwner()->get();
 
             // Return response
-            return response()->jsonApi($groups->toArray(), 200);
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => "Contacts groups list",
+                'message' => 'List of contacts groups successfully received',
+                'data' => $groups->toArray()
+            ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'error',
-                'title' => "Get groups list",
+                'type' => 'danger',
+                'title' => "Contacts groups list",
                 'message' => $e->getMessage()
             ], 400);
         }
     }
 
     /**
-     * Save user's group data
+     * Save contact's group data
      *
      * @OA\Post(
      *     path="/v1/contacts/groups",
-     *     summary="Save user's group data",
-     *     description="Save user's group data",
+     *     summary="Save contact's group data",
+     *     description="Save contact's group data",
      *     tags={"Contact Groups"},
      *
      *     security={{
@@ -109,7 +116,7 @@ class GroupController extends Controller
      *             @OA\Property(
      *                 property="name",
      *                 type="text",
-     *                 description="Group Name",
+     *                 description="Contact group Name",
      *                 example="My Group 1"
      *             )
      *         )
@@ -140,35 +147,37 @@ class GroupController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $this->validate($request, Group::rules());
+        $validator = $this->validate($request, Group::validationRules());
 
         try {
             $group = Group::create([
-                'name' => $request->get('name'),
+                'name' => $request->get('name', null),
                 'user_id' => (int)Auth::user()->getAuthIdentifier()
             ]);
 
             return response()->jsonApi([
-                'status' => 'success',
-                'title' => 'Group creating',
-                'message' => "Group {$group->name} successfully added"
+                'type' => 'success',
+                'title' => 'Adding a contact group',
+                'message' => "Group {$group->name} successfully added",
+                'data' => $group->toArray()
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'status' => 'error',
-                'title' => 'Group creating',
-                'message' => $e->getMessage()
+                'type' => 'danger',
+                'title' => 'Adding a contact group',
+                'message' => $e->getMessage(),
+                'data' => []
             ], 400);
         }
     }
 
     /**
-     * Update user's group data
+     * Update contact's group data
      *
      * @OA\Put(
      *     path="/v1/contacts/groups/{id}",
-     *     summary="Update user's group data",
-     *     description="Update user's group data",
+     *     summary="Update contact's group data",
+     *     description="Update contact's group data",
      *     tags={"Contact Groups"},
      *
      *     security={{
@@ -244,49 +253,32 @@ class GroupController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         // Validate input
-        $this->validate($request, Group::rules());
+        $this->validate($request, Group::validationRules());
 
-        // Get payment order model
+        // Read contact group model
         $group = $this->getObject($id);
-        if (!$group instanceof Group) {
+        if (is_a($group, 'Sumra\JsonApi\JsonApiResponse')) {
             return $group;
         }
 
+        // Try update group model
         try {
-            $group->fill($request->toArray());
+            $group->name = $request->get('name', null);
             $group->save();
 
             return response()->jsonApi([
-                'status' => 'success',
-                'title' => 'Group updating',
-                'message' => "Group {$group->name} successfully updated"
+                'type' => 'success',
+                'title' => 'Change a contact group',
+                'message' => "Group {$group->name} successfully updated",
+                'data' => $group->toArray()
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'status' => 'error',
-                'title' => 'Group updating',
-                'message' => $e->getMessage()
+                'type' => 'danger',
+                'title' => 'Change a contact group',
+                'message' => $e->getMessage(),
+                'data' => []
             ], 400);
-        }
-    }
-
-    /**
-     * Contact's group not found
-     *
-     * @param $id
-     *
-     * @return mixed
-     */
-    private function getObject($id)
-    {
-        try {
-            return Group::findOrFail($id);
-        } catch (ModelNotFoundException $e) {
-            return response()->jsonApi([
-                'type' => 'error',
-                'title' => "Get contact's group",
-                'message' => "Contact's group #{$id} not found"
-            ], 404);
         }
     }
 
@@ -317,12 +309,12 @@ class GroupController extends Controller
      *
      *     @OA\Parameter(
      *         name="id",
-     *         description="Group ID",
+     *         in="path",
      *         required=true,
-     *         in="query",
-     *          @OA\Schema (
-     *              type="integer"
-     *          )
+     *         description="Group ID",
+     *         @OA\Schema(
+     *             type="string"
+     *         )
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -337,8 +329,8 @@ class GroupController extends Controller
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="not found"
+     *         response="404",
+     *         description="Group not found"
      *     )
      * )
      *
@@ -348,26 +340,50 @@ class GroupController extends Controller
      */
     public function destroy($id): JsonResponse
     {
-        // Check group model
+        // Read contact group model
         $group = $this->getObject($id);
-        if (!$group instanceof Group) {
+        if (is_a($group, 'Sumra\JsonApi\JsonApiResponse')) {
             return $group;
         }
 
+        // Try to delete group
         try {
             $group->delete();
 
             return response()->jsonApi([
-                'status' => 'success',
+                'type' => 'success',
                 'title' => "Delete of contact's group",
-                'message' => 'Group of contacts is successfully deleted'
+                'message' => 'Group of contacts is successfully deleted',
+                'data' => []
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => "Delete of contact's group",
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'data' => []
             ], 400);
+        }
+    }
+
+    /**
+     * Get Contact's group object
+     *
+     * @param $id
+     *
+     * @return mixed
+     */
+    private function getObject($id)
+    {
+        try {
+            return Group::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->jsonApi([
+                'type' => 'danger',
+                'title' => "Get contact's group",
+                'message' => "Contact's group #{$id} not found",
+                'data' => []
+            ], 404);
         }
     }
 }

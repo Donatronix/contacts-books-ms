@@ -20,7 +20,7 @@ class CheckUserMiddleware
         // Check exist user-id and it not null
         if ($request->header('user-id', null) === null) {
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => 'Auth error',
                 'message' => 'Unauthorized access'
             ], 401);

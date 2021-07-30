@@ -4,6 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Creating groups table
+ */
 class CreateGroupsTable extends Migration
 {
     /**
@@ -15,8 +18,8 @@ class CreateGroupsTable extends Migration
     {
         Schema::create('groups', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name')->nullable();
-            $table->uuid('user_id')->nullable();
+            $table->string('name');
+            $table->uuid('user_id');
             $table->timestamps();
         });
     }

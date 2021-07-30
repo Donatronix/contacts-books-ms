@@ -23,9 +23,11 @@ class CreateAddresses extends Migration
             $table->string('postcode', 10)->nullable();
             $table->string('post_office_box_number', 10)->nullable();
             $table->boolean('is_default')->default(false);
+
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
+
             $table->timestamps();
         });
     }

@@ -21,27 +21,44 @@ class ContactPhone extends Model
     /**
      * @var string[]
      */
+    protected $casts = [
+        'is_default' => 'boolean'
+    ];
+
+    /**
+     * @var string[]
+     */
     protected $fillable = [
         'phone',
-        'phone_type',
-        'is_default',
-        'contact_id'
+        'type',
+        'is_default'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'pivot'
     ];
 
     /**
      * @return array[]
      */
-    public static function rules()
+    public static function validationRules(): array
     {
         return [
             'phone' => [
                 'required',
-                'max:15',
-                //'regex:/(0)[0-9\(\)]{15}/',
-                Rule::unique('contact_phones')->where(function ($query) {
-                    return $query->where('contact_id', $this->request->get('contact_id'));
+                'max:17',
+                'regex:/^(\+)?[0-9\(\)\.\-\+]{5,17}/',
+                Rule::unique('contact_phones')->where(function ($q) {
+                    return $q->where('contact_id', request()->get('contact_id'));
                 })
-            ]
+            ],
+            'type' => 'string|max:30',
+            'is_default' => 'boolean',
         ];
     }
 

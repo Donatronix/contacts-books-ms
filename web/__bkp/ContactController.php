@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Api\V1\Controllers;
-
 use App\Http\Controllers\Controller;
 use Exception;
 use GraphAware\Neo4j\Client\ClientBuilder;
@@ -12,73 +10,73 @@ use Illuminate\Http\Request;
  *
  * @package App\Api\V1\Controllers
  */
-class ContactController___ extends Controller
+class ContactController extends Controller
 {
-//    /**
-//     * Save contact data
-//     *
-//     * @ OA\Post (
-//     *     path="/v1/contacts/11",
-//     *     summary="Save contact data in Neo4j",
-//     *     description="Save contact data in Neo4j",
-//     *     tags={"Contacts"},
-//     *
-//     *     security={{
-//     *         "default": {
-//     *             "ManagerRead",
-//     *             "User",
-//     *             "ManagerWrite"
-//     *         }
-//     *     }},
-//     *     x={
-//     *         "auth-type": "Application & Application User",
-//     *         "throttling-tier": "Unlimited",
-//     *         "wso2-application-security": {
-//     *             "security-types": {"oauth2"},
-//     *             "optional": "false"
-//     *         }
-//     *     },
-//     *
-//     *     @ OA\RequestBody(
-//     *         required=true,
-//     *         @ OA\JsonContent(
-//     *             @ OA\Property(
-//     *                 property="contacts",
-//     *                 type="text",
-//     *                 description="Contacts in JSON",
-//     *                 example=""
-//     *             ),
-//     *            @ OA\Property(
-//     *                 property="deleteAbsent",
-//     *                 type="integer",
-//     *                 description="Delete contacts, absent in JSON, or not",
-//     *                 example="0"
-//     *             )
-//     *         )
-//     *     ),
-//     *
-//     *     @ OA\Response(
-//     *         response="200",
-//     *         description="Success send data"
-//     *     ),
-//     *     @ OA\Response(
-//     *         response=401,
-//     *         description="Unauthorized"
-//     *     ),
-//     *     @ OA\Response(
-//     *         response=400,
-//     *         description="Invalid request"
-//     *     ),
-//     *     @ OA\Response(
-//     *         response=404,
-//     *         description="not found"
-//     *     )
-//     * )
-//     *
-//     * @param \Illuminate\Http\Request $request
-//     *
-//     * @return \Illuminate\Http\JsonResponse|mixed
-//     */
+    /**
+     * Save contact data
+     *
+     * @ OA\Post (
+     *     path="/v1/contacts/11",
+     *     summary="Save contact data in Neo4j",
+     *     description="Save contact data in Neo4j",
+     *     tags={"Contacts"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
+     *
+     *     @ OA\RequestBody(
+     *         required=true,
+     *         @ OA\JsonContent(
+     *             @ OA\Property(
+     *                 property="contacts",
+     *                 type="text",
+     *                 description="Contacts in JSON",
+     *                 example=""
+     *             ),
+     *            @ OA\Property(
+     *                 property="deleteAbsent",
+     *                 type="integer",
+     *                 description="Delete contacts, absent in JSON, or not",
+     *                 example="0"
+     *             )
+     *         )
+     *     ),
+     *
+     *     @ OA\Response(
+     *         response="200",
+     *         description="Success send data"
+     *     ),
+     *     @ OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @ OA\Response(
+     *         response=400,
+     *         description="Invalid request"
+     *     ),
+     *     @ OA\Response(
+     *         response=404,
+     *         description="not found"
+     *     )
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
     public function store(Request $request)
     {
         $userID = 0;
@@ -88,7 +86,7 @@ class ContactController___ extends Controller
 
         if (count($errors) > 0)
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => 'Data is not valid',
                 'message' => implode(', ', $errors)
             ], 400);
@@ -97,13 +95,13 @@ class ContactController___ extends Controller
 
         if ($result == 'Ok')
             return response()->jsonApi([
-                'status' => 'success',
+                'type' => 'success',
                 'title' => 'Contacts are saved',
                 'message' => 'Contacts are saved'
             ], 200);
         else {
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => 'Contacts are not saved',
                 'message' => $result
             ], 400);
@@ -292,7 +290,7 @@ RETURN person";
 
         if (count($errors) > 0)
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => 'Data is not valid',
                 'message' => implode(', ', $errors)
             ], 400);
@@ -315,13 +313,13 @@ RETURN person";
             }
 
             return response()->jsonApi([
-                'status' => 'success',
+                'type' => 'success',
                 'title' => 'Contacts are deleted',
                 'message' => 'Contacts are deleted'
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => 'Contacts are not saved',
                 'message' => $e->getMessage()
             ], 400);

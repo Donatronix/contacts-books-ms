@@ -3,26 +3,21 @@
 namespace App\Models;
 
 use App\Traits\OwnerTrait;
+use App\Traits\Sorting;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 
 class Contact extends Model
 {
     use HasFactory;
-    use SoftDeletes;
-    use UuidTrait;
     use OwnerTrait;
-
-    public $type = '';
-
-    public $images = [];
+    use SoftDeletes;
+    use Sorting;
+    use UuidTrait;
 
     /**
      * @var string[]
@@ -52,8 +47,13 @@ class Contact extends Model
      * @var string[]
      */
     protected $hidden = [
+        'birthday',
+        'user_prefix',
+        'user_suffix',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'deleted_at',
+        'pivot'
     ];
 
     /**
@@ -136,16 +136,6 @@ class Contact extends Model
     public function relations(): BelongsToMany
     {
         return $this->belongsToMany(Relation::class);
-    }
-
-    public function scopeFavorites($query)
-    {
-
-    }
-
-    public function scopeRecentlyAdded($query)
-    {
-
     }
 
     /**

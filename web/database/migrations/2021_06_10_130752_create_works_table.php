@@ -13,16 +13,17 @@ class CreateWorksTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('works', function (Blueprint $table)
-        {
+        Schema::create('works', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('company', 100)->default('');
             $table->string('department', 100)->default('');
-            $table->boolean('is_default')->default(false);
             $table->string('post', 50)->default('')->comment('user position at work');
+            $table->boolean('is_default')->default(false);
+
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
+
             $table->timestamps();
         });
     }

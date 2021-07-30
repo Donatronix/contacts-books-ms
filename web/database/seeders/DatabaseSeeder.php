@@ -20,10 +20,10 @@ class DatabaseSeeder extends Seeder
             ContactPhonesTableSeeder::class,
             ContactsToGroupsTableSeeder::class,
             CategoriesTableSeeder::class,
-            WorkSeeder::class,
-            AddressSeeder::class,
-            SiteSeeder::class,
-            ChatSeeder::class,
+      //      WorkSeeder::class,
+      //      AddressSeeder::class,
+      //      SiteSeeder::class,
+      //      ChatSeeder::class,
             RelationSeeder::class,
         ]);
     }

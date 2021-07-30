@@ -22,7 +22,7 @@ class CheckAdminMiddleware
 
         if(empty($adminUsers) || !in_array(Auth::user()->getAuthIdentifier(), $adminUsers)){
             return response()->jsonApi([
-                'status' => 'error',
+                'type' => 'danger',
                 'title' => 'Access error',
                 'message' => "You have not permissions to access"
             ], 403);

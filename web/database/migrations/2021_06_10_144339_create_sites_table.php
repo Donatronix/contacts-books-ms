@@ -18,9 +18,11 @@ class CreateSitesTable extends Migration
             $table->string('site')->nullable();
             $table->boolean('is_default')->default(false);
             $table->string('site_type', 30)->nullable()->comment('site type for grouping');
+
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
+
             $table->timestamps();
         });
     }
