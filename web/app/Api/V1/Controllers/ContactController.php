@@ -248,12 +248,12 @@ class ContactController extends Controller
     }
 
     /**
-     * Save user's contacts in JSON format
+     * Save user's contacts
      *
      * @OA\Post(
      *     path="/v1/contacts",
-     *     summary="Save user's contacts in JSON format",
-     *     description="Save user's contacts in JSON format",
+     *     summary="Save user's contacts",
+     *     description="Save user's contacts",
      *     tags={"Contacts"},
      *
      *     security={{
@@ -274,14 +274,7 @@ class ContactController extends Controller
      *
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="contacts",
-     *                 type="json",
-     *                 description="Contacts data in JSON",
-     *                 example=""
-     *             )
-     *         )
+     *         @OA\JsonContent(ref="#/components/schemas/Contact")
      *     ),
      *
      *     @OA\Response(
@@ -310,119 +303,109 @@ class ContactController extends Controller
     public function store(Request $request): JsonResponse
     {
         // Validate input
-        $input = (object)$this->validate($request, Contact::rules());
+        $this->validate($request, Contact::rules());
 
         try {
-            foreach ($input->contacts as $item) {
-                // First, Create contact
-                $contact = Contact::create([
-                    'first_name' => $item['first_name'],
-                    'last_name' => $item['last_name'],
-                    'surname' => $item['surname'],
-                    'avatar' => $item['avatar'],
-                    'birthday' => $item['birthday'],
-                    'nickname' => $item['nickname'],
-                    'user_prefix' => $item['user_prefix'],
-                    'user_suffix' => $item['user_suffix'],
-                    'user_id' => (int)Auth::user()->getAuthIdentifier()
-                ]);
+            // First, Create contact
+            $contact = new Contact();
+            $contact->fill($request->all());
+            $contact->user_id = (int)Auth::user()->getAuthIdentifier();
+            $contact->save();
 
-                // Save contact's phones
-                if (isset($item['phones']) && count($item['phones']) > 0) {
-                    foreach ($item['phones'] as $x => $phone) {
-                        ContactPhone::create([
-                            'phone' => $phone,
-                            'type' => $item['type'],
-                            'is_default' => $x === 0,
-                            'contact_id' => $contact->id
-                        ]);
-                    }
-                }
-
-                // Save contact's emails
-                if (isset($item['emails']) && count($item['emails']) > 0) {
-                    foreach ($item['emails'] as $x => $email) {
-                        ContactEmail::create([
-                            'email' => $email,
-                            'type' => $item['type'],
-                            'is_default' => $x === 0,
-                            'contact_id' => $contact->id
-                        ]);
-                    }
-                }
-
-                if (isset($item['works']) && count($item['works']) > 0) {
-                    foreach ($item['works'] as $x => $company) {
-                        Work::create([
-                            'company' => $company,
-                            'department' => $item['department'],
-                            'post' => $item['post'],
-                            'is_default' => $x === 0,
-                            'contact_id' => $contact->id
-                        ]);
-                    }
-                }
-
-                if (isset($item['addresses']) && count($item['addresses']) > 0) {
-                    foreach ($item['addresses'] as $x => $country) {
-                        Work::create([
-                            'country' => $country,
-                            'provinces' => $item['provinces'],
-                            'city' => $item['city'],
-                            'address' => $item['address'],
-                            'address_type' => $item['address_type'],
-                            'postcode' => $item['postcode'],
-                            'post_office_box_number' => $item['post_office_box_number'],
-                            'is_default' => $x === 0,
-                            'contact_id' => $contact->id
-                        ]);
-                    }
-                }
-
-                if (isset($item['sites']) && count($item['sites']) > 0) {
-                    foreach ($item['sites'] as $x => $site) {
-                        Work::create([
-                            'site' => $site,
-                            'site_type' => $item['site_type'],
-                            'is_default' => $x === 0,
-                            'contact_id' => $contact->id
-                        ]);
-                    }
-                }
-
-                if (isset($item['chats']) && count($item['chats']) > 0) {
-                    foreach ($item['chats'] as $x => $chat) {
-                        Work::create([
-                            'site' => $chat,
-                            'chat_name' => $item['chat_name'],
-                            'is_default' => $x === 0,
-                            'contact_id' => $contact->id
-                        ]);
-                    }
-                }
-
-                if (isset($item['relation']) && count($item['relation']) > 0) {
-                    foreach ($item['relation'] as $x => $relation) {
-                        Work::create([
-                            'relation' => $relation,
-                            'relation_name' => $item['relation_name'],
-                            'is_default' => $x === 0,
-                            'contact_id' => $contact->id
-                        ]);
-                    }
+            // Save contact's phones
+            if ($request->has('phones') && count($request->get('phones')) > 0) {
+                foreach ($request->get('phones') as $phone) {
+                    $row = new ContactPhone();
+                    $row->fill($phone);
+                    $row->contact()->associate($contact);
+                    $row->save();
                 }
             }
 
+            // Save contact's emails
+            if ($request->has('emails') && count($request->get('emails')) > 0) {
+                foreach ($request->get('emails') as $x => $email) {
+                    $row = new ContactEmail();
+                    $row->fill($email);
+                    $row->contact()->associate($contact);
+                    $row->save();
+                }
+            }
+
+//            if ($request->has('works') && count($request->get('works')) > 0) {
+//                foreach ($request->get('works') as $x => $company) {
+//                    Work::create([
+//                        'company' => $company,
+//                        'department' => $request->get('department'),
+//                        'post' => $request->get('post'),
+//                        'is_default' => $x === 0,
+//                        'contact_id' => $contact->id
+//                    ]);
+//                }
+//            }
+//
+//            if ($request->has('addresses') && count($request->get('addresses')) > 0) {
+//                foreach ($request->get('addresses') as $x => $country) {
+//                    Work::create([
+//                        'country' => $country,
+//                        'provinces' => $request->get('provinces'),
+//                        'city' => $request->get('city'),
+//                        'address' => $request->get('address'),
+//                        'address_type' => $request->get('address_type'),
+//                        'postcode' => $item['postcode'],
+//                        'post_office_box_number' => $item['post_office_box_number'],
+//                        'is_default' => $x === 0,
+//                        'contact_id' => $contact->id
+//                    ]);
+//                }
+//            }
+//
+//            if ($request->has('sites') && count($request->get('sites')) > 0) {
+//                foreach ($request->get('sites') as $x => $site) {
+//                    Work::create([
+//                        'site' => $site,
+//                        'site_type' => $item['site_type'],
+//                        'is_default' => $x === 0,
+//                        'contact_id' => $contact->id
+//                    ]);
+//                }
+//            }
+//
+//            if ($request->has('chats') && count($request->get('chats')) > 0) {
+//                foreach ($request->get('chats') as $x => $chat) {
+//                    Work::create([
+//                        'site' => $chat,
+//                        'chat_name' => $item['chat_name'],
+//                        'is_default' => $x === 0,
+//                        'contact_id' => $contact->id
+//                    ]);
+//                }
+//            }
+//
+//            if ($request->has('relation') && count($request->get('relation')) > 0) {
+//                foreach ($request->get('relation') as $x => $relation) {
+//                    Work::create([
+//                        'relation' => $relation,
+//                        'relation_name' => $item['relation_name'],
+//                        'is_default' => $x === 0,
+//                        'contact_id' => $contact->id
+//                    ]);
+//                }
+//            }
+//
+
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => "Upload user's contacts",
-                'message' => "User's contacts successfully saved"
+                'title' => "Adding new contact",
+                'message' => "User's contacts successfully saved",
+                'data' => $contact->toArray()
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => "Upload user's contacts",
-                'message' => $e->getMessage()
+                'title' => "Adding new contact",
+                'message' => $e->getMessage(),
+                'data' => null
             ], 400);
         }
     }
@@ -496,22 +479,29 @@ class ContactController extends Controller
      */
     public function show($id)
     {
-        // Get contact model
-        try {
-            $contact = Contact::with(['phones', 'emails', 'groups'])
-                ->where('id', $id)
-                ->first();
+        // Get object
+        $contact = $this->getObject($id);
 
-            $contact->setAttribute('avatar', $this->getImagesFromRemote($id));
-
-            return response()->jsonApi($contact, 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->jsonApi([
-                'type' => 'danger',
-                'title' => 'Contact not found',
-                'message' => "Contact with #{$id} not found: {$e}"
-            ], 404);
+        if ($contact instanceof JsonApiResponse) {
+            return $contact;
         }
+
+        // Load linked relations data
+        $contact->load([
+            'phones',
+            'emails',
+            'groups'
+        ]);
+
+        // Read big size of avatar from storage
+        $contact->setAttribute('avatar', $this->getImagesFromRemote($id, 'big'));
+
+        return response()->jsonApi([
+            'type' => 'success',
+            'title' => 'Contact details',
+            'message' => "contact details received",
+            'data' => $contact->toArray()
+        ], 200);
     }
 
     /**
@@ -551,14 +541,7 @@ class ContactController extends Controller
      *
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="contacts",
-     *                 type="json",
-     *                 description="Contacts data in JSON",
-     *                 example=""
-     *             )
-     *         )
+     *         @OA\JsonContent(ref="#/components/schemas/Contact")
      *     ),
      *
      *     @OA\Response(
@@ -592,10 +575,40 @@ class ContactController extends Controller
      * @param                          $id
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function update(Request $request, $id): JsonResponse
     {
+        // Validate input
+        $this->validate($request, Contact::rules());
 
+        // Read contact group model
+        $contact = $this->getObject($id);
+        if (is_a($contact, 'Sumra\JsonApi\JsonApiResponse')) {
+            return $contact;
+        }
+
+        // Try update group model
+        try {
+            // First, update mail contact data
+            $contact->fill($request->all());
+            $contact->user_id = (int)Auth::user()->getAuthIdentifier();
+            $contact->save();
+
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => 'Change a contact data',
+                'message' => "Contact {$contact->display_name} successfully updated",
+                'data' => $contact->toArray()
+            ], 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'type' => 'danger',
+                'title' => 'Change a contact data',
+                'message' => $e->getMessage(),
+                'data' => null
+            ], 400);
+        }
     }
 
     /**
@@ -838,7 +851,7 @@ class ContactController extends Controller
     /**
      * Add / delete contacts to/from favorites
      *
-     * @OA\Put(
+     * @OA\Get(
      *     path="/v1/contacts/{id}/favorite",
      *     summary="Add / delete contacts to / from favorites",
      *     tags={"Contacts"},
@@ -895,7 +908,8 @@ class ContactController extends Controller
             return response()->jsonApi([
                 'type' => 'success',
                 'title' => 'Favorites list',
-                'message' => sprintf("%s was successfully %s favorites", $contact->display_name, $contact->is_favorite ? 'added to' : 'removed from')
+                'message' => sprintf("%s was successfully %s favorites", $contact->display_name, $contact->is_favorite ? 'added to' : 'removed from'),
+                'data' => $contact->toArray()
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
@@ -903,6 +917,92 @@ class ContactController extends Controller
                 'title' => "Favorites list",
                 'message' => "Can't change status for contacts {$contact->display_name}"
             ], 404);
+        }
+    }
+
+    /**
+     * Join contacts to selected groups
+     *
+     * @OA\Post(
+     *     path="/v1/contacts/join-groups",
+     *     summary="Join contacts to selected groups",
+     *     description="Join contacts to selected groups",
+     *     tags={"Contacts"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="contacts",
+     *                 type="array",
+     *                 description="Array of contacts Id's",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     example="0aa06e6b-35de-3235-b925-b0c43f8f7c75"
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="groups",
+     *                 type="array",
+     *                 description="Array of group Id's",
+     *                 @OA\Items(
+     *                     type="string",
+     *                     example="1bae0037-b7ba-3729-adc1-248c5d58de2f"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *          response="200",
+     *          description="Successfully save"
+     *     ),
+     *     @OA\Response(
+     *         response="500",
+     *         description="Unknown error"
+     *     )
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return mixed
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function joinGroups(Request $request){
+        // Validate input
+        $this->validate($request, [
+            'contacts' => 'required|array',
+            'groups' => 'required|array'
+        ]);
+
+        try {
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => 'Join contact to group',
+                'message' => 'Contact to group added successfully'
+            ], 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'type' => 'danger',
+                'title' => 'Join contact to group',
+                'message' => $e->getMessage()
+            ], 400);
         }
     }
 
@@ -1045,10 +1145,8 @@ class ContactController extends Controller
      *
      *     @OA\RequestBody(
      *         required=true,
-     *
      *         @OA\JsonContent(
      *             type="array",
-     *
      *             @OA\Items(
      *                 type="object",
      *
@@ -1129,24 +1227,32 @@ class ContactController extends Controller
         try {
             $json = json_decode($request, true);
 
-            $result = [];
-            foreach ($json as $k => $item) {
-                if (isset($json['display_name'])) {
-                    $result[$k]['name_param'] = $json['display_name'];
-                }
+            // First, Create contact
+            $contact = new Contact();
+            $contact->fill($request->all());
+            $contact->user_id = (int)Auth::user()->getAuthIdentifier();
+            $contact->save();
 
-                if (isset($json['msisdns'])) {
-                    $result[$k]['phone'] = $json['msisdns'];
-                }
-
-                if (isset($json['emails'])) {
-                    $result[$k]['email'] = $json['emails'];
-                }
-
-                if (isset($json['photo_uri'])) {
-                    $result[$k]['photo'] = $json['photo_uri'];
+            // Save contact's phones
+            if ($request->has('phones') && count($request->get('phones')) > 0) {
+                foreach ($request->get('phones') as $phone) {
+                    $row = new ContactPhone();
+                    $row->fill($phone);
+                    $row->contact()->associate($contact);
+                    $row->save();
                 }
             }
+
+            // Save contact's emails
+            if ($request->has('emails') && count($request->get('emails')) > 0) {
+                foreach ($request->get('emails') as $x => $email) {
+                    $row = new ContactEmail();
+                    $row->fill($email);
+                    $row->contact()->associate($contact);
+                    $row->save();
+                }
+            }
+
 
             return response()->jsonApi([
                 'type' => 'success',
@@ -1177,7 +1283,7 @@ class ContactController extends Controller
             return response()->jsonApi([
                 'type' => 'danger',
                 'title' => "Get contact object",
-                'message' => "Contact with #{$id} not found"
+                'message' => "Contact with #{$id} not found: {$e->getMessage()}"
             ], 404);
         }
     }

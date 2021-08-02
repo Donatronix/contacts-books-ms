@@ -166,7 +166,7 @@ class GroupController extends Controller
                 'type' => 'danger',
                 'title' => 'Adding a contact group',
                 'message' => $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 400);
         }
     }
@@ -277,7 +277,7 @@ class GroupController extends Controller
                 'type' => 'danger',
                 'title' => 'Change a contact group',
                 'message' => $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 400);
         }
     }
@@ -354,14 +354,14 @@ class GroupController extends Controller
                 'type' => 'success',
                 'title' => "Delete of contact's group",
                 'message' => 'Group of contacts is successfully deleted',
-                'data' => []
+                'data' => null
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
                 'title' => "Delete of contact's group",
                 'message' => $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 400);
         }
     }
@@ -382,7 +382,7 @@ class GroupController extends Controller
                 'type' => 'danger',
                 'title' => "Get contact's group",
                 'message' => "Contact's group #{$id} not found",
-                'data' => []
+                'data' => null
             ], 404);
         }
     }

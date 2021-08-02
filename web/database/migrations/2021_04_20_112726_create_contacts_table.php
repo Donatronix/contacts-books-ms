@@ -15,21 +15,17 @@ class CreateContactsTable extends Migration
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('first_name', 50)->default('');
-            $table->string('last_name', 50)->default('');
-            $table->string('surname', 50)->default('');
-            $table->string('user_prefix', 20)->nullable()->comment('prefix user name');
-            $table->string('user_suffix', 20)->nullable()->comment('suffix user name');
-            $table->string('nickname', 50)->nullable()->comment('user alias');
-
-            $table->boolean('avatar')->default(0);
+            $table->string('prefix_name', 20)->nullable()->comment('Prefix of contact name');
+            $table->string('first_name', 50)->nullable();
+            $table->string('middle_name', 50)->nullable();
+            $table->string('last_name', 50)->nullable();
+            $table->string('suffix_name', 20)->nullable()->comment('Suffix of contact name');
+            $table->string('write_as_name', 200)->nullable();
+            $table->string('nickname', 50)->nullable()->comment('Nickname of contact');
             $table->date('birthday')->nullable();
-
-            $table->boolean('is_favorite')->default(false);
-
-            $table->uuid('user_id')->index();
-
             $table->text('note')->nullable();
+            $table->boolean('is_favorite')->default(false);
+            $table->uuid('user_id')->index();
 
             $table->timestamps();
             $table->softDeletes();

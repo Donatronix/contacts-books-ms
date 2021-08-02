@@ -102,7 +102,7 @@ class ContactPhoneController extends Controller
                 'type' => 'danger',
                 'title' => "Get contact object",
                 'message' => "Contact with id #{$contactId} not found: " . $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 404);
         }
 
@@ -137,7 +137,7 @@ class ContactPhoneController extends Controller
                 'type' => 'danger',
                 'title' => 'Adding new phone number',
                 'message' => $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 400);
         }
     }
@@ -276,7 +276,7 @@ class ContactPhoneController extends Controller
                 'type' => 'danger',
                 'title' => 'Change a contact group',
                 'message' => $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 400);
         }
     }
@@ -345,14 +345,14 @@ class ContactPhoneController extends Controller
                 'type' => 'success',
                 'title' => "Delete of contact's phone",
                 'message' => 'Phone of contacts is successfully deleted',
-                'data' => []
+                'data' => null
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
                 'title' => "Delete of contact's phone",
                 'message' => $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 400);
         }
     }
@@ -373,7 +373,7 @@ class ContactPhoneController extends Controller
                 'type' => 'danger',
                 'title' => "Get Contact's phone number",
                 'message' => "Contact's phone number with id #{$id} not found",
-                'data' => []
+                'data' => null
             ], 404);
         }
     }

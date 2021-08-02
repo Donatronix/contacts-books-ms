@@ -56,8 +56,8 @@ class ContactEmailController extends Controller
      *             @OA\Property(
      *                 property="type",
      *                 type="string",
-     *                 description="Email type (home, work, cell, etc)",
-     *                 enum={"home", "work", "cell", "other", "main","googlevoice"}
+     *                 description="Email type (home, work, etc)",
+     *                 enum={"home", "work", "other", "main"}
      *             ),
      *             @OA\Property(
      *                 property="is_default",
@@ -102,7 +102,7 @@ class ContactEmailController extends Controller
                 'type' => 'danger',
                 'title' => "Get contact object",
                 'message' => "Contact with id #{$contactId} not found: " . $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 404);
         }
 
@@ -137,7 +137,7 @@ class ContactEmailController extends Controller
                 'type' => 'danger',
                 'title' => 'Adding new email',
                 'message' => $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 400);
         }
     }
@@ -191,8 +191,8 @@ class ContactEmailController extends Controller
      *             @OA\Property(
      *                 property="type",
      *                 type="string",
-     *                 description="Email type (home, work, cell, etc)",
-     *                 enum={"home", "work", "cell", "other", "main","googlevoice"}
+     *                 description="Email type (home, work, etc)",
+     *                 enum={"home", "work", "other", "main"}
      *             ),
      *             @OA\Property(
      *                 property="is_default",
@@ -276,7 +276,7 @@ class ContactEmailController extends Controller
                 'type' => 'danger',
                 'title' => 'Changing contact email',
                 'message' => $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 400);
         }
     }
@@ -345,14 +345,14 @@ class ContactEmailController extends Controller
                 'type' => 'success',
                 'title' => "Delete of contact's email",
                 'message' => 'Email of contacts is successfully deleted',
-                'data' => []
+                'data' => null
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
                 'title' => "Delete of contact's email",
                 'message' => $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 400);
         }
     }
@@ -373,7 +373,7 @@ class ContactEmailController extends Controller
                 'type' => 'danger',
                 'title' => "Get contact's email",
                 'message' => "Contact's email with id #{$id} not found",
-                'data' => []
+                'data' => null
             ], 404);
         }
     }

@@ -26,7 +26,7 @@ class ContactFactory extends Factory
             'user_id' => $this->faker->randomNumber(3, true),
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName,
-            'user_suffix' => $this->faker->suffix,
+            'suffix_name' => $this->faker->suffix,
             'birthday' => $this->faker->date($format = 'Y-m-d', $max = 'now'),
         ];
     }

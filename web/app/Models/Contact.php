@@ -10,7 +10,139 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
+/**
+ * Contact Model
+ *
+ * @package App\Models
+ *
+ * @OA\Schema(
+ *     schema="Contact",
+ *
+ *     @OA\Property(
+ *         property="prefix_name",
+ *         type="string",
+ *         description="Prefix of contact name",
+ *         example=""
+ *     ),
+ *     @OA\Property(
+ *         property="first_name",
+ *         type="string",
+ *         description="First name in string",
+ *         example=""
+ *     ),
+ *     @OA\Property(
+ *         property="middle_name",
+ *         type="string",
+ *         description="Display name data in string",
+ *         example=""
+ *     ),
+ *     @OA\Property(
+ *         property="last_name",
+ *         type="string",
+ *         description="Display name data in string",
+ *         example=""
+ *     ),
+ *     @OA\Property(
+ *         property="suffix_name",
+ *         type="string",
+ *         description="Display name data in string",
+ *         example=""
+ *     ),
+ *     @OA\Property(
+ *         property="write_as_name",
+ *         type="string",
+ *         description="Display name data in string",
+ *         example=""
+ *     ),
+ *     @OA\Property(
+ *         property="nickname",
+ *         type="string",
+ *         description="Nickname of contact",
+ *         example=""
+ *     ),
+ *     @OA\Property(
+ *         property="birthday",
+ *         type="date",
+ *         description="Birthday date of contact",
+ *         example="1984-10-25"
+ *     ),
+ *     @OA\Property(
+ *         property="avatar",
+ *         type="string",
+ *         description="Photo body in base64 format",
+ *         example=""
+ *     ),
+ *     @OA\Property(
+ *         property="note",
+ *         type="string",
+ *         description="Contact note",
+ *         example=""
+ *     ),
+ *     @OA\Property(
+ *         property="phones",
+ *         type="array",
+ *         description="Contacts phones / Msisdns data in JSON",
+ *         @OA\Items(
+ *             type="object",
+ *
+ *             @OA\Property(
+ *                 property="phone",
+ *                 type="string",
+ *                 description="Phone number of contact",
+ *                 example="(555)-777-1234"
+ *             ),
+ *             @OA\Property(
+ *                 property="type",
+ *                 type="string",
+ *                 description="Phone type (home, work, cell, etc)",
+ *                 enum={"home", "work", "cell", "other", "main", "homefax", "workfax", "googlevoice", "pager"}
+ *             ),
+ *             @OA\Property(
+ *                 property="is_default",
+ *                 type="boolean",
+ *                 description="Phone by default. Accept 1, 0, true, false",
+ *                 example="false"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="emails",
+ *         type="array",
+ *         description="Contacts emails",
+ *
+ *         @OA\Items(
+ *             type="object",
+ *
+ *             @OA\Property(
+ *                 property="email",
+ *                 type="string",
+ *                 description="Email of contact",
+ *                 example="test@tes.com"
+ *             ),
+ *             @OA\Property(
+ *                 property="type",
+ *                 type="string",
+ *                 description="Email type (home, work, etc)",
+ *                 enum={"home", "work", "other", "main"}
+ *             ),
+ *             @OA\Property(
+ *                 property="is_default",
+ *                 type="boolean",
+ *                 description="Email by default. Accept 1, 0, true, false",
+ *                 example="true"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="is_favorite",
+ *         type="boolean",
+ *         description="Need shared contacts data (1, 0, true, false)",
+ *         example="false"
+ *     )
+ * )
+ */
 class Contact extends Model
 {
     use HasFactory;
@@ -29,27 +161,31 @@ class Contact extends Model
     /**
      * @var string[]
      */
+    protected $casts = [
+        'is_favorite' => 'boolean'
+    ];
+
+    /**
+     * @var string[]
+     */
     protected $fillable = [
-        'user_id',
+        'prefix_name',
         'first_name',
+        'middle_name',
         'last_name',
-        'surname',
-        'prefix',
-        'suffix',
+        'suffix_name',
+        'write_as_name',
         'nickname',
-        'note',
-        'avatar',
         'birthday',
-        'is_favorite'
+        'note',
+        'is_favorite',
+        'user_id',
     ];
 
     /**
      * @var string[]
      */
     protected $hidden = [
-        'birthday',
-        'user_prefix',
-        'user_suffix',
         'created_at',
         'updated_at',
         'deleted_at',
@@ -62,7 +198,18 @@ class Contact extends Model
     public static function rules(): array
     {
         return [
-            'contacts' => 'required|array'
+            'prefix_name' => 'nullable|string',
+            'first_name' => 'nullable|string',
+            'middle_name' => 'nullable|string',
+            'last_name' => 'nullable|string',
+            'suffix_name' => 'nullable|string',
+            'write_as_name' => 'nullable|string',
+            'avatar' => 'nullable|string',
+            'nickname' => 'nullable|string',
+            'birthday' => 'nullable|string',
+            'note' => 'nullable|string',
+            'phones' => 'required|array',
+            'emails' => 'required|array'
         ];
     }
 
@@ -145,6 +292,20 @@ class Contact extends Model
      */
     public function getDisplayNameAttribute(): string
     {
-        return $this->attributes['display_name'] = $this->first_name . ' ' . $this->last_name;
+        $displayName = $this->write_as_name;
+        if (empty($displayName)) {
+            $displayName = sprintf(
+                "%s %s %s %s %s",
+                $this->prefix_name,
+                $this->first_name,
+                $this->middle_name,
+                $this->last_name,
+                $this->suffix_name
+            );
+
+            $displayName = trim(Str::replace('  ', ' ', $displayName));
+        }
+
+        return $this->attributes['display_name'] = $displayName;
     }
 }

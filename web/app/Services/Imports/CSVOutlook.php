@@ -88,21 +88,21 @@ class CSVOutlook
 
                 if($key == 'Middle Name'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'surname';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'middle_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
 
                 if($key == 'Title'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'user_prefix';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'prefix_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
 
                 if($key == 'Suffix'){
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'user_suffix';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'suffix_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
@@ -233,14 +233,14 @@ class CSVOutlook
                         if($param['name_param'][$key]['type'] == 'first_name'){
                             $user->first_name = $user_value;
                         }
-                        if($param['name_param'][$key]['type'] == 'surname'){
-                            $user->surname = $user_value;
+                        if($param['name_param'][$key]['type'] == 'middle_name'){
+                            $user->middle_name = $user_value;
                         }
-                        if($param['name_param'][$key]['type'] == 'user_prefix'){
-                            $user->user_prefix = $user_value;
+                        if($param['name_param'][$key]['type'] == 'prefix_name'){
+                            $user->prefix_name = $user_value;
                         }
-                        if($param['name_param'][$key]['type'] == 'user_suffix'){
-                            $user->user_suffix = $user_value;
+                        if($param['name_param'][$key]['type'] == 'suffix_name'){
+                            $user->suffix_name = $user_value;
                         }
                     }
                 }

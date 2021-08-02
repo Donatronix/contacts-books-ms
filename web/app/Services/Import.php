@@ -195,14 +195,14 @@ class Import
                         if($user_type == 'first_name'){
                             $contact->first_name = $user_value;
                         }
-                        if($user_type == 'surname'){
-                            $contact->surname = $user_value;
+                        if($user_type == 'middle_name'){
+                            $contact->middle_name = $user_value;
                         }
-                        if($user_type == 'user_prefix'){
-                            $contact->user_prefix = $user_value;
+                        if($user_type == 'prefix_name'){
+                            $contact->prefix_name = $user_value;
                         }
-                        if($user_type == 'user_suffix'){
-                            $contact->user_suffix = $user_value;
+                        if($user_type == 'suffix_name'){
+                            $contact->suffix_name = $user_value;
                         }
                     }
                 }

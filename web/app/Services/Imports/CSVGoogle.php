@@ -81,21 +81,21 @@ class CSVGoogle
 
                 if ($key == 'Additional Name') {
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'surname';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'middle_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
 
                 if ($key == 'Name Prefix') {
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'user_prefix';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'prefix_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
 
                 if ($key == 'Name Suffix') {
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'user_suffix';
+                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'suffix_name';
                     $data_params['cnt_name_key']++;
                     continue;
                 }
@@ -309,9 +309,9 @@ class CSVGoogle
                     'user_id' => $user_id,
                     'first_name' => $c['First Name'],
                     'last_name' => $c['Last Name'],
-                    'middlename' => $c['Middle Name'],
-                    'prefix' => $c['Title'],
-                    'suffix' => $c['Suffix'],
+                    'middle_name' => $c['Middle Name'],
+                    'prefix_name' => $c['Title'],
+                    'suffix_name' => $c['Suffix'],
                     'nickname' => '',
                     'adrextend' => $c['Home Address PO Box'],
                     'adrstreet' => $c['Home Street'] . "\n" . $c['Home Street2'] . "\n" . $c['Home Street3'],

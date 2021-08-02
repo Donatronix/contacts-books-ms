@@ -80,12 +80,12 @@ Parameter  | Description | Type | Example | Required
 id         | Contact ID  | char (36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 first_name | First name user | varchar (50) | Vasya | Y
 last_name | Last name user | varchar (50) | Pupkin | Y
-surname | Surname user | varchar (50) | Sydorovich | N
+middle_name | middle_name user | varchar (50) | Sydorovich | N
 avatar | Image uploaded by the user | tinyint(1) | 1 | N
 birthday | User's date of birth | date | 2011-11-22 | N
 nickname | Username | varchar(50) | Ded Hasan | N
-user_prefix | User prefix | varchar(20) | dr. | N
-user_suffix | User suffix | varchar(20) | -san | N
+prefix_name | User prefix | varchar(20) | dr. | N
+suffix_name | User suffix | varchar(20) | -san | N
 is_favorite | User favorite | tinyint(1) | 1 | N
 user_id | The ID of the user who uploaded the contact | bigint | 10 | Y
 note | The user writes that he will climb into his head | text | Matyuki some | N
@@ -105,15 +105,15 @@ note | The user writes that he will climb into his head | text | Matyuki some | 
         },
         {2}: {
             'value': 'Sydorovich',
-            'type': 'surname'
+            'type': 'middle_name'
         },
         {3}: {
             'value': 'dr.',
-            'type': 'user_prefix',
+            'type': 'prefix_name',
         },
         {4}: {
             'value': '-san',
-            'type': 'user_suffix'
+            'type': 'suffix_name'
         }
     },
     'photo': 1,

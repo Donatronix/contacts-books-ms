@@ -466,7 +466,7 @@ class Vcard
         $tmp = $data['N'][0]['value'];
         if($tmp){
             $result = [];
-            $arr_type = ['last_name', 'first_name', 'surname', 'user_prefix', 'user_suffix'];
+            $arr_type = ['last_name', 'first_name', 'middle_name', 'prefix_name', 'suffix_name'];
             for($i=0; $i < count($tmp); $i++)
             {
                 $result[$i]['value'] = $this->checkParam($tmp[$i][0]);
