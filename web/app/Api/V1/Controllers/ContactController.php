@@ -905,6 +905,9 @@ class ContactController extends Controller
                 'is_favorite' => !$contact->is_favorite
             ]);
 
+            // Load contact's group
+            $contact->load('groups');
+
             return response()->jsonApi([
                 'type' => 'success',
                 'title' => 'Favorites list',
