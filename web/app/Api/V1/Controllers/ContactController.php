@@ -309,6 +309,7 @@ class ContactController extends Controller
             // First, Create contact
             $contact = new Contact();
             $contact->fill($request->all());
+            $contact->write_as_name = $request->get('display_name');
             $contact->user_id = (int)Auth::user()->getAuthIdentifier();
             $contact->save();
 
@@ -592,6 +593,7 @@ class ContactController extends Controller
         try {
             // First, update mail contact data
             $contact->fill($request->all());
+            $contact->write_as_name = $request->get('display_name');
             $contact->user_id = (int)Auth::user()->getAuthIdentifier();
             $contact->save();
 
@@ -672,11 +674,11 @@ class ContactController extends Controller
      *     )
      * )
      *
-     * @param \Illuminate\Http\Request $request
+     * @param $id
      *
-     * @return \Illuminate\Http\JsonResponse|mixed
+     * @return \Sumra\JsonApi\JsonApiResponse
      */
-    public function destroy($id)
+    public function destroy($id): JsonApiResponse
     {
         // Get object
         $contact = $this->getObject($id);

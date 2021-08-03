@@ -51,7 +51,7 @@ use Illuminate\Support\Str;
  *         example=""
  *     ),
  *     @OA\Property(
- *         property="write_as_name",
+ *         property="display_name",
  *         type="string",
  *         description="Display name data in string",
  *         example=""
@@ -203,7 +203,7 @@ class Contact extends Model
             'middle_name' => 'nullable|string',
             'last_name' => 'nullable|string',
             'suffix_name' => 'nullable|string',
-            'write_as_name' => 'nullable|string',
+            'display_name' => 'nullable|string',
             'avatar' => 'nullable|string',
             'nickname' => 'nullable|string',
             'birthday' => 'nullable|string',
