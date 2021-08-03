@@ -274,7 +274,7 @@ class CSVOutlook
         catch (\Exception $e)
         {
             return response()->jsonApi([
-                'status' => 'danger',
+                'type' => 'danger',
                 'title' => 'Operation not successful',
                 'message' => 'The operation for insert was unsuccessful'
             ], 404);

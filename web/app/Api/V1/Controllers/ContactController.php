@@ -1136,60 +1136,61 @@ class ContactController extends Controller
      *         }
      *     },
      *
-     *     @OA\Parameter(
-     *         name="id",
-     *         description="user id",
-     *         required=true,
-     *         in="query",
-     *         @OA\Schema (
-     *             type="integer"
-     *         )
-     *     ),
-     *
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 type="object",
+     *             @OA\Property(
+     *                 property="group_id",
+     *                 type="string",
+     *                 description="Input Group ID",
+     *                 example="3d9319c9-59ee-3efc-900f-eec98811c96b"
+     *             ),
+     *             @OA\Property(
+     *                 property="contacts",
+     *                 type="array",
+     *                 description="User contacts array in JSON",
      *
-     *                 @OA\Property(
-     *                     property="display_name",
-     *                     type="string",
-     *                     description="Display name data in string",
-     *                     example=""
-     *                 ),
-     *                 @OA\Property(
-     *                     property="avatar",
-     *                     type="string",
-     *                     description="Photo body in base64 format",
-     *                     example=""
-     *                 ),
-     *                 @OA\Property(
-     *                     property="phones",
-     *                     type="array",
-     *                     description="Contacts phones / Msisdns data in JSON",
+     *                 @OA\Items(
+     *                     type="object",
      *
-     *                     @OA\Items(
+     *                     @OA\Property(
+     *                         property="display_name",
      *                         type="string",
-     *                         example="+3521234562545"
-     *                     )
-     *                 ),
-     *                 @OA\Property(
-     *                     property="emails",
-     *                     type="array",
-     *                     description="Contacts emails",
-     *
-     *                     @OA\Items(
+     *                         description="Display name data in string",
+     *                         example=""
+     *                     ),
+     *                     @OA\Property(
+     *                         property="avatar",
      *                         type="string",
-     *                         example="client1@client.com"
+     *                         description="Photo body in base64 format",
+     *                         example=""
+     *                     ),
+     *                     @OA\Property(
+     *                         property="phones",
+     *                         type="array",
+     *                         description="Contacts phones / Msisdns data in JSON",
+     *
+     *                         @OA\Items(
+     *                             type="string",
+     *                             example="+3521234562545"
+     *                         )
+     *                     ),
+     *                     @OA\Property(
+     *                         property="emails",
+     *                         type="array",
+     *                         description="Contacts emails",
+     *
+     *                         @OA\Items(
+     *                             type="string",
+     *                             example="client1@client.com"
+     *                         )
+     *                     ),
+     *                     @OA\Property(
+     *                         property="is_shared",
+     *                         type="boolean",
+     *                         description="Need shared contacts data (1, 0, true, false)",
+     *                         example="false"
      *                     )
-     *                 ),
-     *                 @OA\Property(
-     *                     property="is_shared",
-     *                     type="boolean",
-     *                     description="Need shared contacts data (1, 0, true, false)",
-     *                     example="false"
      *                 )
      *             )
      *         )
@@ -1228,44 +1229,47 @@ class ContactController extends Controller
     public function importJson(Request $request)
     {
         try {
-            $json = json_decode($request, true);
+            foreach ($request->get('contacts') as $lead){
+                // First, Create contact
+                $contact = new Contact();
+                $contact->fill($lead);
+                $contact->user_id = (int)Auth::user()->getAuthIdentifier();
+                $contact->save();
 
-            // First, Create contact
-            $contact = new Contact();
-            $contact->fill($request->all());
-            $contact->user_id = (int)Auth::user()->getAuthIdentifier();
-            $contact->save();
+                // Save contact's phones
+                if (isset($lead['phones']) && count($lead['phones']) > 0) {
+                    foreach ($lead['phones'] as $phone) {
+                        $row = new ContactPhone();
+                        $row->fill([
+                            'phone' => $phone
+                        ]);
+                        $row->contact()->associate($contact);
+                        $row->save();
+                    }
+                }
 
-            // Save contact's phones
-            if ($request->has('phones') && count($request->get('phones')) > 0) {
-                foreach ($request->get('phones') as $phone) {
-                    $row = new ContactPhone();
-                    $row->fill($phone);
-                    $row->contact()->associate($contact);
-                    $row->save();
+                // Save contact's emails
+                if ($lead['emails'] && count($lead['emails']) > 0) {
+                    foreach ($lead['emails'] as $email) {
+                        $row = new ContactEmail();
+                        $row->fill([
+                            'email' => $email
+                        ]);
+                        $row->contact()->associate($contact);
+                        $row->save();
+                    }
                 }
             }
-
-            // Save contact's emails
-            if ($request->has('emails') && count($request->get('emails')) > 0) {
-                foreach ($request->get('emails') as $x => $email) {
-                    $row = new ContactEmail();
-                    $row->fill($email);
-                    $row->contact()->associate($contact);
-                    $row->save();
-                }
-            }
-
 
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => "Get data was success",
-                'message' => "Get data from remote server was successfully"
+                'title' => "Bulk import of contacts",
+                'message' => "Contacts was imported successfully"
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'status' => 'danger',
-                'title' => "Get data from remote server was unsuccessful",
+                'type' => 'danger',
+                'title' => "Bulk import of contacts",
                 'message' => $e->getMessage()
             ], 400);
         }
