@@ -186,6 +186,7 @@ class Contact extends Model
      * @var string[]
      */
     protected $hidden = [
+        'write_as_name',
         'created_at',
         'updated_at',
         'deleted_at',
