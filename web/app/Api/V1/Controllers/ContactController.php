@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\ContactEmail;
 use App\Models\ContactPhone;
-use App\Models\Work;
 use App\Services\Import;
 use Exception;
 use GuzzleHttp\Client;
@@ -150,10 +149,10 @@ class ContactController extends Controller
         try {
             $contacts = Contact::byOwner()
                 ->with([
-                    'phones' => function ($q) use ($request){
+                    'phones' => function ($q) use ($request) {
                         return $q->where('is_default', true);
                     },
-                    'emails' => function ($q) use ($request){
+                    'emails' => function ($q) use ($request) {
                         return $q->where('is_default', true);
                     },
                     'groups',
@@ -164,7 +163,6 @@ class ContactController extends Controller
                     return $q->where('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%")
                         ->orWhere('note', 'like', "%{$search}%")
-
                         ->orWhereHas('emails', function ($q) use ($search) {
                             return $q->where('email', 'like', "%{$search}%");
                         })
@@ -172,7 +170,6 @@ class ContactController extends Controller
                             return $q->where('phone', 'like', "%{$search}%");
                         });
                 })
-
                 ->when($request->has('isFavorite'), function ($q) use ($request) {
                     return $q->where('is_favorite', $request->get('isFavorite'));
                 })
@@ -213,7 +210,7 @@ class ContactController extends Controller
 
             // Transform collection objects
             $contacts->map(function ($object) {
-                $object->setAttribute('avatar', $this->getImagesFromRemote($object->id));
+                //   $object->setAttribute('avatar', $this->getImagesFromRemote($object->id));
 
                 $email = $object->emails->first();
                 $object->setAttribute('email', $email ? $email->email : null);
@@ -225,24 +222,42 @@ class ContactController extends Controller
             });
 
             // Get first letters
-            $letters = Contact::selectRaw('substr(first_name,1,1) as letter')
+            $ln_letters = Contact::selectRaw('SUBSTR(last_name,1,1) as letter')
+                ->when($request->has('isFavorite'), function ($q) use ($request) {
+                    return $q->where('is_favorite', $request->get('isFavorite'));
+                });
+
+            $dn_letters = Contact::selectRaw('SUBSTR(write_as_name,1,1) as letter')
+                ->when($request->has('isFavorite'), function ($q) use ($request) {
+                    return $q->where('is_favorite', $request->get('isFavorite'));
+                });
+
+            $letters = Contact::selectRaw('SUBSTR(first_name,1,1) as letter')
                 ->when($request->has('isFavorite'), function ($q) use ($request) {
                     return $q->where('is_favorite', $request->get('isFavorite'));
                 })
                 ->distinct()
+                ->union($ln_letters)
+                ->union($dn_letters)
                 ->orderBy('letter')
                 ->get()
                 ->pluck('letter')
                 ->toArray();
-            $letters = array_values(array_unique($letters, SORT_LOCALE_STRING));
+            $letters = array_values(array_filter(array_unique($letters, SORT_LOCALE_STRING)));
 
             // Return response
-            return response()->jsonApi(array_merge(['letters' => $letters], $contacts->toArray()), 200);
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => "Get contacts list",
+                'message' => 'Contacts list received',
+                'data' => array_merge(['letters' => $letters], $contacts->toArray())
+            ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
                 'title' => "Get contacts list",
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'data' => null
             ], 400);
         }
     }
@@ -989,7 +1004,8 @@ class ContactController extends Controller
      * @return mixed
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function joinGroups(Request $request){
+    public function joinGroups(Request $request)
+    {
         // Validate input
         $this->validate($request, [
             'contacts' => 'required|array',
@@ -1231,7 +1247,7 @@ class ContactController extends Controller
     public function importJson(Request $request)
     {
         try {
-            foreach ($request->get('contacts') as $lead){
+            foreach ($request->get('contacts') as $lead) {
                 // First, Create contact
                 $contact = new Contact();
                 $contact->fill($lead);
@@ -1278,7 +1294,7 @@ class ContactController extends Controller
     }
 
     /**
-     * Contact's group not found
+     * Contact's not found
      *
      * @param $id
      *

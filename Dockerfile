@@ -81,7 +81,8 @@ RUN docker-php-ext-install -j$(nproc) \
 RUN pecl install xdebug-3.0.3
 
 #RUN docker-php-ext-configure xdebug
-RUN docker-php-ext-enable xdebug
+RUN docker-php-ext-enable \
+    xdebug
 
 # Configure Apache
 COPY conf/vhost.conf /etc/apache2/sites-available/000-default.conf

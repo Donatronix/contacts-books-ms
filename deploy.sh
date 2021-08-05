@@ -14,29 +14,24 @@ DOCKER_ECR_REPO_URL="005279544259.dkr.ecr.us-west-2.amazonaws.com"
 
 case "$1" in
 build)
-    echo "${GREEN}Start Build${NC}\n"
-    echo "Deploy Name: $DEPLOY_NAME\nBranch: $BRANCH\nRev: $REVISION\n"
+    echo "${GREEN}Start Build${NC}"
+    echo "Deploy Name: $DEPLOY_NAME"
+    echo "Branch: $BRANCH"
+    echo "Rev: $REVISION"
     docker build -f Dockerfile -t $DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION .
     ;;
-
 push)
-    echo "${GREEN}Push Docker IMAGE Build ${NC}\n"
-    echo "Deploy Name: $DEPLOY_NAME\nBranch: $BRANCH\nRev: $REVISION\n"
+    echo "${GREEN}Push Docker IMAGE Build ${NC}"
+    echo "Deploy Name: $DEPLOY_NAME"
+    echo "Branch: $BRANCH"
+    echo "Rev: $REVISION"
     docker push  $DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION
     ;;
 start)
     echo "${GREEN}Generate docker-compose${NC}\n"
-    echo "Deploy Name: $DEPLOY_NAME\nBranch: $BRANCH\nRev: $REVISION"
-    cat compose-tmpl.yaml | grep -v "#"  > docker-compose.yaml
-    sed -i "" "s~{{DEPLOY_NAME}}~$DEPLOY_NAME~" docker-compose.yaml
-    sed -i "" "s~{{DOCKER_IMAGE}}~$DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION~" docker-compose.yaml
-    echo "Run docker-compose up "
-    docker-compose stop
-    docker-compose up -d
-    ;;
-up)
-    echo "${GREEN}Generate docker-compose${NC}\n"
-    echo "Deploy Name: $DEPLOY_NAME\nBranch: $BRANCH\nRev: $REVISION"
+    echo "Deploy Name: $DEPLOY_NAME"
+    echo "Branch: $BRANCH"
+    echo "Rev: $REVISION"
     cat compose-tmpl.yaml | grep -v "#"  > docker-compose.yaml
     sed -i"" "s~{{DEPLOY_NAME}}~$DEPLOY_NAME~" docker-compose.yaml
     sed -i"" "s~{{DOCKER_IMAGE}}~$DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION~" docker-compose.yaml
@@ -56,7 +51,6 @@ rm)
     echo "${GREEN}Stop docker-compose${NC}\n"
     docker-compose rm -f
     ;;
-
 *) echo "${RED}Command $1 is not implemented${NC}\n"
    ;;
 esac
