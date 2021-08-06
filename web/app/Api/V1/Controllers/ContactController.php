@@ -206,7 +206,7 @@ class ContactController extends Controller
 //                        return $q->join('emails', 'users.role_id', '=', 'roles.id')->orderBy('emails.email', $sort['order'] ?? 'asc');
 //                    });
                 })
-                ->paginate($request->get('limit', 1000));
+                ->paginate($request->get('limit', config('settings.pagination_limit')));
 
             // Transform collection objects
             $contacts->map(function ($object) {
@@ -246,12 +246,15 @@ class ContactController extends Controller
             $letters = array_values(array_filter(array_unique($letters, SORT_LOCALE_STRING)));
 
             // Return response
-            return response()->jsonApi([
-                'type' => 'success',
-                'title' => "Get contacts list",
-                'message' => 'Contacts list received',
-                'data' => array_merge(['letters' => $letters], $contacts->toArray())
-            ], 200);
+            return response()->json(array_merge(
+                [
+                    'type' => 'success',
+                    'title' => "Get contacts list",
+                    'message' => 'Contacts list received',
+                    'letters' => $letters
+                ],
+                $contacts->toArray()
+            ), 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -1323,10 +1326,10 @@ class ContactController extends Controller
     {
         $images = null;
 
-        $client = new Client(['base_uri' => env('FILES_MICROSERVICE_HOST')]);
+        $client = new Client(['base_uri' => config('settings.api.files.host')]);
 
         try {
-            $response = $client->request('GET', env('API_FILES', '/v1') . '/files' . "?entity=contact&entity_id={$id}", [
+            $response = $client->request('GET', config('settings.api.files.version') . "/files?entity=contact&entity_id={$id}", [
                 'headers' => [
                     'user-id' => '100',
                     'Accept' => 'application/json',

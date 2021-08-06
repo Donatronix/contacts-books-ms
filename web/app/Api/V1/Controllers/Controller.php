@@ -6,7 +6,7 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 
 /**
  * @OA\Info(
- *     title="Contacts Book API",
+ *     title="Contacts Book API Microservice",
  *     description="This is API of Contacts Book Microservice",
  *     version="1.0",
  *
