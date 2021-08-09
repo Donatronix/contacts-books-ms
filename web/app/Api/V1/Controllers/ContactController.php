@@ -524,7 +524,7 @@ class ContactController extends Controller
     }
 
     /**
-     * Update user's contacts in JSON format
+     * Update user's contact (in JSON format)
      *
      * @OA\Put(
      *     path="/v1/contacts/{id}",
@@ -551,8 +551,9 @@ class ContactController extends Controller
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Contacts Id",
      *         required=true,
+     *         description="Contacts ID",
+     *         example="0aa06e6b-35de-3235-b925-b0c43f8f7c75",
      *         @OA\Schema(
      *             type="string"
      *         )
@@ -569,24 +570,7 @@ class ContactController extends Controller
      *     ),
      *     @OA\Response(
      *         response="500",
-     *         description="Unknown error",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(
-     *                 property="error",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="code",
-     *                     type="string",
-     *                     description="code of error"
-     *                 ),
-     *                 @OA\Property(
-     *                     property="message",
-     *                     type="string",
-     *                     description="error message"
-     *                 )
-     *             )
-     *         )
+     *         description="Unknown error"
      *     )
      * )
      *
@@ -632,12 +616,12 @@ class ContactController extends Controller
     }
 
     /**
-     * Delete contact data
+     * Delete selected contact / contacts
      *
      * @OA\Delete(
      *     path="/v1/contacts/{id}",
-     *     summary="Save contact data in Neo4j",
-     *     description="Save contact data in Neo4j",
+     *     summary="Delete selected contact / contacts",
+     *     description="Delete selected contact / contacts",
      *     tags={"Contacts"},
      *
      *     security={{
@@ -657,22 +641,29 @@ class ContactController extends Controller
      *     },
      *
      *     @OA\Parameter(
-     *         name="userID",
+     *         name="id",
+     *         in="path",
+     *         required=true,
      *         description="Contacts ID",
-     *         required=true,
-     *         in="query",
-     *          @OA\Schema (
-     *              type="integer"
-     *          )
+     *         example="0aa06e6b-35de-3235-b925-b0c43f8f7c75",
+     *         @OA\Schema (
+     *             type="string"
+     *         )
      *     ),
-     *     @OA\Parameter(
-     *         name="contacts",
-     *         description="Contacts in JSON",
-     *         required=true,
-     *         in="query",
-     *          @OA\Schema (
-     *              type="string"
-     *          )
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="ids",
+     *                 type="array",
+     *                 description="Contacts Ids in JSON",
+     *
+     *                 @OA\Items(
+     *                     type="item",
+     *                     example="0aa06e6b-35de-3235-b925-b0c43f8f7c75"
+     *                 )
+     *             )
+     *         )
      *     ),
      *     @OA\Response(
      *         response="200",
@@ -692,33 +683,53 @@ class ContactController extends Controller
      *     )
      * )
      *
-     * @param $id
+     * @param                          $id
+     * @param \Illuminate\Http\Request $request
      *
      * @return \Sumra\JsonApi\JsonApiResponse
      */
-    public function destroy($id): JsonApiResponse
+    public function destroy($id, Request $request): JsonApiResponse
     {
-        // Get object
-        $contact = $this->getObject($id);
+        if ($id === '0' && $request->has('ids')) {
+            try {
+                // now this will destroy campaigns with ids
+                Contact::destroy($request->get('ids'));
 
-        if ($contact instanceof JsonApiResponse) {
-            return $contact;
-        }
+                return response()->jsonApi([
+                    'type' => 'success',
+                    'title' => 'Delete contacts',
+                    'message' => 'The selected contacts have been successfully deleted'
+                ], 200);
+            } catch (Exception $e) {
+                return response()->jsonApi([
+                    'type' => 'danger',
+                    'title' => 'Delete contacts',
+                    'message' => 'Error while deleting contacts: ' . $e->getMessage()
+                ], 400);
+            }
+        }else{
+            // Get object
+            $contact = $this->getObject($id);
 
-        try {
-            $contact->delete();
+            if ($contact instanceof JsonApiResponse) {
+                return $contact;
+            }
 
-            return response()->jsonApi([
-                'type' => 'success',
-                'title' => 'Contact are deleted',
-                'message' => 'Contact are deleted'
-            ], 200);
-        } catch (Exception $e) {
-            return response()->jsonApi([
-                'type' => 'danger',
-                'title' => 'Contact are not saved',
-                'message' => $e->getMessage()
-            ], 400);
+            try {
+                $contact->delete();
+
+                return response()->jsonApi([
+                    'type' => 'success',
+                    'title' => 'Delete contact',
+                    'message' => 'The selected contact have been successfully deleted'
+                ], 200);
+            } catch (Exception $e) {
+                return response()->jsonApi([
+                    'type' => 'danger',
+                    'title' => 'Delete contact',
+                    'message' => 'Error while deleting contact: ' . $e->getMessage()
+                ], 400);
+            }
         }
     }
 
@@ -752,15 +763,15 @@ class ContactController extends Controller
      *
      *             @OA\Property(
      *                 property="contact_id_from",
-     *                 type="integer",
+     *                 type="string",
      *                 description="Contact ID From",
-     *                 example="2"
+     *                 example="0aa06e6b-35de-3235-b925-b0c43f8f7c75"
      *             ),
      *             @OA\Property(
      *                 property="contact_id_to",
-     *                 type="integer",
+     *                 type="string",
      *                 description="Contact ID To",
-     *                 example="5"
+     *                 example="0aa06e6b-35de-3235-b925-b0c43f8f7c87"
      *             )
      *         )
      *     ),
@@ -770,24 +781,7 @@ class ContactController extends Controller
      *     ),
      *     @OA\Response(
      *         response="500",
-     *         description="Unknown error",
-     *         @OA\JsonContent(
-     *             type="object",
-     *             @OA\Property(
-     *                 property="error",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="code",
-     *                     type="string",
-     *                     description="code of error"
-     *                 ),
-     *                 @OA\Property(
-     *                     property="message",
-     *                     type="string",
-     *                     description="error message"
-     *                 )
-     *             )
-     *         )
+     *         description="Unknown error"
      *     )
      * )
      *

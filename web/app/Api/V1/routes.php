@@ -15,7 +15,7 @@ $router->group([
     $router->post('/', 'ContactController@store');
     $router->get('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@show');
     $router->put('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@update');
-    $router->delete('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@destroy');
+    $router->delete('/{id}', 'ContactController@destroy');
     $router->get('/{id:[a-fA-F0-9\-]{36}}/favorite', 'ContactController@favorite');
     $router->post('/merge', 'ContactController@merge');
     $router->post('/join-groups', 'ContactController@joinGroups');

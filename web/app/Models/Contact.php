@@ -210,7 +210,7 @@ class Contact extends Model
             'birthday' => 'nullable|string',
             'note' => 'nullable|string',
             'phones' => 'required|array',
-            'emails' => 'required|array'
+            'emails' => 'nullable|array'
         ];
     }
 
