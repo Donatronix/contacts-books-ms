@@ -1,4 +1,5 @@
 #!/bin/bash -x
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
@@ -28,14 +29,14 @@ push)
     docker push  $DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION
     ;;
 start)
-    echo "${GREEN}Generate docker-compose${NC}\n"
+    printf "%sGenerate docker-compose%s\n" "$GREEN" "$NC"
     echo "Deploy Name: $DEPLOY_NAME"
     echo "Branch: $BRANCH"
     echo "Rev: $REVISION"
     cat compose-tmpl.yaml | grep -v "#"  > docker-compose.yaml
     sed -i"" "s~{{DEPLOY_NAME}}~$DEPLOY_NAME~" docker-compose.yaml
     sed -i"" "s~{{DOCKER_IMAGE}}~$DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION~" docker-compose.yaml
-    echo "Run docker-compose up "
+    echo "Run docker-compose up"
     docker-compose stop
     docker-compose up -d
     ;;

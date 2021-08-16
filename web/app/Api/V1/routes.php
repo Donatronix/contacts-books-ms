@@ -6,7 +6,7 @@
 $router->group([
     'prefix' => 'contacts',
     'namespace' => '\App\Api\V1\Controllers',
-   // 'middleware' => 'checkUser'
+    'middleware' => 'checkUser'
 ], function ($router) {
     /**
      * Contacts

@@ -171,7 +171,7 @@ class ContactController extends Controller
                         });
                 })
                 ->when($request->has('isFavorite'), function ($q) use ($request) {
-                    return $q->where('is_favorite', $request->get('isFavorite'));
+                    return $q->where('is_favorite', $request->boolean('isFavorite'));
                 })
                 ->when($request->has('isRecently'), function ($q) use ($request) {
                     return $q->sortBy('created_at', 'desc');
