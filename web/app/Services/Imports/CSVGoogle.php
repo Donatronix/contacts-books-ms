@@ -76,6 +76,7 @@ class CSVGoogle
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'last_name';
                     $data_params['cnt_name_key']++;
+
                     continue;
                 }
 
@@ -83,6 +84,7 @@ class CSVGoogle
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'middle_name';
                     $data_params['cnt_name_key']++;
+
                     continue;
                 }
 
@@ -90,6 +92,7 @@ class CSVGoogle
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'prefix_name';
                     $data_params['cnt_name_key']++;
+
                     continue;
                 }
 
@@ -97,11 +100,13 @@ class CSVGoogle
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'suffix_name';
                     $data_params['cnt_name_key']++;
+
                     continue;
                 }
 
                 if ($key == 'Nickname') {
                     $data_result[$k]['nickname'] = $item;
+
                     continue;
                 }
 
@@ -113,6 +118,7 @@ class CSVGoogle
 
                 if ($key == 'Notes') {
                     $data_result[$k]['note'] = $item;
+
                     continue;
                 }
 
@@ -214,7 +220,6 @@ class CSVGoogle
 
                 // TODO: does not work
                 if ($value == "Address {$data_params['cnt_address_key']} - Country" || $value == "Address {$data_params['cnt_address_key']} - Postal Code" || $value == "Address {$data_params['cnt_address_key']} - Region" || $value == "Address {$data_params['cnt_address_key']} - City" || $value == "Address {$data_params['cnt_address_key']} - Street" || $value == "Address {$data_params['cnt_address_key']} - Extended Address" || $value == "Address {$data_params['cnt_address_key']} - PO Box") {
-                    echo 111;
                     if ($value == "Address {$data_params['cnt_address_key']} - Country") {
                         $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'country';
                         $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
@@ -254,6 +259,7 @@ class CSVGoogle
                     $data_params['cnt_address_info']++;
                 }
             }
+
             $data_params['cnt_company_info_key']++;
         }
 

@@ -14,6 +14,7 @@ use App\Models\Work;
 use App\Services\Imports\Vcard;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PubSub;
 
@@ -85,17 +86,17 @@ class Import
     public function parse($classes, $request)
     {
         $data_result = false;
-        $path_to_dir = '\App\Services\Imports\\';
-        $file_data = '';
+
         $file_extension = $request->file()['contacts']->clientExtension();
-//        foreach ($classes as $class)
-//        {
+
+//        foreach ($classes as $class) {
+
         if ($file_extension == 'vcard') {
             $file = $this->readFile($request);
 
             $file_data = new Vcard($file);
             $data_parse = $file_data->parse($file_data);
-//                dd($data_parse);
+
             $data_result = $this->insertContactToBb($data_parse);
         }
 

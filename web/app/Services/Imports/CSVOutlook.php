@@ -12,6 +12,7 @@ use App\Models\Relation;
 use App\Models\Work;
 use App\Services\Import;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class CSVOutlook
 {
