@@ -161,7 +161,7 @@ class ContactController extends Controller
                     return $q->where('is_favorite', $request->boolean('isFavorite'));
                 })
                 ->when($request->has('isRecently'), function ($q) use ($request) {
-                    return $q->sortBy('created_at', 'desc');
+                    return $q->orderBy('created_at', 'desc');
                 })
                 ->when($request->has('groupId'), function ($q) use ($request) {
                     return $q->whereHas('groups', function ($q) use ($request) {
