@@ -260,37 +260,9 @@ class CSVGoogle
         return $data_result ?? false;
     }
 
-    function parse_csv($str)
-    {
-        $str = preg_replace_callback('/([^"]*)("((""|[^"])*)"|$)/s',
-            function ($matches) {
-                $str = str_replace("\r", "\rR", $matches[3]);
-
-                return preg_replace('/\r\n?/', "\n", $matches[1]) . $str;
-            },
-            $str);
-        dd($str);
-        $str = preg_replace('/\n$/', '', $str);
-
-        return array_map(
-            function ($line) {
-                return array_map(
-                    function ($field) {
-                        $field = str_replace("\rC", ',', $field);
-                        $field = str_replace("\rQ", '"', $field);
-                        $field = str_replace("\rN", "\n", $field);
-                        $field = str_replace("\rR", "\r", $field);
-
-                        return $field;
-                    },
-                    explode(',', $line));
-            }, explode("\n", $str)
-        );
-    }
-
     public function readDataTmp($file_data)
     {
-        $user_id = (int)Auth::user()->getAuthIdentifier();
+        $user_id = (string)Auth::user()->getAuthIdentifier();
 
         $googles = $this->parse_csv($file_data);
 
@@ -337,5 +309,33 @@ class CSVGoogle
             'success' => true,
             'data' => $contacts
         ], 200);
+    }
+
+    function parse_csv($str)
+    {
+        $str = preg_replace_callback('/([^"]*)("((""|[^"])*)"|$)/s',
+            function ($matches) {
+                $str = str_replace("\r", "\rR", $matches[3]);
+
+                return preg_replace('/\r\n?/', "\n", $matches[1]) . $str;
+            },
+            $str);
+        dd($str);
+        $str = preg_replace('/\n$/', '', $str);
+
+        return array_map(
+            function ($line) {
+                return array_map(
+                    function ($field) {
+                        $field = str_replace("\rC", ',', $field);
+                        $field = str_replace("\rQ", '"', $field);
+                        $field = str_replace("\rN", "\n", $field);
+                        $field = str_replace("\rR", "\r", $field);
+
+                        return $field;
+                    },
+                    explode(',', $line));
+            }, explode("\n", $str)
+        );
     }
 }

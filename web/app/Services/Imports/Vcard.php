@@ -2,17 +2,14 @@
 
 namespace App\Services\Imports;
 
-use App\Models\Contact;
-use App\Services\Import;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
-use Dotenv\Exception\ValidationException;
+use Exception;
 
 class Vcard
 {
     public $file_format = 'vcf';
 
     public $data = [];
+
     /**
      *
      * Reads a file for parsing, then sends it to $this->readData()
@@ -31,22 +28,11 @@ class Vcard
      *
      */
 
-    public function __construct($file_data=false)
+    public function __construct($file_data = false)
     {
         $this->data = $this->readData($file_data);
 
         return $this->data;
-    }
-
-    function fromFile($filename, $decode_qp = true)
-    {
-        if (file_exists($filename) && is_readable($filename)) {
-            $text = file_get_contents($filename);
-
-            return $this->readData($text, $decode_qp);
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -81,71 +67,6 @@ class Vcard
         $lines = explode("\n", $text);
 
         return $this->_fromArray($lines, $decode_qp);
-    }
-
-    /**
-     *
-     * Splits a string into an array at semicolons. (splits at ';' not '\;').
-     *
-     * @param string $text The string to split into an array.
-     * @param bool   $convertSingle
-     */
-
-    function splitBySemi($text, $convertSingle = false)
-    {
-        $regex = '(?<!\\\\)(\;)';
-        $tmp = preg_split("/$regex/i", $text);
-        if ($convertSingle && count($tmp) == 1) {
-            return $tmp[0];
-        } else {
-            return $tmp;
-        }
-    }
-
-    /**
-     *
-     * Splits a string into an array at commas. (splits at ',' not '\,').
-     *
-     * @param string $text The string to split into an array.
-     * @param bool   $convertSingle
-     */
-
-    function splitByComma($text, $convertSingle = false)
-    {
-        $regex = '(?<!\\\\)(\,)';
-        $tmp = preg_split("/$regex/i", $text);
-        if ($convertSingle && count($tmp) == 1) {
-            return $tmp[0];
-        } else {
-            return $tmp;
-        }
-    }
-
-    /**
-     *
-     * Used to make string human-readable after being a vCard value.
-     *
-     * Converts...
-     *     \: => :
-     *     \; => ;
-     *     \, => ,
-     *     literal \n => newline
-     *
-     * @param mixed $text The text to unescape.
-     *
-     * @return void
-     */
-
-    function unescape(&$text)
-    {
-        if (is_array($text)) {
-            foreach ($text as $key => $val) {
-                $this->unescape($val);
-                $text[$key] = $val;
-            }
-        } else {
-            $text = $this->vcard_stripcslashes($text, ":;,n\\");
-        }
     }
 
     private function _fromArray($source, $decode_qp = true)
@@ -253,16 +174,23 @@ class Vcard
         return strtoupper($split[0]);
     }
 
-    private function _getItemNr($text)
+    /**
+     *
+     * Splits a string into an array at semicolons. (splits at ';' not '\;').
+     *
+     * @param string $text The string to split into an array.
+     * @param bool   $convertSingle
+     */
+
+    function splitBySemi($text, $convertSingle = false)
     {
-        $split = $this->splitBySemi($text);
-        if (strtoupper(substr($split[0], 0, 4)) == 'ITEM') {
-            $split[0] = substr($split[0], 4);
-
-            return (int)$split[0];
+        $regex = '(?<!\\\\)(\;)';
+        $tmp = preg_split("/$regex/i", $text);
+        if ($convertSingle && count($tmp) == 1) {
+            return $tmp[0];
+        } else {
+            return $tmp;
         }
-
-        return 0;
     }
 
     private function _getParams($text)
@@ -294,21 +222,6 @@ class Vcard
         return $params;
     }
 
-    private function _decode_qp(&$params, &$text)
-    {
-        foreach ($params as $param_key => $param_val) {
-            if (trim(strtoupper($param_key)) == 'ENCODING') {
-                foreach ($param_val as $enc_key => $enc_val) {
-                    if (trim(strtoupper($enc_val)) == 'QUOTED-PRINTABLE') {
-                        $text = utf8_encode(quoted_printable_decode($text));
-
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
     private function _getParamName($value)
     {
         static $types = [
@@ -337,6 +250,52 @@ class Vcard
         }
 
         return $name;
+    }
+
+    /**
+     *
+     * Splits a string into an array at commas. (splits at ',' not '\,').
+     *
+     * @param string $text The string to split into an array.
+     * @param bool   $convertSingle
+     */
+
+    function splitByComma($text, $convertSingle = false)
+    {
+        $regex = '(?<!\\\\)(\,)';
+        $tmp = preg_split("/$regex/i", $text);
+        if ($convertSingle && count($tmp) == 1) {
+            return $tmp[0];
+        } else {
+            return $tmp;
+        }
+    }
+
+    private function _getItemNr($text)
+    {
+        $split = $this->splitBySemi($text);
+        if (strtoupper(substr($split[0], 0, 4)) == 'ITEM') {
+            $split[0] = substr($split[0], 4);
+
+            return (int)$split[0];
+        }
+
+        return 0;
+    }
+
+    private function _decode_qp(&$params, &$text)
+    {
+        foreach ($params as $param_key => $param_val) {
+            if (trim(strtoupper($param_key)) == 'ENCODING') {
+                foreach ($param_val as $enc_key => $enc_val) {
+                    if (trim(strtoupper($enc_val)) == 'QUOTED-PRINTABLE') {
+                        $text = utf8_encode(quoted_printable_decode($text));
+
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     private function _parseN($text)
@@ -401,6 +360,33 @@ class Vcard
         ];
     }
 
+    /**
+     *
+     * Used to make string human-readable after being a vCard value.
+     *
+     * Converts...
+     *     \: => :
+     *     \; => ;
+     *     \, => ,
+     *     literal \n => newline
+     *
+     * @param mixed $text The text to unescape.
+     *
+     * @return void
+     */
+
+    function unescape(&$text)
+    {
+        if (is_array($text)) {
+            foreach ($text as $key => $val) {
+                $this->unescape($val);
+                $text[$key] = $val;
+            }
+        } else {
+            $text = $this->vcard_stripcslashes($text, ":;,n\\");
+        }
+    }
+
     private function vcard_stripcslashes($string, $escapes)
     {
         $escape_mode = 0;
@@ -444,10 +430,84 @@ class Vcard
         return $out_string;
     }
 
+    function fromFile($filename, $decode_qp = true)
+    {
+        if (file_exists($filename) && is_readable($filename)) {
+            $text = file_get_contents($filename);
+
+            return $this->readData($text, $decode_qp);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     *  Parse the array into the desired format.
+     *
+     * @param $file_data_array
+     *
+     * @return array
+     */
+    public function parse($file_data_array)
+    {
+        $data = [];
+
+        try {
+            foreach ($file_data_array->data as $k => $item) {
+                // field: FN (Full name)
+                $data[$k]['full_name'] = $this->getFullname($item);
+
+                // field: N (array of name parameters)
+                $data[$k]['name_param'] = $this->getParamsName($item);
+
+                // field: NICKNAME (pseudonym)
+                $data[$k]['nickname'] = $this->getNickname($item);
+
+                // field: EMAIL
+                $data[$k]['email'] = $this->getEmail($item);
+
+                // field: TEL (phone)
+                $data[$k]['phone'] = $this->getPhone($item);
+
+                // field: ADR (address)
+                $data[$k]['address'] = $this->getAddress($item);
+
+                // field: ORG (company, department) + TITLE (post)
+                $data[$k]['company_info'] = $this->getCompanyInfo($item);
+
+                // field: BDAY (birthday)
+                $data[$k]['birthday'] = $this->getBirthday($item);
+
+                // field: URL (sites)
+                $data[$k]['sites'] = $this->getSites($item);
+
+                // field: X-ABRELATEDNAMES (relation)
+                $data[$k]['relation'] = $this->getRelationInfo($item);
+
+                // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
+                $data[$k]['chats'] = $this->getChat($item);
+
+                // field: NOTE
+                $data[$k]['note'] = $this->getNote($item); // доработать
+
+                // field: PHOTO
+                $data[$k]['photo'] = $this->getAvatar($item);
+
+                // field: CATEGORIES
+                $data[$k]['categories'] = $this->getCategories($item);
+            }
+        } catch (Exception $e) {
+            echo $e;
+        }
+
+        return $data;
+    }
+
     /**
      *  Get full name from imported file
      *
      * @param array $data
+     *
      * @return string
      */
     public function getFullname($data)
@@ -456,33 +516,52 @@ class Vcard
     }
 
     /**
+     *  Checking for the presence of a parameter in the imported file.
+     *
+     * @param array $param
+     *
+     * @return boolean
+     */
+    private function checkParam($param)
+    {
+        if (isset($param)) {
+            return $param;
+        }
+
+        return false;
+    }
+
+    /**
      *  Get an array of full name parameters
      *
      * @param array $data
+     *
      * @return array|false
      */
     public function getParamsName($data)
     {
         $tmp = $data['N'][0]['value'];
-        if($tmp){
+        if ($tmp) {
             $result = [];
             $arr_type = ['last_name', 'first_name', 'middle_name', 'prefix_name', 'suffix_name'];
-            for($i=0; $i < count($tmp); $i++)
-            {
+            for ($i = 0; $i < count($tmp); $i++) {
                 $result[$i]['value'] = $this->checkParam($tmp[$i][0]);
-                if($result[$i]['value']){
+                if ($result[$i]['value']) {
                     $result[$i]['type'] = $arr_type[$i];
                 }
             }
+
             return $result;
         }
-        return FALSE;
+
+        return false;
     }
 
     /**
      *  Get nickname from imported file
      *
      * @param array $data
+     *
      * @return string
      */
     public function getNickname($data)
@@ -494,20 +573,23 @@ class Vcard
      *  Receive email and its type
      *
      * @param array $data
+     *
      * @return array $result|false
      */
     public function getEmail($data)
     {
         $tmp = $data['EMAIL'];
-        if($tmp){
+        if ($tmp) {
             $result = [];
-            for($i=0; $i < count($tmp); $i++){
+            for ($i = 0; $i < count($tmp); $i++) {
                 $result[$i]['value'] = $tmp[$i]['value'][0][0];
                 $result[$i]['type'] = $tmp[$i]['param']['TYPE'][1] ?? 'other';
                 $result[$i]['type'] = mb_strtolower($result[$i]['type']);
             }
+
             return $result;
         }
+
         return false;
     }
 
@@ -515,26 +597,28 @@ class Vcard
      * get a phone and its type
      *
      * @param array $data
+     *
      * @return array $result|false
      */
     public function getPhone($data)
     {
         $tmp = $data['TEL'];
-        if($tmp){
-            for($i=0; $i < count($tmp); $i++){
+        if ($tmp) {
+            for ($i = 0; $i < count($tmp); $i++) {
                 $result[$i]['value'] = str_replace(" ", '', $tmp[$i]['value'][0][0]);
 
-                if(isset($tmp[$i]['param']['TYPE'][0])){
+                if (isset($tmp[$i]['param']['TYPE'][0])) {
                     $result[$i]['type'] = $tmp[$i]['param']['TYPE'][0];
-                }
-                else{
+                } else {
                     $result[$i]['type'] = $tmp[$i]['X-ABLABEL']['value'][0][0] ?? false;
                 }
 
                 $result[$i]['type'] = mb_strtolower($result[$i]['type']);
             }
+
             return $result;
         }
+
         return false;
     }
 
@@ -542,47 +626,53 @@ class Vcard
      *  Get address parameters
      *
      * @param array $data
+     *
      * @return array $result|false
      */
     public function getAddress($data)
     {
         $tmp = $data['ADR'];
-        if($tmp){
+        if ($tmp) {
             $arr_type = ['post_office_box_number', 'address_string2', 'address_string1', 'city', 'provinces', 'postcode', 'country', 'type'];
-            for($i=0; $i < count($tmp); $i++){
+            for ($i = 0; $i < count($tmp); $i++) {
                 $cnt = count($tmp[$i]['value']) + 1;
-                for($j=0; $j < $cnt;$j++){
+                for ($j = 0; $j < $cnt; $j++) {
                     $type = $arr_type[$j];
-                    if($type != 'type'){
+                    if ($type != 'type') {
                         $result[$i][$type] = $tmp[$i]['value'][$j][0];
-                    }
-                    else{
-                        if(isset($tmp[$i]['X-ABLABEL']['value'][0][0])){
+                    } else {
+                        if (isset($tmp[$i]['X-ABLABEL']['value'][0][0])) {
                             $result[$i][$type] = $tmp[$i]['X-ABLABEL']['value'][0][0];
                         }
                     }
                 }
                 $result[$i] = array_reverse($result[$i]);
             }
+
             return $result;
         }
+
         return false;
     }
 
     /**
      *  Get company info
+     *
      * @param array $data
+     *
      * @return array $result|false
      */
     public function getCompanyInfo($data)
     {
         $tmp = $data['ORG'][0]['value'];
-        if($tmp){
+        if ($tmp) {
             $result['company'] = $tmp[0][0];
             $result['department'] = $tmp[1][0];
             $result['post'] = $data['TITLE'][0]['value'][0][0] ?? false;
+
             return $result;
         }
+
         return false;
     }
 
@@ -590,14 +680,17 @@ class Vcard
      *  Get birthday
      *
      * @param array $data
+     *
      * @return array|bool
      */
     public function getBirthday($data)
     {
-        if($birthday = $this->checkParam($data["BDAY"][0]["value"][0][0])){
+        if ($birthday = $this->checkParam($data["BDAY"][0]["value"][0][0])) {
             $birthday = strtotime(str_replace('/', '-', $birthday));
-            return $birthday ? date("Y-m-d", $birthday) : NULL;
+
+            return $birthday ? date("Y-m-d", $birthday) : null;
         }
+
         return false;
     }
 
@@ -605,27 +698,27 @@ class Vcard
      *  Get info by sites
      *
      * @param array $data
+     *
      * @return array $result|false
      */
     public function getSites($data)
     {
         $tmp = $data['URL'];
-        if($tmp)
-        {
-            for($i=0; $i < count($tmp); $i++)
-            {
+        if ($tmp) {
+            for ($i = 0; $i < count($tmp); $i++) {
                 $result[$i]['value'] = $this->checkParam($tmp[$i]['value'][0][0]);
 
-                if(isset($tmp[$i]['param']['TYPE'][0])){
+                if (isset($tmp[$i]['param']['TYPE'][0])) {
                     $result[$i]['type'] = $tmp[$i]['param']['TYPE'][0];
-                }
-                else{
+                } else {
                     $result[$i]['type'] = $tmp[$i]['X-ABLABEL']['value'][0][0] ?? false;
                 }
                 $result[$i]['type'] = mb_strtolower($result[$i]['type']);
             }
+
             return $result;
         }
+
         return false;
     }
 
@@ -633,18 +726,16 @@ class Vcard
      *  Get relationship information
      *
      * @param array $data
+     *
      * @return array $result|false
      */
     public function getRelationInfo($data)
     {
         $tmp = $data['X-ABRELATEDNAMES'];
-        if($tmp)
-        {
+        if ($tmp) {
             $type_info = '';
-            for($i=0; $i < count($tmp); $i++)
-            {
-                switch ($tmp[$i]['X-ABLABEL']['value'][0][0])
-                {
+            for ($i = 0; $i < count($tmp); $i++) {
+                switch ($tmp[$i]['X-ABLABEL']['value'][0][0]) {
                     case '_$!<Spouse>!$_':
                         $type_info = 'spouse';
                         break;
@@ -708,8 +799,10 @@ class Vcard
                 $result[$i]['value'] = $this->checkParam($tmp[$i]['value'][0][0]);
                 $result[$i]['type'] = $type_info;
             }
+
             return $result;
         }
+
         return false;
     }
 
@@ -717,6 +810,7 @@ class Vcard
      *  Get info by chats
      *
      * @param array $data
+     *
      * @return array $result|false
      */
     public function getChat($data)
@@ -724,14 +818,14 @@ class Vcard
         $data_arr_chats = ['X-GTALK', 'X-AIM', 'X-YAHOO', 'X-SKYPE', 'X-QQ', 'X-MSN', 'X-ICQ', 'X-JABBER'];
         $result_arr_chats = ['gtalk', 'aim', 'yahoo', 'skype', 'qq', 'msn', 'isq', 'jabber'];
 
-        for($i=0; $i < count($data_arr_chats); $i++)
-        {
+        for ($i = 0; $i < count($data_arr_chats); $i++) {
             $data_arr = $data_arr_chats[$i];
-            if(isset($data[$data_arr])){
+            if (isset($data[$data_arr])) {
                 $result_arr = $result_arr_chats[$i];
                 $result[$result_arr] = $data[$data_arr][0]['value'][0][0];
             }
         }
+
         return $result ?? false;
     }
 
@@ -739,14 +833,16 @@ class Vcard
      *  We receive a note
      *
      * @param $data
+     *
      * @return false|string
      */
     public function getNote($data)
     {
         $tmp = $data["NOTE"][0]["value"][0][0];
-        if($this->checkParam($tmp)){
+        if ($this->checkParam($tmp)) {
             $result = strstr($tmp, ' ', true);
         }
+
         return $result ?? false;
     }
 
@@ -754,13 +850,15 @@ class Vcard
      *  Get avatar
      *
      * @param array $data
+     *
      * @return array $result|bool
      */
     public function getAvatar($data)
     {
-        if(isset($data['PHOTO'])){
+        if (isset($data['PHOTO'])) {
             $result = $this->checkParam($data['PHOTO'][0]['value'][0][0]);
         }
+
         return $result ?? false;
     }
 
@@ -768,93 +866,19 @@ class Vcard
      *  Get categories from imported file
      *
      * @param array $data
+     *
      * @return array $result|false
      */
     public function getCategories($data)
     {
         $tmp = $data['CATEGORIES'][0]['value'][0];
-        if(isset($tmp)){
-            for($i=0; $i < count($tmp); $i++){
+        if (isset($tmp)) {
+            for ($i = 0; $i < count($tmp); $i++) {
                 $result[$i] = $tmp[$i];
             }
         }
+
         return $result ?? false;
-    }
-
-    /**
-     *  Checking for the presence of a parameter in the imported file.
-     *
-     * @param array $param
-     * @return boolean
-     */
-    private function checkParam($param)
-    {
-        if(isset($param)){
-            return $param;
-        }
-        return false;
-    }
-
-    /**
-     *  Parse the array into the desired format.
-     *
-     * @param $file_data_array
-     * @return array
-     */
-    public function parse($file_data_array)
-    {
-        $data = [];
-
-        try {
-            foreach ($file_data_array->data as $k => $item)
-            {
-                // field: FN (Full name)
-                $data[$k]['full_name'] = $this->getFullname($item);
-
-                // field: N (array of name parameters)
-                $data[$k]['name_param'] = $this->getParamsName($item);
-
-                // field: NICKNAME (pseudonym)
-                $data[$k]['nickname'] = $this->getNickname($item);
-
-                // field: EMAIL
-                $data[$k]['email'] = $this->getEmail($item);
-
-                // field: TEL (phone)
-                $data[$k]['phone'] = $this->getPhone($item);
-
-                // field: ADR (address)
-                $data[$k]['address'] = $this->getAddress($item);
-
-                // field: ORG (company, department) + TITLE (post)
-                $data[$k]['company_info'] = $this->getCompanyInfo($item);
-
-                // field: BDAY (birthday)
-                $data[$k]['birthday'] = $this->getBirthday($item);
-
-                // field: URL (sites)
-                $data[$k]['sites'] = $this->getSites($item);
-
-                // field: X-ABRELATEDNAMES (relation)
-                $data[$k]['relation'] = $this->getRelationInfo($item);
-
-                // fields: X-GTALK + X-AIM + X-YAHOO + X-SKYPE + X-QQ + X-MSN + X-ICQ + X-JABBER
-                $data[$k]['chats'] = $this->getChat($item);
-
-                // field: NOTE
-                $data[$k]['note'] = $this->getNote($item); // доработать
-
-                // field: PHOTO
-                $data[$k]['photo'] = $this->getAvatar($item);
-
-                // field: CATEGORIES
-                $data[$k]['categories'] = $this->getCategories($item);
-            }
-        }
-        catch (\Exception $e){
-            echo $e;
-        }
-        return $data;
     }
 
 }

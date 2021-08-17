@@ -18,7 +18,7 @@ class ImportController extends Controller
 {
     public function addvcard(Request $request)
     {
-        $user_id = (int)Auth::user()->getAuthIdentifier();
+        $user_id = (string)Auth::user()->getAuthIdentifier();
 
         $cards = (new Vcard())->readData($request->vcards);
 

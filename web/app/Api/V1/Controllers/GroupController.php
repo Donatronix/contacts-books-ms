@@ -152,7 +152,7 @@ class GroupController extends Controller
         try {
             $group = Group::create([
                 'name' => $request->get('name', null),
-                'user_id' => (int)Auth::user()->getAuthIdentifier()
+                'user_id' => (string)Auth::user()->getAuthIdentifier()
             ]);
 
             return response()->jsonApi([

@@ -69,7 +69,7 @@ RUN apt install -y \
 #    --with-webp=/usr/include/
 
 RUN docker-php-ext-install -j$(nproc) \
-#    gd
+    pdo
     pdo_mysql \
     intl \
     sockets \
