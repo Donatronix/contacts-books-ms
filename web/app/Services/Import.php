@@ -31,11 +31,6 @@ class Import
         return DB::select("SELECT * FROM {$data['table']} ORDER BY `updated_at` DESC LIMIT 1") ?: false;
     }
 
-    public function run(Request $request)
-    {
-        return view("tests.import");
-    }
-
     /**
      *  Loops through the possible parsing options and returns an array in the desired format, if possible.
      *
