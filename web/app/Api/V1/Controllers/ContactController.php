@@ -157,6 +157,23 @@ class ContactController extends Controller
                     },
                     'groups',
                 ])
+                ->when($request->has('isFavorite'), function ($q) use ($request) {
+                    return $q->where('is_favorite', $request->boolean('isFavorite'));
+                })
+                ->when($request->has('isRecently'), function ($q) use ($request) {
+                    return $q->orderBy('created_at', 'desc');
+                })
+                ->when($request->has('groupId'), function ($q) use ($request) {
+                    return $q->whereHas('groups', function ($q) use ($request) {
+                        return $q->where('group_id', $request->get('groupId'));
+                    });
+                })
+                ->when($request->has('byLetter'), function ($q) use ($request) {
+                    $letter = $request->get('byLetter', '');
+
+                    return $q->where('first_name', 'like', "{$letter}%")
+                        ->orWhere('last_name', 'like', "{$letter}%");
+                })
                 ->when($request->has('search'), function ($q) use ($request) {
                     $search = $request->get('search');
 
@@ -169,23 +186,6 @@ class ContactController extends Controller
                         ->orWhereHas('phones', function ($q) use ($search) {
                             return $q->where('phone', 'like', "%{$search}%");
                         });
-                })
-                ->when($request->has('isFavorite'), function ($q) use ($request) {
-                    return $q->where('is_favorite', $request->boolean('isFavorite'));
-                })
-                ->when($request->has('isRecently'), function ($q) use ($request) {
-                    return $q->sortBy('created_at', 'desc');
-                })
-                ->when($request->has('groupId'), function ($q) use ($request) {
-                    return $q->whereHas('groups', function ($q) use ($request) {
-                        return $q->where('group_id', $request->get('groupId'));
-                    });
-                })
-                ->when($request->has('byLetter'), function ($q) use ($request) {
-                    $letter = $request->get('byLetter', '');
-
-                    return $q->where('first_name', 'like', "{$letter}%")
-                        ->orWhere('last_name', 'like', "{$letter}%");
                 })
                 ->when($request->has('sort'), function ($q) use ($request) {
                     $sort = request()->get('sort', null);
@@ -328,7 +328,7 @@ class ContactController extends Controller
             $contact = new Contact();
             $contact->fill($request->all());
             $contact->write_as_name = $request->get('display_name');
-            $contact->user_id = (int)Auth::user()->getAuthIdentifier();
+            $contact->user_id = (string)Auth::user()->getAuthIdentifier();
             $contact->save();
 
             // Save contact's phones
@@ -596,7 +596,7 @@ class ContactController extends Controller
             // First, update mail contact data
             $contact->fill($request->all());
             $contact->write_as_name = $request->get('display_name');
-            $contact->user_id = (int)Auth::user()->getAuthIdentifier();
+            $contact->user_id = (string)Auth::user()->getAuthIdentifier();
             $contact->save();
 
             return response()->jsonApi([
@@ -1107,7 +1107,7 @@ class ContactController extends Controller
      */
     public function importFile(Request $request)
     {
-        $user_id = (int)Auth::user()->getAuthIdentifier();
+        $user_id = (string)Auth::user()->getAuthIdentifier();
 
         try {
             $import = new Import();
@@ -1121,7 +1121,7 @@ class ContactController extends Controller
         } catch (Exception $e) {
             return response()->jsonApi([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => 'Error: ' . $e->getMessage()
             ], 400);
         }
     }
@@ -1248,7 +1248,7 @@ class ContactController extends Controller
                 // First, Create contact
                 $contact = new Contact();
                 $contact->fill($lead);
-                $contact->user_id = (int)Auth::user()->getAuthIdentifier();
+                $contact->user_id = (string)Auth::user()->getAuthIdentifier();
                 $contact->save();
 
                 // Save contact's phones
