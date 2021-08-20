@@ -76,6 +76,7 @@ class CSVGoogle
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'last_name';
                     $data_params['cnt_name_key']++;
+
                     continue;
                 }
 
@@ -83,6 +84,7 @@ class CSVGoogle
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'middle_name';
                     $data_params['cnt_name_key']++;
+
                     continue;
                 }
 
@@ -90,6 +92,7 @@ class CSVGoogle
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'prefix_name';
                     $data_params['cnt_name_key']++;
+
                     continue;
                 }
 
@@ -97,11 +100,13 @@ class CSVGoogle
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
                     $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'suffix_name';
                     $data_params['cnt_name_key']++;
+
                     continue;
                 }
 
                 if ($key == 'Nickname') {
                     $data_result[$k]['nickname'] = $item;
+
                     continue;
                 }
 
@@ -113,6 +118,7 @@ class CSVGoogle
 
                 if ($key == 'Notes') {
                     $data_result[$k]['note'] = $item;
+
                     continue;
                 }
 
@@ -214,7 +220,6 @@ class CSVGoogle
 
                 // TODO: does not work
                 if ($value == "Address {$data_params['cnt_address_key']} - Country" || $value == "Address {$data_params['cnt_address_key']} - Postal Code" || $value == "Address {$data_params['cnt_address_key']} - Region" || $value == "Address {$data_params['cnt_address_key']} - City" || $value == "Address {$data_params['cnt_address_key']} - Street" || $value == "Address {$data_params['cnt_address_key']} - Extended Address" || $value == "Address {$data_params['cnt_address_key']} - PO Box") {
-                    echo 111;
                     if ($value == "Address {$data_params['cnt_address_key']} - Country") {
                         $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'country';
                         $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
@@ -254,43 +259,16 @@ class CSVGoogle
                     $data_params['cnt_address_info']++;
                 }
             }
+
             $data_params['cnt_company_info_key']++;
         }
 
         return $data_result ?? false;
     }
 
-    function parse_csv($str)
-    {
-        $str = preg_replace_callback('/([^"]*)("((""|[^"])*)"|$)/s',
-            function ($matches) {
-                $str = str_replace("\r", "\rR", $matches[3]);
-
-                return preg_replace('/\r\n?/', "\n", $matches[1]) . $str;
-            },
-            $str);
-        dd($str);
-        $str = preg_replace('/\n$/', '', $str);
-
-        return array_map(
-            function ($line) {
-                return array_map(
-                    function ($field) {
-                        $field = str_replace("\rC", ',', $field);
-                        $field = str_replace("\rQ", '"', $field);
-                        $field = str_replace("\rN", "\n", $field);
-                        $field = str_replace("\rR", "\r", $field);
-
-                        return $field;
-                    },
-                    explode(',', $line));
-            }, explode("\n", $str)
-        );
-    }
-
     public function readDataTmp($file_data)
     {
-        $user_id = (int)Auth::user()->getAuthIdentifier();
+        $user_id = (string)Auth::user()->getAuthIdentifier();
 
         $googles = $this->parse_csv($file_data);
 
@@ -337,5 +315,33 @@ class CSVGoogle
             'success' => true,
             'data' => $contacts
         ], 200);
+    }
+
+    function parse_csv($str)
+    {
+        $str = preg_replace_callback('/([^"]*)("((""|[^"])*)"|$)/s',
+            function ($matches) {
+                $str = str_replace("\r", "\rR", $matches[3]);
+
+                return preg_replace('/\r\n?/', "\n", $matches[1]) . $str;
+            },
+            $str);
+        dd($str);
+        $str = preg_replace('/\n$/', '', $str);
+
+        return array_map(
+            function ($line) {
+                return array_map(
+                    function ($field) {
+                        $field = str_replace("\rC", ',', $field);
+                        $field = str_replace("\rQ", '"', $field);
+                        $field = str_replace("\rN", "\n", $field);
+                        $field = str_replace("\rR", "\r", $field);
+
+                        return $field;
+                    },
+                    explode(',', $line));
+            }, explode("\n", $str)
+        );
     }
 }

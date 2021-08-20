@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Sumra\JsonApi\JsonApiResponse;
 
 /**
@@ -107,7 +108,7 @@ class ContactController extends Controller
      *     @OA\Parameter(
      *         name="sort[by]",
      *         in="query",
-     *         description="Sort by field",
+     *         description="Sort by field (name, email, phone)",
      *         @OA\Schema(
      *             type="string"
      *         )
@@ -148,6 +149,7 @@ class ContactController extends Controller
     {
         try {
             $contacts = Contact::byOwner()
+                ->select('*')
                 ->with([
                     'phones' => function ($q) use ($request) {
                         return $q->where('is_default', true);
@@ -161,19 +163,45 @@ class ContactController extends Controller
                     return $q->where('is_favorite', $request->boolean('isFavorite'));
                 })
                 ->when($request->has('isRecently'), function ($q) use ($request) {
+<<<<<<< HEAD
                     return $q->orderBy('created_at', 'desc');
+=======
+                    return $q->latest();
+>>>>>>> f05b224244ec34a8a4e5849ecb9ce25270ca1799
                 })
-                ->when($request->has('groupId'), function ($q) use ($request) {
+
+                ->when(($request->has('groupId') && !empty($request->get('groupId'))), function ($q) use ($request) {
                     return $q->whereHas('groups', function ($q) use ($request) {
                         return $q->where('group_id', $request->get('groupId'));
                     });
                 })
-                ->when($request->has('byLetter'), function ($q) use ($request) {
+
+                ->when(($request->has('byLetter') && !empty($request->get('byLetter'))), function ($q) use ($request) {
                     $letter = $request->get('byLetter', '');
 
-                    return $q->where('first_name', 'like', "{$letter}%")
-                        ->orWhere('last_name', 'like', "{$letter}%");
+                    return $q->where(function ($q) use($letter) {
+                        return $q->where(DB::raw('TRIM(CONCAT_WS(" ", prefix_name, first_name, middle_name, last_name, suffix_name))'), 'like', "{$letter}%")
+                            ->orWhere('write_as_name', 'like', "{$letter}%");
+                    });
                 })
+
+                ->when(($request->has('search') && !empty($request->get('search'))), function ($q) use ($request) {
+                    $search = $request->get('search');
+
+                    return $q->where(function ($q) use($search) {
+                        return $q->where(DB::raw('TRIM(CONCAT_WS(" ", prefix_name, first_name, middle_name, last_name, suffix_name))'), 'like', "%{$search}%")
+                            ->orWhere('write_as_name', 'like', "%{$search}%")
+                            ->orWhere('nickname', 'like', "%{$search}%")
+                            ->orWhere('note', 'like', "%{$search}%")
+                            ->orWhereHas('emails', function ($q) use ($search) {
+                                return $q->where('email', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('phones', function ($q) use ($search) {
+                                return $q->where('phone', 'like', "%{$search}%");
+                            });
+                    });
+                })
+<<<<<<< HEAD
                 ->when($request->has('search'), function ($q) use ($request) {
                     $search = $request->get('search');
 
@@ -187,30 +215,36 @@ class ContactController extends Controller
                             return $q->where('phone', 'like', "%{$search}%");
                         });
                 })
+=======
+
+>>>>>>> f05b224244ec34a8a4e5849ecb9ce25270ca1799
                 ->when($request->has('sort'), function ($q) use ($request) {
                     $sort = request()->get('sort', null);
+                    $order = !empty($sort['order']) ? $sort['order'] : 'asc';
 
-//                    if($sort['by'] === 'email'){
-//                        return $q->whereHas('emails', function ($q) use ($sort) {
-//                            return $q->orderBy('emails.email', $sort['order'] ?? 'asc');
-//                        });
-//                    }
+                    if(!empty($sort['by']) && $sort['by'] === 'name'){
+                        return $q->selectRaw('TRIM(CONCAT_WS(" ", prefix_name, first_name, middle_name, last_name, suffix_name)) as name')
+                            ->orderBy('name', $order)
+                            ->orderBy('write_as_name', $order);
+                    }
 
-//                    if($sort['by'] === 'phone'){
-//                        return $q->whereHas('emails', function ($q) use ($sort) {
-//                            return $q->orderBy($sort['by'], $sort['order'] ?? 'asc');
-//                        });
-//                    }
-//
-//                    return $q->when((!is_null($sort) && $sort['by'] === 'email'), function ($q) use ($sort) {
-//                        return $q->join('emails', 'users.role_id', '=', 'roles.id')->orderBy('emails.email', $sort['order'] ?? 'asc');
-//                    });
+                    if(!empty($sort['by']) && $sort['by'] === 'email'){
+                        return $q->whereHas('emails', function ($q) use ($sort, $order) {
+                            return $q->orderBy($sort['by'], $order);
+                        });
+                    }
+
+                    if(!empty($sort['by']) && $sort['by'] === 'phone'){
+                        return $q->whereHas('phones', function ($q) use ($sort, $order) {
+                            return $q->orderBy($sort['by'], $order);
+                        });
+                    }
                 })
                 ->paginate($request->get('limit', config('settings.pagination_limit')));
 
             // Transform collection objects
             $contacts->map(function ($object) {
-                //   $object->setAttribute('avatar', $this->getImagesFromRemote($object->id));
+                $object->setAttribute('avatar', $this->getImagesFromRemote($object->id));
 
                 $email = $object->emails->first();
                 $object->setAttribute('email', $email ? $email->email : null);
@@ -218,26 +252,34 @@ class ContactController extends Controller
                 $phone = $object->phones->first();
                 $object->setAttribute('phone', $phone ? sprintf('%s (%s)', $phone->phone, $phone->type) : null);
 
-                unset($object->phones, $object->emails);
+                unset(
+                    $object->name,
+                    $object->phones,
+                    $object->emails
+                );
             });
 
             // Get first letters
-            $ln_letters = Contact::selectRaw('SUBSTR(last_name,1,1) as letter')
+            $dn_letters = Contact::selectRaw('SUBSTR(TRIM(write_as_name), 1, 1) as letter')
                 ->when($request->has('isFavorite'), function ($q) use ($request) {
-                    return $q->where('is_favorite', $request->get('isFavorite'));
+                    return $q->where('is_favorite', $request->boolean('isFavorite'));
+                })
+                ->when(($request->has('groupId') && !empty($request->get('groupId'))), function ($q) use ($request) {
+                    return $q->whereHas('groups', function ($q) use ($request) {
+                        return $q->where('group_id', $request->get('groupId'));
+                    });
                 });
 
-            $dn_letters = Contact::selectRaw('SUBSTR(write_as_name,1,1) as letter')
+            $letters = Contact::selectRaw('SUBSTR(TRIM(CONCAT_WS(" ", prefix_name, first_name, middle_name, last_name, suffix_name)), 1, 1) as letter')
                 ->when($request->has('isFavorite'), function ($q) use ($request) {
-                    return $q->where('is_favorite', $request->get('isFavorite'));
-                });
-
-            $letters = Contact::selectRaw('SUBSTR(first_name,1,1) as letter')
-                ->when($request->has('isFavorite'), function ($q) use ($request) {
-                    return $q->where('is_favorite', $request->get('isFavorite'));
+                    return $q->where('is_favorite', $request->boolean('isFavorite'));
+                })
+                ->when(($request->has('groupId') && !empty($request->get('groupId'))), function ($q) use ($request) {
+                    return $q->whereHas('groups', function ($q) use ($request) {
+                        return $q->where('group_id', $request->get('groupId'));
+                    });
                 })
                 ->distinct()
-                ->union($ln_letters)
                 ->union($dn_letters)
                 ->orderBy('letter')
                 ->get()
@@ -1325,7 +1367,7 @@ class ContactController extends Controller
         try {
             $response = $client->request('GET', config('settings.api.files.version') . "/files?entity=contact&entity_id={$id}", [
                 'headers' => [
-                    'user-id' => '100',
+                    'user-id' => '1000',
                     'Accept' => 'application/json',
                 ]
             ]);
@@ -1338,7 +1380,7 @@ class ContactController extends Controller
                 }
             }
 
-        } catch (RequestException $e) {
+        } catch (Exception $e) {
         }
 
         return $images;
