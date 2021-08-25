@@ -9,42 +9,25 @@ use PhpOffice\PhpSpreadsheet\Reader\Csv;
 class CsvParser
 {
     /**
-     *  Loads a file, gets and returns its path.
+     * Loads a file, gets and returns its path.
+     * We get the parsed array from Excel after we load the file of the required structure.
      *
-     * @param $request
+     * From the Excel file format, we get an array, where the keys are the letters of the column.
      *
-     * @return array $path_file
-     */
-    public function run($request)
-    {
-        $file = $request->file('contacts');
-        $path_file = $file->getPathname();
-        $this->load($path_file);
-    }
-
-    /**
-     *  We get the parsed array from Excel after we load the file of the required structure.
-     *
-     * @param $path_file
+     * @param $file
      *
      * @return array|false
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public function load($path_file)
+    public function parse($file)
     {
+        $path_file = $file->getPathname();
+
         $reader = new Csv();
         $spreadsheet = $reader->load($path_file);
 
-        return $this->parse($spreadsheet);
-    }
-
-    /**
-     *  From the Excel file format, we get an array, where the keys are the letters of the column.
-     *
-     * @param array | false
-     */
-    public function parse($spreadsheet)
-    {
         $objWorksheet = $spreadsheet->getActiveSheet();
+
         // Selecting the first sheet
         $worksheet = $spreadsheet->setActiveSheetIndex(0);
 
@@ -78,37 +61,37 @@ class CsvParser
      *
      * @return array $data_result | false
      */
-    public function parseByLetter($data_arr)
+    public function parseByLetter(array $data_arr): array
     {
         $array_letter = array_shift($data_arr);
         $data_arr = array_values($data_arr);
+
         $data_result = [];
-        $import = new Import();
 
         foreach ($array_letter as $key => $item) {
             for ($i = 0; $i < count($data_arr); $i++) {
                 if (isset($data_arr[$i][$key])) {
-                    $data = $array_letter[$key];
-                    $data_result[$i][$data] = $data_arr[$i][$key];
+                    $data_result[$i][$item] = $data_arr[$i][$key];
                 } else {
                     continue;
                 }
             }
         }
+
         $data_google = new CSVGoogle();
         $data_result_google = $data_google->define($data_result);
+
         $data_outlook = new CSVOutlook();
         $data_result_outlook = $data_outlook->define($data_result);
 
         if ($data_result_google) {
-
             $data_result = $data_google->getTransformation($data_result);
-            $import->insertContactToBb($data_result);
         }
 
         if ($data_result_outlook) {
             $data_result = $data_outlook->getTransformation($data_result);
-            $data_outlook->insertContactToBb($data_result);
         }
+
+        return $data_result;
     }
 }

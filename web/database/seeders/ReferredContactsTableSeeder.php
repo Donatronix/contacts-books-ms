@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Contact;
-use App\Models\ContactEmail;
+use App\Models\Email;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 
@@ -20,17 +20,10 @@ class ReferredContactsTableSeeder extends Seeder
 
         $contacts = Contact::all();
 
-        foreach($contacts as $contact) {
-            $is_default = false;
-
+        foreach ($contacts as $contact) {
             for ($x = 1; $x <= $faker->numberBetween(1, 5); $x++) {
-                if (!$is_default) {
-                    $is_default = $faker->boolean;
-                }
-
-                $row = new ContactEmail();
+                $row = new Email();
                 $row->contact()->associate($contact);
-
                 $row->save();
             }
         }

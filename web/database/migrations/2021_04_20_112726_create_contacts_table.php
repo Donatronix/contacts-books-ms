@@ -16,9 +16,9 @@ class CreateContactsTable extends Migration
         Schema::create('contacts', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('prefix_name', 20)->nullable()->comment('Prefix of contact name');
-            $table->string('first_name', 50)->nullable();
+            $table->string('first_name', 100)->nullable();
             $table->string('middle_name', 50)->nullable();
-            $table->string('last_name', 50)->nullable();
+            $table->string('last_name', 100)->nullable();
             $table->string('suffix_name', 20)->nullable()->comment('Suffix of contact name');
             $table->string('write_as_name', 200)->nullable();
             $table->string('nickname', 50)->nullable()->comment('Nickname of contact');

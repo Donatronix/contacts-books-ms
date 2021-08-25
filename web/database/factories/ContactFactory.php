@@ -23,7 +23,7 @@ class ContactFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'user_id' => $this->faker->randomNumber(3, true),
+            'user_id' => $this->faker->randomElement(explode(',', env('SUMRA_USERS'))),
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName,
             'suffix_name' => $this->faker->suffix,

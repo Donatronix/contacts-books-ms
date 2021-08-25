@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\Rule;
 
-class ContactEmail extends Model
+class Phone extends Model
 {
     use HasFactory;
     use UuidTrait;
@@ -29,7 +29,7 @@ class ContactEmail extends Model
      * @var string[]
      */
     protected $fillable = [
-        'email',
+        'phone',
         'type',
         'is_default'
     ];
@@ -49,11 +49,11 @@ class ContactEmail extends Model
     public static function validationRules(): array
     {
         return [
-            'email' => [
+            'phone' => [
                 'required',
-                'max:200',
-                'regex:/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}/',
-                Rule::unique('contact_emails')->where(function ($q) {
+                'max:17',
+                'regex:/^(\+)?[0-9\(\)\.\-\+]{5,17}/',
+                Rule::unique('phones')->where(function ($q) {
                     return $q->where('contact_id', request()->get('contact_id'));
                 })
             ],

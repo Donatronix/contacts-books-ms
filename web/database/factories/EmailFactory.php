@@ -3,17 +3,17 @@
 namespace Database\Factories;
 
 use App\Models\Contact;
-use App\Models\ContactPhone;
+use App\Models\Email;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ContactPhoneFactory extends Factory
+class EmailFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = ContactPhone::class;
+    protected $model = Email::class;
 
     /**
      * Define the model's default state.
@@ -24,11 +24,11 @@ class ContactPhoneFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'phone' => $this->faker->phoneNumber(),
-            'type' => $this->faker->randomElement(['home', 'work', 'cell', 'other', 'main', 'homefax', 'workfax', 'googlevoice', 'pager']),
-            'is_default' => false,
+            'email' => $this->faker->email(),
+            'type' => $this->faker->randomElement(['home', 'work', 'other']),
+            'is_default' => $this->faker->boolean(),
             'contact_id' => function () {
-                return Contact::factory()->create()->id;
+                return Contact::all()->random()->id;
             },
         ];
     }

@@ -28,13 +28,15 @@ class AddressFactory extends Factory
             'country' => $this->faker->country,
             'provinces' => $this->faker->state,
             'city' => $this->faker->city,
-            'address' => $this->faker->address,
-            'address_type' => $this->faker->randomElement(['home', 'work', 'another']),
+            'address_string1' => $this->faker->address,
+            'address_string1' => $this->faker->address,
+            'type' => $this->faker->randomElement(['home', 'work', 'another']),
             'postcode' => $this->faker->postcode,
-            'post_office_box_number' => $this->faker->postcode,
+            'po_box' => $this->faker->postcode,
+            'is_default' => $this->faker->boolean(),
             'contact_id' => function () {
-                return Contact::factory()->create()->id;
-            },
+                return Contact::all()->random()->id;
+            }
         ];
     }
 }

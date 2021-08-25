@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\Contact;
-use App\Models\ContactPhone;
+use App\Models\Phone;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 
-class ContactPhonesTableSeeder extends Seeder
+class PhonesTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -20,16 +20,11 @@ class ContactPhonesTableSeeder extends Seeder
 
         $contacts = Contact::all();
 
-        foreach($contacts as $contact) {
-            $is_default = true;
-
+        foreach ($contacts as $contact) {
             for ($x = 0; $x <= $faker->numberBetween(1, 5); $x++) {
-                if ($x > 0) {
-                    $is_default = false;
-                }
-
-                $row = ContactPhone::factory()->create();
-                $row->is_default = $is_default;
+                $row = Phone::factory()->create([
+                    'is_default' => $x === 0
+                ]);
                 $row->contact()->associate($contact);
                 $row->save();
             }

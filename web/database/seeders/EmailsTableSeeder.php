@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\Contact;
-use App\Models\ContactEmail;
+use App\Models\Email;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 
-class ContactEmailsTableSeeder extends Seeder
+class EmailsTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -20,16 +20,11 @@ class ContactEmailsTableSeeder extends Seeder
 
         $contacts = Contact::all();
 
-        foreach($contacts as $contact) {
-            $is_default = true;
-
+        foreach ($contacts as $contact) {
             for ($x = 0; $x <= $faker->numberBetween(1, 5); $x++) {
-                if ($x > 0) {
-                    $is_default = false;
-                }
-
-                $row = ContactEmail::factory()->create();
-                $row->is_default = $is_default;
+                $row = Email::factory()->create([
+                    'is_default' => $x === 0
+                ]);
                 $row->contact()->associate($contact);
                 $row->save();
             }

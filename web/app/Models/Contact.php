@@ -136,6 +136,180 @@ use Illuminate\Support\Str;
  *         )
  *     ),
  *     @OA\Property(
+ *         property="works",
+ *         type="array",
+ *         description="Contacts phones / Msisdns data in JSON",
+ *         @OA\Items(
+ *             type="object",
+ *
+ *             @OA\Property(
+ *                 property="company",
+ *                 type="string",
+ *                 description="Company",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="department",
+ *                 type="string",
+ *                 description="Department",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="post",
+ *                 type="string",
+ *                 description="Post",
+ *                 example=""
+ *             )
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="addresses",
+ *         type="array",
+ *         description="Contacts phones / Msisdns data in JSON",
+ *         @OA\Items(
+ *             type="object",
+ *
+ *             @OA\Property(
+ *                 property="country",
+ *                 type="string",
+ *                 description="country",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="address_string1",
+ *                 type="string",
+ *                 description="Department",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="address_string2",
+ *                 type="string",
+ *                 description="Post",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="city",
+ *                 type="string",
+ *                 description="Post",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="provinces",
+ *                 type="string",
+ *                 description="Post",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="postcode",
+ *                 type="string",
+ *                 description="Post",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="po_box",
+ *                 type="string",
+ *                 description="Post",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="type",
+ *                 type="string",
+ *                 description="Post",
+ *                 example=""
+ *             ),
+ *             @OA\Property(
+ *                 property="is_default",
+ *                 type="boolean",
+ *                 description="Post",
+ *                 example=""
+ *             )
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="sites",
+ *         type="array",
+ *         description="Sites",
+ *
+ *         @OA\Items(
+ *             type="object",
+ *
+ *             @OA\Property(
+ *                 property="url",
+ *                 type="string",
+ *                 description="Site url",
+ *                 example="test@tes.com"
+ *             ),
+ *             @OA\Property(
+ *                 property="type",
+ *                 type="string",
+ *                 description="Email type (home, work, etc)",
+ *                 enum={"home", "work", "other", "main"}
+ *             ),
+ *             @OA\Property(
+ *                 property="is_default",
+ *                 type="boolean",
+ *                 description="Email by default. Accept 1, 0, true, false",
+ *                 example="true"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="chats",
+ *         type="array",
+ *         description="Sites",
+ *
+ *         @OA\Items(
+ *             type="object",
+ *
+ *             @OA\Property(
+ *                 property="chat",
+ *                 type="string",
+ *                 description="Site url",
+ *                 example="test@tes.com"
+ *             ),
+ *             @OA\Property(
+ *                 property="type",
+ *                 type="string",
+ *                 description="Email type (home, work, etc)",
+ *                 enum={"home", "work", "other", "main"}
+ *             ),
+ *             @OA\Property(
+ *                 property="is_default",
+ *                 type="boolean",
+ *                 description="Email by default. Accept 1, 0, true, false",
+ *                 example="true"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="relations",
+ *         type="array",
+ *         description="Relations",
+ *
+ *         @OA\Items(
+ *             type="object",
+ *
+ *             @OA\Property(
+ *                 property="relation",
+ *                 type="string",
+ *                 description="Site url",
+ *                 example="test@tes.com"
+ *             ),
+ *             @OA\Property(
+ *                 property="type",
+ *                 type="string",
+ *                 description="Email type (home, work, etc)",
+ *                 enum={"home", "work", "other", "main"}
+ *             ),
+ *             @OA\Property(
+ *                 property="is_default",
+ *                 type="boolean",
+ *                 description="Email by default. Accept 1, 0, true, false",
+ *                 example="true"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Property(
  *         property="is_favorite",
  *         type="boolean",
  *         description="Need shared contacts data (1, 0, true, false)",
@@ -219,7 +393,7 @@ class Contact extends Model
      */
     public function phones(): HasMany
     {
-        return $this->hasMany(ContactPhone::class);
+        return $this->hasMany(Phone::class);
     }
 
     /**
@@ -227,7 +401,7 @@ class Contact extends Model
      */
     public function emails(): HasMany
     {
-        return $this->hasMany(ContactEmail::class);
+        return $this->hasMany(Email::class);
     }
 
     /**

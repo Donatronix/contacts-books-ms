@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Models\Address;
 use App\Models\Chat;
 use App\Models\Contact;
-use App\Models\ContactEmail;
-use App\Models\ContactPhone;
+use App\Models\Email;
+use App\Models\Phone;
 use App\Models\Group;
 use App\Models\Relation;
 use App\Models\Site;
@@ -14,23 +14,14 @@ use App\Models\Work;
 use App\Services\Imports\Vcard;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use PubSub;
 
 class Import
 {
-    // Temporary method for tests.
-    public static function InsertBase64EncodedImage($path_img)
-    {
-        return base64_encode(file_get_contents($path_img));
-    }
-
-    public static function searchContact($data)
-    {
-        return DB::select("SELECT * FROM {$data['table']} ORDER BY `updated_at` DESC LIMIT 1") ?: false;
-    }
-
     /**
      *  Loops through the possible parsing options and returns an array in the desired format, if possible.
      *
@@ -41,198 +32,220 @@ class Import
     public function exec(Request $request)
     {
         // get list classes by path app/Services/Imports/
-
-        $path = __DIR__ . '/Imports/';
-        $classes = $this->getClassList($path);
+//        $path = __DIR__ . '/Imports/';
+//        $classes = $this->getClassList($path);
+        $classes = null;
 
         // trying to parse the contents of the file
-        return $this->parse($classes, $request) ?? false;
+        return $this->parse($request, $classes) ?? [];
     }
 
     /**
-     *  Reads the class import directory and creates an array from them.
-     *
-     * @param string $dirpath
-     *
-     * @return array $result
-     */
-    public function getClassList($dirpath)
-    {
-        $result = [];
-        $cdir = scandir($dirpath);
-        foreach ($cdir as $value) {
-            if (!in_array($value, [".", ".."]) && !is_dir($dirpath . DIRECTORY_SEPARATOR . $value)) {
-                $value = trim(substr($value, 0, -4));
-                $result[] = $value;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     *  Loops through the classes from the imports directory, trying to find the required file format and, if it finds it, tries to parse it.
+     * Loops through the classes from the import directory,
+     * trying to find the required file format and, if it finds it, tries to parse it.
      *
      * @param string $file_data
      * @param array  $classes
      *
      * @return false|array $data_result
+     * @throws \Exception
      */
-    public function parse($classes, $request)
+    public function parse($request, $classes = null)
     {
-        $data_result = false;
+        $inputFile = $request->file('contacts');
 
-        $file_extension = $request->file()['contacts']->clientExtension();
+//        $file_extension = $inputFile->clientExtension();
+        $file_extension = $inputFile->extension();
 
 //        foreach ($classes as $class) {
 
-        if ($file_extension == 'vcard') {
-            $file = $this->readFile($request);
-
-            $file_data = new Vcard($file);
-            $data_parse = $file_data->parse($file_data);
-
-            $data_result = $this->insertContactToBb($data_parse);
+        if ($file_extension == 'vcard' || $file_extension == 'vcf') {
+            $data_parse = (new Vcard($inputFile->get()))->parse();
         }
 
-        if ($file_extension == 'csv') {
-            $file = new CsvParser();
-            $data_result = $file->run($request);
+        if ($file_extension == 'csv' || $file_extension == 'txt') {
+            $data_parse = (new CsvParser())->parse($inputFile);
         }
 
 //        }
 
-        return $data_result ?? false;
+        $data_result = $this->insertContactToDB($data_parse);
+
+        return $data_result ?? [];
     }
 
     /**
-     *  Reads the downloaded file and returns its contents.
+     * Adding data from the uploaded file to the database and sending the avatar information to the file microservice.
      *
-     * @param $request
+     * @param $data_arr
      *
-     * @return false|string
+     * @return string[]
+     * @throws \Exception
      */
-    public function readFile($request)
+    public function insertContactToDB($data_arr): array
     {
-        // TODO: Validation !!!
-
-        $file = $request->file('contacts');
-        $path_file = $file->getPathname();
-
-        return file_get_contents($path_file) ?? false;
-    }
-
-    /**
-     *  Adding data from the uploaded file to the database and sending the avatar information to the file microservice.
-     *
-     * @param $data_arr array
-     *
-     * @return mixed
-     */
-    public function insertContactToBb($data_arr)
-    {
-        $user_id = (string)Auth::user()->getAuthIdentifier();
-
-        $data_cnt = ['name_param_cnt' => 0];
-        $contact_info = [];
-        $info_send_rabbitmq = [];
-        $info_send_rabbitmq_body = [];
-
         try {
-            foreach ($data_arr as $k => $param) {
+            $user_id = (string)Auth::user()->getAuthIdentifier();
+
+            $info_send_rabbitmq_body = [];
+
+            $count = 0;
+            foreach ($data_arr as $param) {
+                   //dd($param);
+
+                // First, Create contact
                 $contact = new Contact();
+                $contact->fill($param);
 
-                if (!$param['full_name'] || !isset($param['full_name'])) {
-                    $param['full_name'] = false;
-                }
-
-                if (isset($param['photo'])) {
-                    $file_check_data = Import::checkFileFormat($param['photo']);
-                }
-
-                if (isset($param['name_param'])) {
-                    foreach ($param['name_param'] as $key => $item) {
-                        $user_value = $item['value'];
-
-                        if (!$user_value) {
-                            continue;
-                        }
-
-                        $user_type = $param['name_param'][$key]['type'];
-
-                        if ($user_type == 'last_name') {
-                            $contact->last_name = $user_value;
-                        }
-                        if ($user_type == 'first_name') {
-                            $contact->first_name = $user_value;
-                        }
-                        if ($user_type == 'middle_name') {
-                            $contact->middle_name = $user_value;
-                        }
-                        if ($user_type == 'prefix_name') {
-                            $contact->prefix_name = $user_value;
-                        }
-                        if ($user_type == 'suffix_name') {
-                            $contact->suffix_name = $user_value;
-                        }
-                    }
-                }
-
-                if (isset($param['birthday'])) {
-                    $contact->birthday = $param['birthday'];
-                }
-
-                if (isset($param['nickname'])) {
-                    $contact->nickname = $param['nickname'];
-                }
-
-                if (isset($param['note'])) {
-                    $contact->note = $param['note'];
+                if (isset($param['birthday']) && !empty($param['birthday'])) {
+                    $contact->birthday = Carbon::parse($param['birthday']);
                 }
 
                 $contact->user_id = $user_id;
                 $contact->save();
 
-                if (isset($param['photo']) && $file_check_data) {
-                    $photo = preg_replace('/[^[:print:]]+/', '', $param['photo']);
-
-                    $info_send_rabbitmq_head = [
-                        'entity' => 'contact',
-                        'user_id' => $user_id,
-                    ];
-
-                    $info_send_rabbitmq_body[] = [
-                        'entity_id' => $contact->id,
-                        'url' => $photo
-                    ];
+                // Save contact's phones
+                if (isset($param['phones'])) {
+                    foreach ($param['phones'] as $key => $item) {
+                        $row = new Phone();
+                        $row->phone = str_replace(['(', ')', ' ', '-'], '', $param['phones'][$key]['value']);
+                        $row->type = !isset($param['phones'][$key]['type']) ?? 'other';
+                        $row->is_default = $key == 0;
+                        $row->contact()->associate($contact);
+                        $row->save();
+                    }
                 }
 
-                $data_contact_id[] = $contact->id;
+                // Save contact's emails
+                if (isset($param['emails'])) {
+                    foreach ($param['emails'] as $key => $item) {
+                        $row = new Email();
+                        $row->email = $param['emails'][$key]['value'];
+                        $row->type = !isset($param['emails'][$key]['type']) ?? 'other';
+                        $row->is_default = $key == 0;
+                        $row->contact()->associate($contact);
+                        $row->save();
+                    }
+                }
+
+                // Save contact's sites if exist
+                if (isset($param['sites'])) {
+                    foreach ($param['sites'] as $key => $item) {
+                        $row = new Site();
+                        $row->url = $param['sites'][$key]['value'];
+                        $row->type = !isset($param['sites'][$key]['type']) ?? 'other';
+                        $row->contact()->associate($contact);
+                        $row->save();
+                    }
+                }
+
+                // Save contact's relations if exist
+                if (isset($param['relations'])) {
+                    foreach ($param['relations'] as $key => $item) {
+                        $row = new Relation();
+                        $row->relation = $param['relations'][$key]['value'];
+                        $row->type = !isset($param['relations'][$key]['type']) ?? 'other';
+                        $row->contact()->associate($contact);
+                        $row->save();
+                    }
+                }
+
+                // Save contact's chats if exist
+                if (isset($param['chats'])) {
+                    foreach ($param['chats'] as $key => $item) {
+                        $row = new Chat();
+                        if (is_array($item)) {
+                            $row->chat = $param['chats'][$key]['value'];
+                            $row->type = $param['chats'][$key]['type'];
+                        } else {
+                            $row->chat = $item;
+                            $row->type = $key;
+                        }
+                        $row->contact()->associate($contact);
+                        $row->save();
+                    }
+                }
+
+                // Save contact's addresses if exist
+                if (isset($param['addresses'])) {
+                    foreach ($param['addresses'] as $key => $item) {
+                        $row = new Address();
+                        $row->fill($item);
+                        $row->is_default = $key == 0;
+                        $row->contact()->associate($contact);
+                        $row->save();
+                    }
+                }
+
+                if (isset($param['company_info'])) {
+                    $row = new Work();
+
+                    foreach ($param['company_info'] as $key => $value) {
+                        $row->{$key} = $value;
+                    }
+
+                    $row->contact()->associate($contact);
+                    $row->save();
+                }
+
+                if (isset($param['groups'])) {
+                    foreach ($param['groups'] as $name) {
+                        if(Str::endsWith($name, 'starred')){
+                            $contact->is_favorite = true;
+                            $contact->save();
+
+                            continue;
+                        }
+
+                        $group = Group::byOwner()->where('name', $name)->first();
+                        if(!$group){
+                            $group = Group::create([
+                                'name' => $name,
+                                'user_id' => (string)Auth::user()->getAuthIdentifier()
+                            ]);
+                        }
+
+                        $group->contacts()->attach($contact);
+                    }
+                }
+
+                if (isset($param['photo'])) {
+                    $file_check_data = Import::checkFileFormat($param['photo']);
+
+                    if ($file_check_data) {
+                        $info_send_rabbitmq_body[] = [
+                            'entity_id' => $contact->id,
+                            'url' => preg_replace('/[^[:print:]]+/', '', $param['photo'])
+                        ];
+                    }
+                }
+
+                $count++;
             }
 
-            if ($info_send_rabbitmq_body) {
-                $info_send_rabbitmq_body = ['avatars' => $info_send_rabbitmq_body];
-                $info_send_rabbitmq = array_merge($info_send_rabbitmq_head, $info_send_rabbitmq_body);
+            if (!empty($info_send_rabbitmq_body)) {
+                $info_send_rabbitmq = [
+                    'entity' => 'contact',
+                    'user_id' => $user_id,
+                    'avatars' => $info_send_rabbitmq_body
+                ];
 
                 PubSub::publish('SaveAvatars', $info_send_rabbitmq, 'files');
             }
 
-            $this->insertToOther($data_arr, $data_contact_id);
-
-            return response()->jsonApi([
-                'type' => 'success',
-                'title' => 'Create was success',
-                'message' => 'The operation to add data to the database was successful',
-            ], 200);
+            return [
+                'count' => $count
+            ];
         } catch (Exception $e) {
-            return response()->jsonApi([
-                'type' => 'danger',
-                'title' => 'Operation not successful',
-                'message' => 'The operation for insert was unsuccessful. ' . $e->getMessage()
-            ], 404);
+            throw new Exception($e->getMessage());
         }
     }
 
+    /**
+     * @param $file
+     *
+     * @return bool
+     */
     public static function checkFileFormat($file)
     {
         $avatar = strtolower(substr($file, -3));
@@ -246,178 +259,23 @@ class Import
     }
 
     /**
-     *  Adding data to other tables.
+     *  Reads the class import directory and creates an array from them.
      *
-     * @param array  $data_arr
-     * @param string $data_contact
+     * @param string $dirpath
      *
-     * @return mixed
+     * @return array $result
      */
-
-    public function insertToOther($data_arr, $info_id)
+    private function getClassList($dirpath)
     {
-        foreach ($data_arr as $k => $param) {
-            if (isset($param['email'])) {
-                foreach ($param['email'] as $key => $item) {
-                    $data = new ContactEmail();
-                    if (!isset($param['email'][$key]['type'])) {
-                        continue;
-                    }
-
-                    $data->email = $param['email'][$key]['value'];
-                    $data->type = $param['email'][$key]['type'];
-                    $data->contact_id = $info_id[$k];
-                    $data->save();
-                }
-            }
-
-            if (isset($param['sites'])) {
-                foreach ($param['sites'] as $key => $item) {
-                    $data = new Site();
-                    if (!isset($param['sites'][$key]['type'])) {
-                        continue;
-                    }
-
-                    $data->site = $param['sites'][$key]['value'];
-                    $data->site_type = $param['sites'][$key]['type'];
-                    $data->contact_id = $info_id[$k];
-                    $data->save();
-                }
-            }
-
-            if (isset($param['relation'])) {
-                foreach ($param['relation'] as $key => $item) {
-                    $data = new Relation();
-                    if (!isset($param['relation'][$key]['type'])) {
-                        continue;
-                    }
-
-                    $data->relation = $param['relation'][$key]['value'];
-                    $data->relation_name = $param['relation'][$key]['type'];
-                    $data->contact_id = $info_id[$k];
-                    $data->save();
-                }
-            }
-
-            if (isset($param['phone'])) {
-                foreach ($param['phone'] as $key => $item) {
-                    $data = new ContactPhone();
-                    if (!isset($param['phone'][$key]['type'])) {
-                        continue;
-                    }
-
-                    $data->phone = str_replace(' ', '', $param['phone'][$key]['value']);
-                    $data->type = $param['phone'][$key]['type'];
-                    $data->contact_id = $info_id[$k];
-                    $data->save();
-                }
-            }
-
-            if (isset($param['chats'])) {
-                foreach ($param['chats'] as $key => $item) {
-                    $data = new Chat();
-                    if (is_array($item)) {
-                        $data->chat = $param['chats'][$key]['value'];
-                        $data->chat_name = $param['chats'][$key]['type'];
-                    } else {
-                        $data->chat = $item;
-                        $data->chat_name = $key;
-                    }
-                    $data->contact_id = $info_id[$k];
-                    $data->save();
-                }
-            }
-
-            if (isset($param['address'])) {
-                $cnt = 0;
-
-                foreach ($param['address'] as $key => $item) {
-                    $data = new Address();
-                    $data->contact_id = $info_id[$k];
-                    if (isset($param['address'][$key]['country'])) {
-                        $data->country = $param['address'][$key]['country'];
-                    }
-
-                    if (isset($param['address'][$key]['postcode'])) {
-                        $data->postcode = $param['address'][$key]['postcode'];
-                    }
-
-                    if (isset($param['address'][$key]['provinces'])) {
-                        $data->provinces = $param['address'][$key]['provinces'];
-                    }
-
-                    if (isset($param['address'][$key]['city'])) {
-                        $data->city = $param['address'][$key]['city'];
-                    }
-
-                    if (isset($param['address'][$key]['post_office_box_number'])) {
-                        $data->post_office_box_number = $param['address'][$key]['post_office_box_number'];
-                    }
-
-                    // TODO: does not work
-                    if (isset($param['address'][$key]['address_string1']) || isset($param['address'][$key]['address_string2'])) {
-                        $data_address_path1 = $param['address'][$key]['address_string1'];
-                        $data_address_path2 = $param['address'][$key]['address_string2'];
-
-                        $data->address = $data_address_path1 . ', ' . $data_address_path2;
-                    }
-
-                    $data->save();
-                }
-            }
-
-            if (isset($param['company_info'])) {
-                $data = new Work();
-
-                foreach ($param['company_info'] as $key => $item) {
-                    $data->contact_id = $info_id[$k];
-
-                    if ($key == 'company') {
-//                        $data->company = $item;
-                        $data->company = $item;
-                    }
-
-                    if ($key == 'department') {
-                        $data->department = $param['company_info'][$key];
-                    }
-
-                    if ($key == 'post') {
-                        $data->post = $item;
-                    }
-                }
-
-                $data->save();
-            }
-
-            if (isset($param['categories'])) {
-                $cnt = 0;
-                foreach ($param['categories'] as $key => $item) {
-                    $data = new Group();
-                    if (isset($item)) {
-                        $data->user_id = $info_id[$k];
-                        $data->name = $param['categories'][$cnt];
-                    }
-
-                    $cnt++;
-                    $data->save();
-                }
+        $result = [];
+        $cdir = scandir($dirpath);
+        foreach ($cdir as $value) {
+            if (!in_array($value, [".", ".."]) && !is_dir($dirpath . DIRECTORY_SEPARATOR . $value)) {
+                $value = trim(substr($value, 0, -4));
+                $result[] = $value;
             }
         }
 
-        return true;
-    }
-
-    /**
-     *   Loops through an array to determine an internal empty element.
-     *
-     * @param array $list
-     *
-     * @return mixed
-     */
-    public function checkArrayByEmpty($list)
-    {
-        foreach ($list as $value) {
-            return $value;
-        }
+        return $result;
     }
 }

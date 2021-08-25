@@ -25,10 +25,11 @@ class SiteFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'site' => $this->faker->url,
-            'site_type' => $this->faker->randomElement(['profile', 'blog', 'homepage', 'work']),
+            'url' => $this->faker->url,
+            'type' => $this->faker->randomElement(['profile', 'blog', 'homepage', 'work']),
+            'is_default' => $this->faker->boolean(),
             'contact_id' => function () {
-                return Contact::factory()->create()->id;
+                return Contact::all()->random()->id;
             },
         ];
     }

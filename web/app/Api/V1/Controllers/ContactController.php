@@ -4,15 +4,17 @@ namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
-use App\Models\ContactEmail;
-use App\Models\ContactPhone;
+use App\Models\Email;
+use App\Models\Group;
+use App\Models\Phone;
+use App\Models\Relation;
 use App\Services\Import;
 use Exception;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Sumra\JsonApi\JsonApiResponse;
@@ -116,7 +118,7 @@ class ContactController extends Controller
      *     @OA\Parameter(
      *         name="sort[order]",
      *         in="query",
-     *         description="Sort order",
+     *         description="Sort order (asc, desc)",
      *         @OA\Schema(
      *             type="string"
      *         )
@@ -165,26 +167,23 @@ class ContactController extends Controller
                 ->when($request->has('isRecently'), function ($q) use ($request) {
                     return $q->latest();
                 })
-
                 ->when(($request->has('groupId') && !empty($request->get('groupId'))), function ($q) use ($request) {
                     return $q->whereHas('groups', function ($q) use ($request) {
                         return $q->where('group_id', $request->get('groupId'));
                     });
                 })
-
                 ->when(($request->has('byLetter') && !empty($request->get('byLetter'))), function ($q) use ($request) {
                     $letter = $request->get('byLetter', '');
 
-                    return $q->where(function ($q) use($letter) {
+                    return $q->where(function ($q) use ($letter) {
                         return $q->where(DB::raw('TRIM(CONCAT_WS(" ", prefix_name, first_name, middle_name, last_name, suffix_name))'), 'like', "{$letter}%")
                             ->orWhere('write_as_name', 'like', "{$letter}%");
                     });
                 })
-
                 ->when(($request->has('search') && !empty($request->get('search'))), function ($q) use ($request) {
                     $search = $request->get('search');
 
-                    return $q->where(function ($q) use($search) {
+                    return $q->where(function ($q) use ($search) {
                         return $q->where(DB::raw('TRIM(CONCAT_WS(" ", prefix_name, first_name, middle_name, last_name, suffix_name))'), 'like', "%{$search}%")
                             ->orWhere('write_as_name', 'like', "%{$search}%")
                             ->orWhere('nickname', 'like', "%{$search}%")
@@ -197,24 +196,23 @@ class ContactController extends Controller
                             });
                     });
                 })
-
                 ->when($request->has('sort'), function ($q) use ($request) {
                     $sort = request()->get('sort', null);
                     $order = !empty($sort['order']) ? $sort['order'] : 'asc';
 
-                    if(!empty($sort['by']) && $sort['by'] === 'name'){
+                    if (!empty($sort['by']) && $sort['by'] === 'name') {
                         return $q->selectRaw('TRIM(CONCAT_WS(" ", prefix_name, first_name, middle_name, last_name, suffix_name)) as name')
                             ->orderBy('name', $order)
                             ->orderBy('write_as_name', $order);
                     }
 
-                    if(!empty($sort['by']) && $sort['by'] === 'email'){
+                    if (!empty($sort['by']) && $sort['by'] === 'email') {
                         return $q->whereHas('emails', function ($q) use ($sort, $order) {
                             return $q->orderBy($sort['by'], $order);
                         });
                     }
 
-                    if(!empty($sort['by']) && $sort['by'] === 'phone'){
+                    if (!empty($sort['by']) && $sort['by'] === 'phone') {
                         return $q->whereHas('phones', function ($q) use ($sort, $order) {
                             return $q->orderBy($sort['by'], $order);
                         });
@@ -349,6 +347,7 @@ class ContactController extends Controller
             // First, Create contact
             $contact = new Contact();
             $contact->fill($request->all());
+            $contact->birthday = Carbon::parse($request->get('birthday'));
             $contact->write_as_name = $request->get('display_name');
             $contact->user_id = (string)Auth::user()->getAuthIdentifier();
             $contact->save();
@@ -356,7 +355,7 @@ class ContactController extends Controller
             // Save contact's phones
             if ($request->has('phones') && count($request->get('phones')) > 0) {
                 foreach ($request->get('phones') as $phone) {
-                    $row = new ContactPhone();
+                    $row = new Phone();
                     $row->fill($phone);
                     $row->contact()->associate($contact);
                     $row->save();
@@ -365,76 +364,65 @@ class ContactController extends Controller
 
             // Save contact's emails
             if ($request->has('emails') && count($request->get('emails')) > 0) {
-                foreach ($request->get('emails') as $x => $email) {
-                    $row = new ContactEmail();
+                foreach ($request->get('emails') as $email) {
+                    $row = new Email();
                     $row->fill($email);
                     $row->contact()->associate($contact);
                     $row->save();
                 }
             }
 
-//            if ($request->has('works') && count($request->get('works')) > 0) {
-//                foreach ($request->get('works') as $x => $company) {
-//                    Work::create([
-//                        'company' => $company,
-//                        'department' => $request->get('department'),
-//                        'post' => $request->get('post'),
-//                        'is_default' => $x === 0,
-//                        'contact_id' => $contact->id
-//                    ]);
-//                }
-//            }
-//
-//            if ($request->has('addresses') && count($request->get('addresses')) > 0) {
-//                foreach ($request->get('addresses') as $x => $country) {
-//                    Work::create([
-//                        'country' => $country,
-//                        'provinces' => $request->get('provinces'),
-//                        'city' => $request->get('city'),
-//                        'address' => $request->get('address'),
-//                        'address_type' => $request->get('address_type'),
-//                        'postcode' => $item['postcode'],
-//                        'post_office_box_number' => $item['post_office_box_number'],
-//                        'is_default' => $x === 0,
-//                        'contact_id' => $contact->id
-//                    ]);
-//                }
-//            }
-//
-//            if ($request->has('sites') && count($request->get('sites')) > 0) {
-//                foreach ($request->get('sites') as $x => $site) {
-//                    Work::create([
-//                        'site' => $site,
-//                        'site_type' => $item['site_type'],
-//                        'is_default' => $x === 0,
-//                        'contact_id' => $contact->id
-//                    ]);
-//                }
-//            }
-//
-//            if ($request->has('chats') && count($request->get('chats')) > 0) {
-//                foreach ($request->get('chats') as $x => $chat) {
-//                    Work::create([
-//                        'site' => $chat,
-//                        'chat_name' => $item['chat_name'],
-//                        'is_default' => $x === 0,
-//                        'contact_id' => $contact->id
-//                    ]);
-//                }
-//            }
-//
-//            if ($request->has('relation') && count($request->get('relation')) > 0) {
-//                foreach ($request->get('relation') as $x => $relation) {
-//                    Work::create([
-//                        'relation' => $relation,
-//                        'relation_name' => $item['relation_name'],
-//                        'is_default' => $x === 0,
-//                        'contact_id' => $contact->id
-//                    ]);
-//                }
-//            }
-//
+            // Save contact's works if exist
+            if ($request->has('works') && count($request->get('works')) > 0) {
+                foreach ($request->get('works') as $company) {
+                    $row = new Work();
+                    $row->fill($company);
+                    $row->contact()->associate($contact);
+                    $row->save();
+                }
+            }
 
+            // Save contact's addresses if exist
+            if ($request->has('addresses') && count($request->get('addresses')) > 0) {
+                foreach ($request->get('addresses') as $address) {
+                    $row = new Address();
+                    $row->fill($address);
+                    $row->contact()->associate($contact);
+                    $row->save();
+                }
+            }
+
+            // Save contact's sites if exist
+            if ($request->has('sites') && count($request->get('sites')) > 0) {
+                foreach ($request->get('sites') as $site) {
+                    $row = new Site();
+                    $row->fill($site);
+                    $row->contact()->associate($contact);
+                    $row->save();
+                }
+            }
+
+            // Save contact's chats if exist
+            if ($request->has('chats') && count($request->get('chats')) > 0) {
+                foreach ($request->get('chats') as $chat) {
+                    $row = new Chat();
+                    $row->fill($chat);
+                    $row->contact()->associate($contact);
+                    $row->save();
+                }
+            }
+
+            // Save contact's relations if exist
+            if ($request->has('relations') && count($request->get('relations')) > 0) {
+                foreach ($request->get('relations') as $relation) {
+                    $row = new Relation();
+                    $row->fill($relation);
+                    $row->contact()->associate($contact);
+                    $row->save();
+                }
+            }
+
+            // Return response
             return response()->jsonApi([
                 'type' => 'success',
                 'title' => "Adding new contact",
@@ -607,18 +595,17 @@ class ContactController extends Controller
         // Validate input
         $this->validate($request, Contact::rules());
 
-        // Read contact group model
+        // Read contact model
         $contact = $this->getObject($id);
         if (is_a($contact, 'Sumra\JsonApi\JsonApiResponse')) {
             return $contact;
         }
 
-        // Try update group model
+        // Try update contact model
         try {
             // First, update mail contact data
             $contact->fill($request->all());
             $contact->write_as_name = $request->get('display_name');
-            $contact->user_id = (string)Auth::user()->getAuthIdentifier();
             $contact->save();
 
             return response()->jsonApi([
@@ -729,7 +716,7 @@ class ContactController extends Controller
                     'message' => 'Error while deleting contacts: ' . $e->getMessage()
                 ], 400);
             }
-        }else{
+        } else {
             // Get object
             $contact = $this->getObject($id);
 
@@ -993,16 +980,30 @@ class ContactController extends Controller
      *                 description="Array of contacts Id's",
      *                 @OA\Items(
      *                     type="object",
-     *                     example="0aa06e6b-35de-3235-b925-b0c43f8f7c75"
+     *                     example="f97b1458-b4ed-35fe-9fc9-3717b6768339"
      *                 )
      *             ),
      *             @OA\Property(
      *                 property="groups",
-     *                 type="array",
-     *                 description="Array of group Id's",
-     *                 @OA\Items(
-     *                     type="string",
-     *                     example="1bae0037-b7ba-3729-adc1-248c5d58de2f"
+     *                 type="object",
+     *                 description="Array of groups",
+     *                 @OA\Property(
+     *                     property="added",
+     *                     type="array",
+     *                     description="Array of added group Id's",
+     *                     @OA\Items(
+     *                         type="string",
+     *                         example="ca5eb9e6-8509-3280-8da7-bc3cd1efadc3"
+     *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="deleted",
+     *                     type="array",
+     *                     description="Array of deleted group Id's",
+     *                     @OA\Items(
+     *                         type="string",
+     *                         example="26fd178c-be29-3cab-960d-8cafb0f6dbc4"
+     *                     )
      *                 )
      *             )
      *         )
@@ -1032,27 +1033,49 @@ class ContactController extends Controller
         ]);
 
         try {
+            foreach ($request->get('contacts') as $contact_id) {
+                $contact = Contact::find($contact_id);
+
+                if ($contact) {
+                    $ids = $request->get('groups');
+
+                    if (isset($ids['added'])) {
+                        $groups = Group::find($ids['added']);
+
+                        $contact->groups()->attach($groups);
+                    }
+
+                    if (isset($ids['deleted'])) {
+                        $groups = Group::find($ids['deleted']);
+
+                        $contact->groups()->detach($groups);
+                    }
+                }
+            }
+
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => 'Join contact to group',
-                'message' => 'Contact to group added successfully'
+                'title' => 'Join / delete contact to / from group',
+                'message' => 'Operation was been successfully',
+                'data' => null
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => 'Join contact to group',
-                'message' => $e->getMessage()
+                'title' => 'Join / delete contact to / from group',
+                'message' => $e->getMessage(),
+                'data' => null
             ], 400);
         }
     }
 
     /**
-     * Batch Import user contacts using saved file (Google CSV, Outlook CSV, vCard, etc)
+     * Batch Import user's contacts using saved file (Google CSV, Outlook CSV, vCard, etc.)
      *
      * @OA\Post(
      *     path="/v1/contacts/import/file",
-     *     summary="Batch Import user contacts using saved file (Google CSV, Outlook CSV, vCard, etc)",
-     *     description="Batch Import user contacts using saved file (Google CSV, Outlook CSV, vCard, etc)",
+     *     summary="Batch Import user's contacts using saved file (Google CSV, Outlook CSV, vCard, etc)",
+     *     description="Batch Import user's contacts using saved file (Google CSV, Outlook CSV, vCard, etc)",
      *     tags={"Contacts"},
      *
      *     security={{
@@ -1078,14 +1101,14 @@ class ContactController extends Controller
      *                 @OA\Property(
      *                     property="contacts",
      *                     type="file",
-     *                     description="Selected media files"
+     *                     description="Selected media files",
      *                 ),
      *                 @OA\Property(
      *                     property="group_id",
      *                     type="string",
      *                     description="Input Group ID",
      *                     example="3d9319c9-59ee-3efc-900f-eec98811c96b"
-     *                 ),
+     *                 )
      *             )
      *          )
      *     ),
@@ -1117,10 +1140,9 @@ class ContactController extends Controller
      *                  property="message",
      *                  type="string",
      *                  description="Error message"
-     *              ),
-     *          ),
-     *     ),
-     *
+     *              )
+     *          )
+     *     )
      * )
      *
      * @param \Illuminate\Http\Request $request
@@ -1129,21 +1151,33 @@ class ContactController extends Controller
      */
     public function importFile(Request $request)
     {
-        $user_id = (string)Auth::user()->getAuthIdentifier();
+        // Validate input
+        $this->validate($request, [
+            'contacts' => 'file|mimes:csv,vcf,vcard,txt,xls,xlsx',
+            'group_id' => 'nullable|string|max:36'
+        ]);
 
         try {
+            //$file = $request->file('contacts');
+            //$file = $request->file('contacts')->get();
+            //dd($file);
+
             $import = new Import();
             $result = $import->exec($request);
 
             // Return response
             return response()->jsonApi([
-                'success' => true,
+                'type' => 'success',
+                'title' => 'Batch import of contacts from file',
+                'message' => "Successfully imported {$result['count']} contact(s)",
                 'data' => $result
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'success' => false,
-                'error' => 'Error: ' . $e->getMessage()
+                'type' => 'danger',
+                'title' => 'Batch import of contacts from file',
+                'message' => 'Error: ' . $e->getMessage(),
+                'data' => null
             ], 400);
         }
     }
@@ -1276,7 +1310,7 @@ class ContactController extends Controller
                 // Save contact's phones
                 if (isset($lead['phones']) && count($lead['phones']) > 0) {
                     foreach ($lead['phones'] as $phone) {
-                        $row = new ContactPhone();
+                        $row = new Phone();
                         $row->fill([
                             'phone' => $phone
                         ]);
@@ -1288,7 +1322,7 @@ class ContactController extends Controller
                 // Save contact's emails
                 if ($lead['emails'] && count($lead['emails']) > 0) {
                     foreach ($lead['emails'] as $email) {
-                        $row = new ContactEmail();
+                        $row = new Email();
                         $row->fill([
                             'email' => $email
                         ]);
@@ -1300,13 +1334,13 @@ class ContactController extends Controller
 
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => "Bulk import of contacts",
+                'title' => "Batch import of contacts",
                 'message' => "Contacts was imported successfully"
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => "Bulk import of contacts",
+                'title' => "Batch import of contacts",
                 'message' => $e->getMessage()
             ], 400);
         }

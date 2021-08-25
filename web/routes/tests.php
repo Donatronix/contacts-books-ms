@@ -31,9 +31,6 @@ Route::group(
         $router->get('run', '\App\Services\Import@run');
         $router->post('test', '\App\Services\Import@exec');
 
-        $router->get('run1', '\App\Services\Test@run');
-        $router->get('test1', '\App\Services\Test@test');
-
         $router->get('run2', '\App\Services\CsvParser@run');
         $router->post('test2', '\App\Services\CsvParser@test');
     }

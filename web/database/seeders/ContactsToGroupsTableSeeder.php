@@ -15,10 +15,10 @@ class ContactsToGroupsTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $list = Group::all();
+        $groups = Group::all();
 
-        foreach ($list as $group){
-            $contacts = Contact::all()->random(10);
+        foreach ($groups as $group) {
+            $contacts = Contact::all()->random(5);
 
             $group->contacts()->attach($contacts);
         }

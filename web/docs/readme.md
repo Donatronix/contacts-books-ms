@@ -8,7 +8,7 @@ Storing information about the user's contacts.
 
 ```
 {
-    'full_name': '',
+    'display_name': '',
     'name_param': {
         0: {
             'value': '',
@@ -37,7 +37,7 @@ Storing information about the user's contacts.
             'city': '',
             'address_string1': '',
             'address_string2': '',
-            'post_office_box_number': '',
+            'po_box': '',
         },
     },
     'company_info': {
@@ -64,7 +64,7 @@ Storing information about the user's contacts.
     },
     'note': '',
     'photo': 1,
-    'categories': {
+    'groups': {
         0: '',
         1: ''
     }
@@ -134,9 +134,9 @@ country | Country of contact | varchar(100) | UA | N
 provinces | Region, state, province where the contact resides | varchar(100) | Ivano-Frankivs'ka oblast | N
 city | City of residence | varchar(50) | Київ| N
 address | Residence address. **Consists of two parameters**: *address string1* - street and *address_string2* - house number | text | Apollonia St, 44 | N
-address_type | The type of address to be grouped, such as home. if not specified, another is specified by default | varchar(30) | another | N
+type | The type of address to be grouped, such as home. if not specified, another is specified by default | varchar(30) | another | N
 postcode | The zip code of the contact | varchar(10) | 02000 | N
-post_office_box_number | User PO Box | varchar(10) | 123456 | N
+po_box | User PO Box | varchar(10) | 123456 | N
 is_default | Default contact | tinyint(1) | 1 | N
 contact_id | The uuid of the user who uploaded the contact | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 
@@ -152,7 +152,7 @@ contact_id | The uuid of the user who uploaded the contact | char(36) | 93ca1f66
             'city': 'Kiev',
             'address_string1': 'Drum Street',
             'address_string2': 1,
-            'post_office_box_number': '123456'
+            'po_box': '123456'
         },
     },
 }
@@ -175,9 +175,9 @@ name | Name | varchar(255) | Vasya | Y
 Parameter  | Description | Type | Example | Required
 ---------  | ----------- | ---- | ------- | --------
 id         | Contact ID  | char(36) | 100 | Y
-chat | Chat name | text | chat_name | N
+chat | Chat name | text | type | N
 is_default | Default chat name | tinyint(1) | 1 | N
-chat_name | The name of the chat provided by Google contacts | varchar(30) | skype | N
+type | The name of the chat provided by Google contacts | varchar(30) | skype | N
 contact_id | The uuid of the user's chat who uploaded the contact | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 
 === Request body ===
@@ -185,7 +185,7 @@ contact_id | The uuid of the user's chat who uploaded the contact | char(36) | 9
 ```
 {
     'chats': {
-        'skype': 'chat_name',
+        'skype': 'type',
         'type': 'value'
     },
 }
@@ -263,7 +263,7 @@ user_id | Contact UUID | char(36) | 93ca3bee-7612-42fe-9fee-58620860f026 | N
 
 ```
 {
-    'categories': {
+    'groups': {
         0: 'Work',
         1: 'myContacts'
     },
@@ -278,7 +278,7 @@ Parameter  | Description | Type | Example | Required
 id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
 is_default | Default relation | tinyint(1) | 1 | N
 relation | A description of the relationship by the user | varchar(255) | gog | N
-relation_name | Types of relationships from the google contacts service | varchar(30) | father | N
+type | Types of relationships from the google contacts service | varchar(30) | father | N
 contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 
 === Request body ===
@@ -301,9 +301,9 @@ contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 Parameter  | Description | Type | Example | Required
 ---------  | ----------- | ---- | ------- | --------
 id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
-site | Site name | varchar(255) | gen-ka.gs | N
+url | Site name | varchar(255) | gen-ka.gs | N
+type | Site type for grouping | varchar(30) | homepage | N
 is_default | Default site | tinyint(1) | 1 | N
-site_type | Site type for grouping | varchar(30) | homepage | N
 contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 
 === Request body ===
