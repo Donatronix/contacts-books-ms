@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Auth;
  *
  * @package App\Http\Traits
  */
-trait OwnerTrait{
+trait OwnerTrait
+{
     /**
      * @param      $query
      * @param null $user_id

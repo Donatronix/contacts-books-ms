@@ -230,7 +230,7 @@ class Import
                     'avatars' => $info_send_rabbitmq_body
                 ];
 
-                PubSub::publish('SaveAvatars', $info_send_rabbitmq, 'files');
+                PubSub::publish('SaveAvatars', $info_send_rabbitmq, config('settings.exchange_queue.files'));
             }
 
             return [
