@@ -21,10 +21,10 @@ class Address extends Model
         'provinces',
         'city',
         'address',
-        'address_type',
+        'type',
         'postcode',
-        'post_office_box_number',
-        'contact_id',
+        'po_box',
+        'contact_id'
     ];
 
     /**

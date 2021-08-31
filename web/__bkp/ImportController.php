@@ -16,52 +16,6 @@ use Illuminate\Support\Facades\Auth;
  */
 class ImportController extends Controller
 {
-    public function addvcard(Request $request)
-    {
-        $user_id = (string)Auth::user()->getAuthIdentifier();
-
-        $cards = (new Vcard())->readData($request->vcards);
-
-        $contacts = [];
-        try {
-            foreach ($cards as $c) {
-                $contact = Contact::create([
-                    'user_id' => $user_id,
-                    'first_name' => $c['N'][0]['value'][1][0],
-                    'last_name' => $c['N'][0]['value'][0][0],
-                    'middle_name' => $c['N'][0]['value'][2][0],
-                    'prefix_name' => $c['N'][0]['value'][3][0],
-                    'suffix_name' => $c['N'][0]['value'][4][0],
-                    'nickname' => $c['NICKNAME'][0]['value'][0][0],
-                    'adrextend' => $c['ADR'][0]['value'][0][0],
-                    'adrstreet' => $c['ADR'][0]['value'][2][0] . "\n" . $c['ADR'][0]['value'][1][0],
-                    'adrcity' => $c['ADR'][0]['value'][3][0],
-                    'adrstate' => $c['ADR'][0]['value'][4][0],
-                    'adrzip' => $c['ADR'][0]['value'][5][0],
-                    'adrcountry' => $c['ADR'][0]['value'][6][0],
-
-                    //'tel1' => $c['TEL'][0]['value'][0][0],
-                    //'email' => $c['EMAIL'][0]['value'][0][0]
-                ]);
-
-                $contact->save();
-
-                $contacts[] = $contact;
-            }
-        } catch (Exception $e) {
-            return response()->jsonApi([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 400);
-        }
-
-        // Return response
-        return response()->jsonApi([
-            'success' => true,
-            'data' => $contacts
-        ], 200);
-    }
-
     /***********************************
      *  P R I V A T E
      ************************************/

@@ -28,8 +28,9 @@ class WorkFactory extends Factory
             'company' => $this->faker->word(),
             'department' => $this->faker->word(),
             'post' => $this->faker->word(),
+            'is_default' => $this->faker->boolean(),
             'contact_id' => function () {
-                return Contact::factory()->create()->id;
+                return Contact::all()->random()->id;
             },
         ];
     }

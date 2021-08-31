@@ -4,27 +4,27 @@ namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
-use App\Models\ContactPhone;
-use App\Models\Group;
+use App\Models\Email;
+use App\Models\Phone;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /**
- * Class ContactPhoneController
+ * Class EmailController
  *
  * @package App\Api\V1\Controllers
  */
-class ContactPhoneController extends Controller
+class EmailController extends Controller
 {
     /**
-     * Save a new phone number for current contact
+     * Store a newly contact email in storage.
      *
      * @OA\Post(
-     *     path="/v1/contacts/phones",
-     *     summary="Save a new phone number for current contact",
-     *     tags={"Contact Phones"},
+     *     path="/v1/contacts/emails",
+     *     summary="Save a new email for current contact",
+     *     tags={"Contact Emails"},
      *
      *     security={{
      *         "default": {
@@ -48,22 +48,22 @@ class ContactPhoneController extends Controller
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="phone",
+     *                 property="email",
      *                 type="string",
-     *                 description="Phone number of contact",
-     *                 example="(555)-777-1234"
+     *                 description="Email of contact",
+     *                 example="test@tes.com"
      *             ),
      *             @OA\Property(
      *                 property="type",
      *                 type="string",
-     *                 description="Phone type (home, work, cell, etc)",
-     *                 enum={"home", "work", "cell", "other", "main", "homefax", "workfax", "googlevoice", "pager"}
+     *                 description="Email type (home, work, etc)",
+     *                 enum={"home", "work", "other", "main"}
      *             ),
      *             @OA\Property(
      *                 property="is_default",
      *                 type="boolean",
-     *                 description="Phone by default. Accept 1, 0, true, false",
-     *                 example="false"
+     *                 description="Email by default. Accept 1, 0, true, false",
+     *                 example="true"
      *             ),
      *             @OA\Property(
      *                 property="contact_id",
@@ -86,13 +86,13 @@ class ContactPhoneController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      *
-     * @return mixed
+     * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         // Validate input
-        $this->validate($request, ContactPhone::validationRules());
+        $this->validate($request, Email::validationRules());
 
         $contactId = $request->get('contact_id', null);
         try {
@@ -106,36 +106,36 @@ class ContactPhoneController extends Controller
             ], 404);
         }
 
-        // Try to add new phone number
+        // Try to add new email
         try {
             // Reset is_default for other emails
             if ($request->boolean('is_default')) {
-                foreach ($contact->phones as $oldPhone) {
-                    $oldPhone->is_default = false;
-                    $oldPhone->save();
+                foreach ($contact->emails as $oldEmail) {
+                    $oldEmail->is_default = false;
+                    $oldEmail->save();
                 }
             }
 
             // Create new
-            $phone = new ContactPhone();
-            $phone->fill($request->all());
-            $phone->contact()->associate($contact);
-            $phone->save();
+            $email = new Email();
+            $email->fill($request->all());
+            $email->contact()->associate($contact);
+            $email->save();
 
             // Remove contact object from response
-            unset($phone->contact);
+            unset($email->contact);
 
             // Return response to client
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => 'Adding new phone number',
-                'message' => "Contact's phone number {$phone->phone} successfully added",
-                'data' => $phone->toArray()
+                'title' => 'Adding new email',
+                'message' => "Contact's email {$email->email} successfully added",
+                'data' => $email->toArray()
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => 'Adding new phone number',
+                'title' => 'Adding new email',
                 'message' => $e->getMessage(),
                 'data' => null
             ], 400);
@@ -143,13 +143,13 @@ class ContactPhoneController extends Controller
     }
 
     /**
-     * Update phone number for current contact
+     * Update email for current contact
      *
      * @OA\Put(
-     *     path="/v1/contacts/phones/{id}",
-     *     summary="Update phone number for current contact",
-     *     description="Update phone number for current contact",
-     *     tags={"Contact Phones"},
+     *     path="/v1/contacts/emails/{id}",
+     *     summary="Update email for current contact",
+     *     description="Update email for current contact",
+     *     tags={"Contact Emails"},
      *
      *     security={{
      *         "default": {
@@ -170,7 +170,7 @@ class ContactPhoneController extends Controller
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Phone number Id",
+     *         description="Email Id",
      *         required=true,
      *         @OA\Schema(
      *             type="string"
@@ -183,22 +183,22 @@ class ContactPhoneController extends Controller
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="phone",
+     *                 property="email",
      *                 type="string",
-     *                 description="Phone number of contact",
-     *                 example="(555)-777-1234"
+     *                 description="Email of contact",
+     *                 example="test@tes.com"
      *             ),
      *             @OA\Property(
      *                 property="type",
      *                 type="string",
-     *                 description="Phone type (home, work, cell, etc)",
-     *                 enum={"home", "work", "cell", "other", "main", "homefax", "workfax", "googlevoice", "pager"}
+     *                 description="Email type (home, work, etc)",
+     *                 enum={"home", "work", "other", "main"}
      *             ),
      *             @OA\Property(
      *                 property="is_default",
      *                 type="boolean",
-     *                 description="Phone by default. Accept 1, 0, true, false",
-     *                 example="false"
+     *                 description="Email by default. Accept 1, 0, true, false",
+     *                 example="true"
      *             )
      *         )
      *     ),
@@ -239,42 +239,42 @@ class ContactPhoneController extends Controller
     public function update(Request $request, $id): \Illuminate\Http\JsonResponse
     {
         // Validate input
-        $this->validate($request, ContactPhone::validationRules());
+        $this->validate($request, Email::validationRules());
 
         // Read contact group model
-        $phone = $this->getObject($id);
-        if (is_a($phone, 'Sumra\JsonApi\JsonApiResponse')) {
-            return $phone;
+        $email = $this->getObject($id);
+        if (is_a($email, 'Sumra\JsonApi\JsonApiResponse')) {
+            return $email;
         }
 
-        // Try update phone number data
+        // Try update email data
         try {
-            // Reset is_default for other phones
-            if ($request->boolean('is_default') && $phone->contact) {
-                foreach ($phone->contact->phones as $oldPhone) {
-                    $oldPhone->is_default = false;
-                    $oldPhone->save();
+            // Reset is_default for other emails
+            if ($request->boolean('is_default') && $email->contact) {
+                foreach ($email->contact->emails as $oldEmail) {
+                    $oldEmail->is_default = false;
+                    $oldEmail->save();
                 }
             }
 
             // Update data
-            $phone->fill($request->all());
-            $phone->save();
+            $email->fill($request->all());
+            $email->save();
 
             // Remove contact object from response
-            unset($phone->contact);
+            unset($email->contact);
 
             // Return response to client
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => 'Changing phone number',
-                'message' => "Phone number {$phone->phone} successfully updated",
-                'data' => $phone->toArray()
+                'title' => 'Changing contact email',
+                'message' => "Contact email {$email->email} successfully updated",
+                'data' => $email->toArray()
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => 'Change a contact group',
+                'title' => 'Changing contact email',
                 'message' => $e->getMessage(),
                 'data' => null
             ], 400);
@@ -282,13 +282,13 @@ class ContactPhoneController extends Controller
     }
 
     /**
-     * Delete contact phone number from storage
+     * Delete contact email from storage.
      *
      * @OA\Delete(
-     *     path="/v1/contacts/phones/{id}",
-     *     summary="Delete contact phone number from storage",
-     *     description="Delete contact phone number from storage",
-     *     tags={"Contact Phones"},
+     *     path="/v1/contacts/emails/{id}",
+     *     summary="Delete contact email from storage",
+     *     description="Delete contact email from storage",
+     *     tags={"Contact Emails"},
      *
      *     security={{
      *         "default": {
@@ -310,7 +310,7 @@ class ContactPhoneController extends Controller
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="Phone number Id",
+     *         description="Email Id",
      *         @OA\Schema(
      *             type="string"
      *         )
@@ -321,7 +321,7 @@ class ContactPhoneController extends Controller
      *     ),
      *     @OA\Response(
      *         response="404",
-     *         description="Contact phone not found"
+     *         description="Contact email not found"
      *     )
      * )
      *
@@ -337,20 +337,20 @@ class ContactPhoneController extends Controller
             return $phone;
         }
 
-        // Try to delete phome
+        // Try to delete email
         try {
             $phone->delete();
 
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => "Delete of contact's phone",
-                'message' => 'Phone of contacts is successfully deleted',
+                'title' => "Delete of contact's email",
+                'message' => 'Email of contacts is successfully deleted',
                 'data' => null
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => "Delete of contact's phone",
+                'title' => "Delete of contact's email",
                 'message' => $e->getMessage(),
                 'data' => null
             ], 400);
@@ -358,7 +358,7 @@ class ContactPhoneController extends Controller
     }
 
     /**
-     * Get contact's phone number object
+     * Get contact's email object
      *
      * @param $id
      *
@@ -367,12 +367,12 @@ class ContactPhoneController extends Controller
     private function getObject($id)
     {
         try {
-            return ContactPhone::findOrFail($id);
+            return Email::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => "Get Contact's phone number",
-                'message' => "Contact's phone number with id #{$id} not found",
+                'title' => "Get contact's email",
+                'message' => "Contact's email with id #{$id} not found",
                 'data' => null
             ], 404);
         }

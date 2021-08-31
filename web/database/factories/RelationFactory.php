@@ -26,10 +26,11 @@ class RelationFactory extends Factory
         return [
             'id' => $this->faker->uuid(),
             'relation' => $this->faker->word(),
-            'relation_name' => $this->faker->randomElement(['spouse', 'child', 'mother', 'father', 'parent', 'brother', 'sister', 'friend', 'relative', 'manager', 'assistant', 'referred_by', 'partner', 'domestic_partner']),
+            'type' => $this->faker->randomElement(['spouse', 'child', 'mother', 'father', 'parent', 'brother', 'sister', 'friend', 'relative', 'manager', 'assistant', 'referred_by', 'partner', 'domestic_partner']),
+            'is_default' => $this->faker->boolean(),
             'contact_id' => function () {
-                return Contact::factory()->create()->id;
-            },
+                return Contact::all()->random()->id;
+            }
         ];
     }
 }

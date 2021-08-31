@@ -22,7 +22,7 @@ class GroupsTableSeeder extends Seeder
             'My Colleagues'
         ];
 
-        foreach($list as $name){
+        foreach ($list as $name) {
             Group::factory()->create([
                 'name' => $name
             ]);

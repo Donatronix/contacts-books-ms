@@ -61,12 +61,12 @@ class CategoriesTableSeeder extends Seeder
             ]
         ];
 
-        foreach ($list as $name => $children){
+        foreach ($list as $name => $children) {
             $category = Category::factory()->create([
                 'name' => $name
             ]);
 
-            foreach($children as $child){
+            foreach ($children as $child) {
                 Category::factory()->create([
                     'name' => $child,
                     'parent_id' => $category->id

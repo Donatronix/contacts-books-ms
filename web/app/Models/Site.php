@@ -18,7 +18,7 @@ class Site extends Model
      */
     protected $fillable = [
         'site',
-        'site_type',
+        'type',
         'contact_id',
     ];
 

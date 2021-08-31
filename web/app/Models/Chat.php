@@ -18,7 +18,7 @@ class Chat extends Model
      */
     protected $fillable = [
         'chat',
-        'chat_name',
+        'type',
         'contact_id',
     ];
 

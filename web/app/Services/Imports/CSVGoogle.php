@@ -7,12 +7,20 @@ use Illuminate\Support\Facades\Auth;
 
 class CSVGoogle
 {
-    public $data = [];
-    public $file_format = 'csv';
+    /**
+     * @var array
+     */
+    public array $data = [];
+
+    /**
+     * @var string
+     */
+    public string $file_format = 'csv';
 
     public function readData($file_data)
     {
         $csv_data = [];
+
         $lines = explode(PHP_EOL, $file_data);
         foreach ($lines as $line) {
             $csv_data[] = str_getcsv($line);
@@ -34,9 +42,11 @@ class CSVGoogle
             foreach ($value as $key => $item) {
                 if ($key == "Phone {$cnt} - Value") {
                     $data_result = true;
+
                     break;
                 }
             }
+
             $cnt++;
         }
 
@@ -53,53 +63,59 @@ class CSVGoogle
         $data_result = [];
 
         foreach ($data_array as $k => $value) {
-            $data_params = ['cnt_name_key' => 0, 'cnt_email_type' => 1, 'cnt_email_value' => 1, 'cnt_email_key_type' =>
-                0, 'cnt_email_key_value' => 0, 'cnt_phone_type' => 1, 'cnt_phone_value' => 1, 'cnt_phone_key_type' =>
-                0, 'cnt_phone_key_value' => 0, 'cnt_relation_type' => 1, 'cnt_relation_value' => 1, 'cnt_relation_key_type' =>
-                0, 'cnt_relation_key_value' => 0, 'cnt_sites_type' => 1, 'cnt_sites_value' => 1, 'cnt_sites_key_type' =>
-                0, 'cnt_sites_key_value' => 0, 'cnt_company_info_key' => 1, 'cnt_company_info_value' => 0, 'cnt_chats_value' => 0, 'cnt_chats_type' => 0, 'cnt_address_key' => 1, 'cnt_address_info' => 0,];
+            $data_params = [
+                'cnt_name_key' => 0,
+                'cnt_email_type' => 1,
+                'cnt_email_value' => 1,
+                'cnt_email_key_type' => 0,
+                'cnt_email_key_value' => 0,
+                'cnt_phone_type' => 1,
+                'cnt_phone_value' => 1,
+                'cnt_phone_key_type' => 0,
+                'cnt_phone_key_value' => 0,
+                'cnt_relation_type' => 1,
+                'cnt_relation_value' => 1,
+                'cnt_relation_key_type' => 0,
+                'cnt_relation_key_value' => 0,
+                'cnt_sites_type' => 1,
+                'cnt_sites_value' => 1,
+                'cnt_sites_key_type' => 0,
+                'cnt_sites_key_value' => 0,
+                'cnt_company_info_key' => 1,
+                'cnt_company_info_value' => 0,
+                'cnt_chats_value' => 0,
+                'cnt_chats_type' => 0,
+                'cnt_address_key' => 1,
+                'cnt_address_info' => 0
+            ];
 
             foreach ($value as $key => $item) {
-                if ($key == 'Name') {
-                    $data_result[$k]['full_name'] = $item;
-                    continue;
-                }
-
                 if ($key == 'Given Name') {
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'first_name';
-                    $data_params['cnt_name_key']++;
+                    $data_result[$k]['first_name'] = $item;
+
                     continue;
                 }
 
                 if ($key == 'Family Name') {
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'last_name';
-                    $data_params['cnt_name_key']++;
+                    $data_result[$k]['last_name'] = $item;
 
                     continue;
                 }
 
                 if ($key == 'Additional Name') {
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'middle_name';
-                    $data_params['cnt_name_key']++;
+                    $data_result[$k]['middle_name'] = $item;
 
                     continue;
                 }
 
                 if ($key == 'Name Prefix') {
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'prefix_name';
-                    $data_params['cnt_name_key']++;
+                    $data_result[$k]['prefix_name'] = $item;
 
                     continue;
                 }
 
                 if ($key == 'Name Suffix') {
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['value'] = $item;
-                    $data_result[$k]['name_param'][$data_params['cnt_name_key']]['type'] = 'suffix_name';
-                    $data_params['cnt_name_key']++;
+                    $data_result[$k]['suffix_name'] = $item;
 
                     continue;
                 }
@@ -111,7 +127,7 @@ class CSVGoogle
                 }
 
                 if ($key == 'Birthday') {
-                    $data_result[$k]['birthday'] = date("Y-m-d", strtotime($item));
+                    $data_result[$k]['birthday'] = $item;
 
                     continue;
                 }
@@ -198,7 +214,7 @@ class CSVGoogle
                 if ($key == "Group Membership") {
                     $categories = explode(' ::: ', $item);
                     foreach ($categories as $category) {
-                        $data_result[$k]['categories'][] = $category;
+                        $data_result[$k]['groups'][] = $category;
                     }
                 }
 
@@ -251,7 +267,7 @@ class CSVGoogle
                     }
 
                     if ($key == "Address {$data_params['cnt_address_key']} - PO Box") {
-                        $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'post_office_box_number';
+                        $data_result[$k]['address'][$data_params['cnt_address_info']]['type'] = 'po_box';
                         $data_result[$k]['address'][$data_params['cnt_address_info']]['value'] = $item;
                     }
 
@@ -264,84 +280,5 @@ class CSVGoogle
         }
 
         return $data_result ?? false;
-    }
-
-    public function readDataTmp($file_data)
-    {
-        $user_id = (string)Auth::user()->getAuthIdentifier();
-
-        $googles = $this->parse_csv($file_data);
-
-        $header = array_shift($googles);
-        $header[] = "tmp";
-
-        $gcontacts = [];
-        foreach ($googles as $s) {
-            $gcontacts[] = array_combine($header, $s);
-        }
-
-        $contacts = [];
-        try {
-            foreach ($gcontacts as $c) {
-                $contact = Contact::create([
-                    'user_id' => $user_id,
-                    'first_name' => $c['First Name'],
-                    'last_name' => $c['Last Name'],
-                    'middle_name' => $c['Middle Name'],
-                    'prefix_name' => $c['Title'],
-                    'suffix_name' => $c['Suffix'],
-                    'nickname' => '',
-                    'adrextend' => $c['Home Address PO Box'],
-                    'adrstreet' => $c['Home Street'] . "\n" . $c['Home Street2'] . "\n" . $c['Home Street3'],
-                    'adrcity' => $c['Home City'],
-                    'adrstate' => $c['Home State'],
-                    'adrzip' => $c['Home Postal Code'],
-                    'adrcountry' => $c['Home Country'],
-                    // 'tel1' => $c['Other Phone'] ?? $c['Primary Phone'] ?? $c['Home Phone'] ?? $c['Home Phone 2'] ?? $c['Mobile Phone'],
-                    // 'email' => $c['E-mail Address']
-                ]);
-                $contact->save();
-                $contacts[] = $contact;
-            }
-        } catch (Exception $e) {
-            return response()->jsonApi([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 400);
-        }
-
-        // Return response
-        return response()->jsonApi([
-            'success' => true,
-            'data' => $contacts
-        ], 200);
-    }
-
-    function parse_csv($str)
-    {
-        $str = preg_replace_callback('/([^"]*)("((""|[^"])*)"|$)/s',
-            function ($matches) {
-                $str = str_replace("\r", "\rR", $matches[3]);
-
-                return preg_replace('/\r\n?/', "\n", $matches[1]) . $str;
-            },
-            $str);
-        dd($str);
-        $str = preg_replace('/\n$/', '', $str);
-
-        return array_map(
-            function ($line) {
-                return array_map(
-                    function ($field) {
-                        $field = str_replace("\rC", ',', $field);
-                        $field = str_replace("\rQ", '"', $field);
-                        $field = str_replace("\rN", "\n", $field);
-                        $field = str_replace("\rR", "\r", $field);
-
-                        return $field;
-                    },
-                    explode(',', $line));
-            }, explode("\n", $str)
-        );
     }
 }

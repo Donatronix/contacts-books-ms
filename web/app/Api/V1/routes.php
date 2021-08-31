@@ -50,9 +50,9 @@ $router->group([
     $router->group([
         'prefix' => 'emails',
     ], function ($router) {
-        $router->post('/', 'ContactEmailController@store');
-        $router->put('/{id}', 'ContactEmailController@update');
-        $router->delete('/{id}', 'ContactEmailController@destroy');
+        $router->post('/', 'EmailController@store');
+        $router->put('/{id}', 'EmailController@update');
+        $router->delete('/{id}', 'EmailController@destroy');
     });
 
     /**
@@ -61,9 +61,9 @@ $router->group([
     $router->group([
         'prefix' => 'phones',
     ], function ($router) {
-        $router->post('/', 'ContactPhoneController@store');
-        $router->put('/{id}', 'ContactPhoneController@update');
-        $router->delete('/{id}', 'ContactPhoneController@destroy');
+        $router->post('/', 'PhoneController@store');
+        $router->put('/{id}', 'PhoneController@update');
+        $router->delete('/{id}', 'PhoneController@destroy');
     });
 
     /**

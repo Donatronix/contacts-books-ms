@@ -27,9 +27,10 @@ class ChatFactory extends Factory
         return [
             'id' => $this->faker->uuid(),
             'chat' => $this->faker->url,
-            'chat_name' => $this->faker->randomElement(['gtalk', 'aim', 'yahoo', 'skype', 'qq', 'msn', 'isq', 'jabber']),
+            'type' => $this->faker->randomElement(['gtalk', 'aim', 'yahoo', 'skype', 'qq', 'msn', 'isq', 'jabber']),
+            'is_default' => $this->faker->boolean(),
             'contact_id' => function () {
-                return Contact::factory()->create()->id;
+                return Contact::all()->random()->id;
             },
         ];
     }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateContactPhonesTable extends Migration
+class CreatePhonesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateContactPhonesTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact_phones', function (Blueprint $table) {
+        Schema::create('phones', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('phone');
             $table->string('type', 30)->nullable()->comment('a field type for a phone that denotes a group, such as home');
@@ -34,6 +34,6 @@ class CreateContactPhonesTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contact_phones');
+        Schema::dropIfExists('phones');
     }
 }
