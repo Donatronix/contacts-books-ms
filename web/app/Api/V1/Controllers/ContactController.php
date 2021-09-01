@@ -756,7 +756,7 @@ class ContactController extends Controller
      *
      * @OA\Post(
      *     path="/v1/contacts/merge",
-     *     summary="Merge selected contacts to one,
+     *     summary="Merge selected contacts to one",
      *     tags={"Contacts"},
      *
      *     security={{
