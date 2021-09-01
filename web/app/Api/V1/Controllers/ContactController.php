@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Sumra\JsonApi\JsonApiResponse;
+use Sumra\PubSub\PubSub;
 
 /**
  * Class ContactController
@@ -150,7 +151,7 @@ class ContactController extends Controller
     public function index(Request $request)
     {
         try {
-            $contacts = Contact::byOwner()
+            $contactsQuery = Contact::byOwner()
                 ->select('*')
                 ->with([
                     'phones' => function ($q) use ($request) {
@@ -195,30 +196,33 @@ class ContactController extends Controller
                                 return $q->where('phone', 'like', "%{$search}%");
                             });
                     });
-                })
-                ->when($request->has('sort'), function ($q) use ($request) {
-                    $sort = request()->get('sort', null);
-                    $order = !empty($sort['order']) ? $sort['order'] : 'asc';
+                });
 
-                    if (!empty($sort['by']) && $sort['by'] === 'name') {
-                        return $q->selectRaw('TRIM(CONCAT_WS(" ", prefix_name, first_name, middle_name, last_name, suffix_name)) as name')
-                            ->orderBy('name', $order)
-                            ->orderBy('write_as_name', $order);
-                    }
+            // Sorting all records
+            $sort = $request->get('sort', ['by' => 'name']);
+            $sort['by'] = $sort['by'] ?? 'name';
+            $sort['order'] = $sort['order'] ?? 'asc';
 
-                    if (!empty($sort['by']) && $sort['by'] === 'email') {
-                        return $q->whereHas('emails', function ($q) use ($sort, $order) {
-                            return $q->orderBy($sort['by'], $order);
-                        });
-                    }
+            if (!empty($sort['by']) && $sort['by'] === 'name') {
+                $contactsQuery->selectRaw('TRIM(CONCAT_WS(" ", prefix_name, first_name, middle_name, last_name, suffix_name)) as name')
+                    ->orderBy('name', $sort['order'])
+                    ->orderBy('write_as_name', $sort['order']);
+            }
 
-                    if (!empty($sort['by']) && $sort['by'] === 'phone') {
-                        return $q->whereHas('phones', function ($q) use ($sort, $order) {
-                            return $q->orderBy($sort['by'], $order);
-                        });
-                    }
-                })
-                ->paginate($request->get('limit', config('settings.pagination_limit')));
+            if (!empty($sort['by']) && $sort['by'] === 'email') {
+                $contactsQuery->whereHas('emails', function ($q) use ($sort) {
+                    return $q->orderBy($sort['by'], $sort['order']);
+                });
+            }
+
+            if (!empty($sort['by']) && $sort['by'] === 'phone') {
+                $contactsQuery->whereHas('phones', function ($q) use ($sort) {
+                    return $q->orderBy($sort['by'], $sort['order']);
+                });
+            }
+
+            // Add pagination
+            $contacts = $contactsQuery->paginate($request->get('limit', config('settings.pagination_limit')));
 
             // Transform collection objects
             $contacts->map(function ($object) {
@@ -519,7 +523,12 @@ class ContactController extends Controller
         $contact->load([
             'phones',
             'emails',
-            'groups'
+            'groups',
+            'works',
+            'addresses',
+            'sites',
+            'chats',
+            'relations'
         ]);
 
         // Read big size of avatar from storage
@@ -743,11 +752,11 @@ class ContactController extends Controller
     }
 
     /**
-     * Merge 2 contacts to 1
+     * Merge selected contacts to one
      *
      * @OA\Post(
      *     path="/v1/contacts/merge",
-     *     summary="Merge 2 contacts to 1",
+     *     summary="Merge selected contacts to one,
      *     tags={"Contacts"},
      *
      *     security={{
@@ -771,16 +780,13 @@ class ContactController extends Controller
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="contact_id_from",
-     *                 type="string",
-     *                 description="Contact ID From",
-     *                 example="0aa06e6b-35de-3235-b925-b0c43f8f7c75"
-     *             ),
-     *             @OA\Property(
-     *                 property="contact_id_to",
-     *                 type="string",
-     *                 description="Contact ID To",
-     *                 example="0aa06e6b-35de-3235-b925-b0c43f8f7c87"
+     *                 property="contacts",
+     *                 type="array",
+     *                 description="Array of contacts id's for merge",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     example="f97b1458-b4ed-35fe-9fc9-3717b6768339"
+     *                 )
      *             )
      *         )
      *     ),
@@ -797,77 +803,114 @@ class ContactController extends Controller
      * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function merge(Request $request): JsonResponse
     {
-        // Check exist contacts
-        $contact_from = $this->getObject($request->get('contact_id_from'));
-        if ($contact_from instanceof JsonApiResponse) {
-            return $contact_from;
-        }
+        // Validate input
+        $this->validate($request, [
+            'contacts' => 'required|array|min:2',
+            'contacts.*' => 'required|string|distinct|min:36'
+        ]);
 
-        $contact_to = $this->getObject($request->get('contact_id_to'));
-        if ($contact_to instanceof JsonApiResponse) {
-            return $contact_to;
-        }
-
+        // Try process operations with contacts
         try {
-            // Update recipient client
-            $contact_to->update([
-                // client name
-                'name' => $contact_to->name . ' (' . $contact_from->name . ')',
+            $selectedContacts = Contact::find($request->get('contacts'));
 
-                // Notes
-                'note' => $contact_to->note . "\n\n" . $contact_from->note,
+            $contact_to = $selectedContacts->shift();
+            $contact_to->makeHidden('display_name');
+            $contact_to->makeVisible('write_as_name');
 
-                // Merge contacts tags
-                'tags' => array_unique(array_merge($contact_to->tags, $contact_from->tags))
-            ]);
+            $avatars = [];
+            foreach ($selectedContacts as $contact){
+                // Add contact id for photo delete
+                $avatars[] = $contact->id;
 
-            // Merge contacts phones
-            foreach ($contact_from->phones as $phone) {
-                // Check phone
-                $new_phones = $contact_to->phones->pluck('phone')->toArray();
+                // Merge attributes two objects and save recipient
+                $attributesTo = collect($contact_to)->except(['id', 'user_id', 'is_favorite', 'birthday', 'display_name']);
 
-                if (in_array($phone->phone, $new_phones)) {
-                    continue;
+                $attributesFrom = $contact->toArray();
+                foreach ($attributesTo as $key => $value){
+                    if($value !== $attributesFrom[$key]){
+                        $attributesTo[$key] = trim(implode(', ', [$value, $attributesFrom[$key]]), ', ');
+                    }
                 }
 
-                // Update client to phone
-                $phone->contact()->associate($contact_to);
-                $phone->save();
-            }
+                $contact_to->fill($attributesTo->toArray());
+                $contact_to->save();
 
-            // Merge contacts emails
-            foreach ($contact_from->emails as $email) {
-                // Check email
-                $new_emails = $contact_to->emails->pluck('email')->toArray();
-
-                if (in_array($email->email, $new_emails)) {
-                    continue;
+                // Moving phones to contact recipient
+                if($contact->phones->count()){
+                    $contact_to->phones()->saveMany($contact->phones);
                 }
 
-                // Update client to phone
-                $email->contact()->associate($contact_to);
-                $email->save();
+                // Moving emails to contact recipient
+                if($contact->emails->count()){
+                    $contact_to->emails()->saveMany($contact->emails);
+                }
+
+                // Moving sites to contact recipient
+                if($contact->sites->count()){
+                    $contact_to->sites()->saveMany($contact->sites);
+                }
+
+                // Moving relations to contact recipient
+                if($contact->relations->count()){
+                    $contact_to->relations()->saveMany($contact->relations);
+                }
+
+                // Moving chats to contact recipient
+                if($contact->chats->count()){
+                    $contact_to->chats()->saveMany($contact->chats);
+                }
+
+                // Moving addresses to contact recipient
+                if($contact->addresses->count()){
+                    $contact_to->addresses()->saveMany($contact->addresses);
+                }
+
+                // Moving works to contact recipient
+                if($contact->works->count()){
+                    $contact_to->works()->saveMany($contact->works);
+                }
+
+                // Sync contact's groups
+                if($contact->groups->count()){
+                    if(!$contact_to->groups()->exists($contact->groups)){
+                        $contact_to->groups()->attach($contact->groups);
+                    }
+                }
+
+                // Delete permanently donor contact
+                $contact->forceDelete();
             }
 
-            // Delete donor client
-            $contact_from->delete();
+            // Send request for delete avatars from storage
+            if(!empty($avatars)){
+                PubSub::publish(
+                    'DeleteAvatars',
+                    [
+                        'entity' => 'contact',
+                        'user_id' => (string)Auth::user()->getAuthIdentifier(),
+                        'avatars' => $avatars
+                    ],
+                    config('settings.exchange_queue.files')
+                );
+            }
 
             // Return response
             return response()->jsonApi([
-                'success' => [
-                    'message' => 'Contacts was merged successfully'
-                ]
-            ]);
+                'type' => 'success',
+                'title' => 'Merging contacts',
+                'message' => 'Contacts was merged successfully',
+                'data' => $contact_to->toArray()
+            ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'error' => [
-                    'code' => $e->getCode(),
-                    'message' => $e->getMessage()
-                ]
-            ], 500);
+                'type' => 'danger',
+                'title' => 'Merging contacts',
+                'message' => $e->getMessage()
+            ], 400);
         }
     }
 
@@ -1039,16 +1082,28 @@ class ContactController extends Controller
                 if ($contact) {
                     $ids = $request->get('groups');
 
-                    if (isset($ids['added'])) {
-                        $groups = Group::find($ids['added']);
-
-                        $contact->groups()->attach($groups);
-                    }
-
                     if (isset($ids['deleted'])) {
                         $groups = Group::find($ids['deleted']);
 
-                        $contact->groups()->detach($groups);
+                        foreach($groups as $group){
+                            if($contact->groups()->exists($group)){
+                                continue;
+                            }
+
+                            $contact->groups()->detach($group);
+                        }
+                    }
+
+                    if (isset($ids['added'])) {
+                        $groups = Group::find($ids['added']);
+
+                        foreach($groups as $group){
+                            if($contact->groups()->exists($group)){
+                                continue;
+                            }
+
+                            $contact->groups()->attach($group);
+                        }
                     }
                 }
             }
@@ -1147,7 +1202,8 @@ class ContactController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      *
-     * @return \Illuminate\Http\JsonResponse|mixed
+     * @return mixed
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function importFile(Request $request)
     {
@@ -1158,10 +1214,6 @@ class ContactController extends Controller
         ]);
 
         try {
-            //$file = $request->file('contacts');
-            //$file = $request->file('contacts')->get();
-            //dd($file);
-
             $import = new Import();
             $result = $import->exec($request);
 

@@ -85,14 +85,16 @@ class Import
     public function insertContactToDB($data_arr): array
     {
         try {
+            // Read user Id
             $user_id = (string)Auth::user()->getAuthIdentifier();
+
+            // Read selected custom group
+            $selectedGroup = request()->get('group_id', null);
 
             $info_send_rabbitmq_body = [];
 
-            $count = 0;
+            $totalAdded = 0;
             foreach ($data_arr as $param) {
-                   //dd($param);
-
                 // First, Create contact
                 $contact = new Contact();
                 $contact->fill($param);
@@ -106,11 +108,13 @@ class Import
 
                 // Save contact's phones
                 if (isset($param['phones'])) {
+                    $count = sizeof($param['phones']);
+
                     foreach ($param['phones'] as $key => $item) {
                         $row = new Phone();
                         $row->phone = str_replace(['(', ')', ' ', '-'], '', $param['phones'][$key]['value']);
                         $row->type = !isset($param['phones'][$key]['type']) ?? 'other';
-                        $row->is_default = $key == 0;
+                        $row->is_default = $count == 1 || $key == 0;
                         $row->contact()->associate($contact);
                         $row->save();
                     }
@@ -118,11 +122,13 @@ class Import
 
                 // Save contact's emails
                 if (isset($param['emails'])) {
+                    $count = sizeof($param['phones']);
+
                     foreach ($param['emails'] as $key => $item) {
                         $row = new Email();
                         $row->email = $param['emails'][$key]['value'];
                         $row->type = !isset($param['emails'][$key]['type']) ?? 'other';
-                        $row->is_default = $key == 0;
+                        $row->is_default = $count == 1 || $key == 0;
                         $row->contact()->associate($contact);
                         $row->save();
                     }
@@ -177,6 +183,7 @@ class Import
                     }
                 }
 
+                // Save contact's works if exist
                 if (isset($param['company_info'])) {
                     $row = new Work();
 
@@ -188,7 +195,17 @@ class Import
                     $row->save();
                 }
 
-                if (isset($param['groups'])) {
+                // Add contact to group
+                // If user select custom group
+                if ($selectedGroup){
+                    $group = Group::find($selectedGroup);
+                    if($group){
+                        $contact->groups()->attach($group);
+                    }
+                }
+
+                // If user not select custom group and has groups in file
+                if (isset($param['groups']) && !$selectedGroup) {
                     foreach ($param['groups'] as $name) {
                         if(Str::endsWith($name, 'starred')){
                             $contact->is_favorite = true;
@@ -205,10 +222,11 @@ class Import
                             ]);
                         }
 
-                        $group->contacts()->attach($contact);
+                        $contact->groups()->attach($group);
                     }
                 }
 
+                // Save
                 if (isset($param['photo'])) {
                     $file_check_data = Import::checkFileFormat($param['photo']);
 
@@ -220,9 +238,10 @@ class Import
                     }
                 }
 
-                $count++;
+                $totalAdded++;
             }
 
+            // Send to batch process contact;s avatars
             if (!empty($info_send_rabbitmq_body)) {
                 $info_send_rabbitmq = [
                     'entity' => 'contact',
@@ -233,8 +252,9 @@ class Import
                 PubSub::publish('SaveAvatars', $info_send_rabbitmq, config('settings.exchange_queue.files'));
             }
 
+            // Return result
             return [
-                'count' => $count
+                'count' => $totalAdded
             ];
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -246,7 +266,7 @@ class Import
      *
      * @return bool
      */
-    public static function checkFileFormat($file)
+    public static function checkFileFormat($file): bool
     {
         $avatar = strtolower(substr($file, -3));
         $result_file = false;
@@ -265,7 +285,7 @@ class Import
      *
      * @return array $result
      */
-    private function getClassList($dirpath)
+    private function getClassList($dirpath): array
     {
         $result = [];
         $cdir = scandir($dirpath);
