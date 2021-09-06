@@ -1082,28 +1082,24 @@ class ContactController extends Controller
                 if ($contact) {
                     $ids = $request->get('groups');
 
-                    if (isset($ids['deleted'])) {
-                        $groups = Group::find($ids['deleted']);
-
-                        foreach($groups as $group){
-                            if($contact->groups()->exists($group)){
-                                continue;
-                            }
-
-                            $contact->groups()->detach($group);
-                        }
-                    }
+//                    if (isset($ids['deleted'])) {
+//
+//                        $contact->groups()->sync($ids['deleted']);
+//
+//
+//                        $groups = Group::find($ids['deleted']);
+//
+//                        foreach($groups as $group){
+//                            if($contact->groups()->exists($group)){
+//                                continue;
+//                            }
+//
+//                            $contact->groups()->detach($group);
+//                        }
+//                    }
 
                     if (isset($ids['added'])) {
-                        $groups = Group::find($ids['added']);
-
-                        foreach($groups as $group){
-                            if($contact->groups()->exists($group)){
-                                continue;
-                            }
-
-                            $contact->groups()->attach($group);
-                        }
+                        $contact->groups()->sync($ids['added']);
                     }
                 }
             }
