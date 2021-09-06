@@ -1028,25 +1028,11 @@ class ContactController extends Controller
      *             ),
      *             @OA\Property(
      *                 property="groups",
-     *                 type="object",
-     *                 description="Array of groups",
-     *                 @OA\Property(
-     *                     property="added",
-     *                     type="array",
-     *                     description="Array of added group Id's",
-     *                     @OA\Items(
-     *                         type="string",
-     *                         example="ca5eb9e6-8509-3280-8da7-bc3cd1efadc3"
-     *                     )
-     *                 ),
-     *                 @OA\Property(
-     *                     property="deleted",
-     *                     type="array",
-     *                     description="Array of deleted group Id's",
-     *                     @OA\Items(
-     *                         type="string",
-     *                         example="26fd178c-be29-3cab-960d-8cafb0f6dbc4"
-     *                     )
+     *                 type="array",
+     *                 description="Array of groups id's",
+     *                 @OA\Items(
+     *                     type="string",
+     *                     example="ca5eb9e6-8509-3280-8da7-bc3cd1efadc3"
      *                 )
      *             )
      *         )
@@ -1071,8 +1057,10 @@ class ContactController extends Controller
     {
         // Validate input
         $this->validate($request, [
-            'contacts' => 'required|array',
-            'groups' => 'required|array'
+            'contacts' => 'required|array|min:1',
+            'contacts.*' => 'required|string|distinct|min:36',
+            'groups' => 'required|array|min:1',
+            'groups.*' => 'required|string|distinct|min:36'
         ]);
 
         try {
@@ -1080,27 +1068,9 @@ class ContactController extends Controller
                 $contact = Contact::find($contact_id);
 
                 if ($contact) {
-                    $ids = $request->get('groups');
+                    $ids = $request->get('groups', []);
 
-//                    if (isset($ids['deleted'])) {
-//
-//                        $contact->groups()->sync($ids['deleted']);
-//
-//
-//                        $groups = Group::find($ids['deleted']);
-//
-//                        foreach($groups as $group){
-//                            if($contact->groups()->exists($group)){
-//                                continue;
-//                            }
-//
-//                            $contact->groups()->detach($group);
-//                        }
-//                    }
-
-                    if (isset($ids['added'])) {
-                        $contact->groups()->sync($ids['added']);
-                    }
+                    $contact->groups()->sync($ids);
                 }
             }
 
