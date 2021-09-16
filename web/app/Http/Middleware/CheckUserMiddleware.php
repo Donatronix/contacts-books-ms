@@ -17,7 +17,7 @@ class CheckUserMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check exist user-id and it not null
+        // Check exist user-id and it is not null
         if ($request->header('user-id', null) === null) {
             return response()->jsonApi([
                 'type' => 'danger',

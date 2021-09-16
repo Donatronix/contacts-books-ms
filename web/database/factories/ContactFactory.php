@@ -23,11 +23,11 @@ class ContactFactory extends Factory
     {
         return [
             'id' => $this->faker->uuid(),
-            'user_id' => $this->faker->randomElement(explode(',', env('SUMRA_USERS'))),
+            'user_id' => $this->faker->randomElement(config('settings.default_users_ids')),
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName,
             'suffix_name' => $this->faker->suffix,
-            'birthday' => $this->faker->date($format = 'Y-m-d', $max = 'now'),
+            'birthday' => $this->faker->date($format = 'Y-m-d', $max = 'now')
         ];
     }
 }

@@ -1399,8 +1399,9 @@ class ContactController extends Controller
         try {
             $response = $client->request('GET', config('settings.api.files.version') . "/files?entity=contact&entity_id={$id}", [
                 'headers' => [
-                    'user-id' => '1000',
+                    'user-id' => Auth::user()->getAuthIdentifier(),
                     'Accept' => 'application/json',
+                    'Content-Type' => 'application/json'
                 ]
             ]);
 
