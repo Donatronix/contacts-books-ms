@@ -147,7 +147,7 @@ class GroupController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validator = $this->validate($request, Group::validationRules());
+        $this->validate($request, Group::validationRules());
 
         try {
             $group = Group::create([
@@ -346,8 +346,9 @@ class GroupController extends Controller
             return $group;
         }
 
-        // Try to delete group
+        // Try detach contacts and delete group
         try {
+            $group->contacts()->detach();
             $group->delete();
 
             return response()->jsonApi([

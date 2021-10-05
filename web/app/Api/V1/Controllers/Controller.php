@@ -26,7 +26,7 @@ use Laravel\Lumen\Routing\Controller as BaseController;
  *
  *     @OA\Flow(
  *         flow="implicit",
- *         authorizationUrl="https://is.sumra.net/oauth2",
+ *         authorizationUrl="https://sumraid.com/oauth2",
  *         scopes={
  *             "ManagerRead"="Manager can read",
  *             "User":"User access",

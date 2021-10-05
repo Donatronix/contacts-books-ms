@@ -3,12 +3,11 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
-#SOURCE="${BASH_SOURCE[0]}"
-#cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && cd ../
+
 git submodule init
 git submodule update --remote
-REVISION=`git rev-parse HEAD`
-TIME_TAG=`date  +%Y-%m-%d-%H`
+REVISION=`git rev-parse --short HEAD`
+
 BRANCH=`git status |head -n 1|awk '{print $3}'`
 DEPLOY_NAME=`basename $(git remote show -n origin | grep URL|head -1 | cut -d: -f2-)|awk -F '.' '{print $1}'`
 DOCKER_ECR_REPO_URL="005279544259.dkr.ecr.us-west-2.amazonaws.com"

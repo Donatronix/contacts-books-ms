@@ -5,7 +5,6 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\Email;
-use App\Models\Group;
 use App\Models\Phone;
 use App\Models\Relation;
 use App\Services\Import;
@@ -822,7 +821,7 @@ class ContactController extends Controller
             $contact_to->makeVisible('write_as_name');
 
             $avatars = [];
-            foreach ($selectedContacts as $contact){
+            foreach ($selectedContacts as $contact) {
                 // Add contact id for photo delete
                 $avatars[] = $contact->id;
 
@@ -830,8 +829,8 @@ class ContactController extends Controller
                 $attributesTo = collect($contact_to)->except(['id', 'user_id', 'is_favorite', 'birthday', 'display_name']);
 
                 $attributesFrom = $contact->toArray();
-                foreach ($attributesTo as $key => $value){
-                    if($value !== $attributesFrom[$key]){
+                foreach ($attributesTo as $key => $value) {
+                    if ($value !== $attributesFrom[$key]) {
                         $attributesTo[$key] = trim(implode(', ', [$value, $attributesFrom[$key]]), ', ');
                     }
                 }
@@ -840,43 +839,43 @@ class ContactController extends Controller
                 $contact_to->save();
 
                 // Moving phones to contact recipient
-                if($contact->phones->count()){
+                if ($contact->phones->count()) {
                     $contact_to->phones()->saveMany($contact->phones);
                 }
 
                 // Moving emails to contact recipient
-                if($contact->emails->count()){
+                if ($contact->emails->count()) {
                     $contact_to->emails()->saveMany($contact->emails);
                 }
 
                 // Moving sites to contact recipient
-                if($contact->sites->count()){
+                if ($contact->sites->count()) {
                     $contact_to->sites()->saveMany($contact->sites);
                 }
 
                 // Moving relations to contact recipient
-                if($contact->relations->count()){
+                if ($contact->relations->count()) {
                     $contact_to->relations()->saveMany($contact->relations);
                 }
 
                 // Moving chats to contact recipient
-                if($contact->chats->count()){
+                if ($contact->chats->count()) {
                     $contact_to->chats()->saveMany($contact->chats);
                 }
 
                 // Moving addresses to contact recipient
-                if($contact->addresses->count()){
+                if ($contact->addresses->count()) {
                     $contact_to->addresses()->saveMany($contact->addresses);
                 }
 
                 // Moving works to contact recipient
-                if($contact->works->count()){
+                if ($contact->works->count()) {
                     $contact_to->works()->saveMany($contact->works);
                 }
 
                 // Sync contact's groups
-                if($contact->groups->count()){
-                    if(!$contact_to->groups()->exists($contact->groups)){
+                if ($contact->groups->count()) {
+                    if (!$contact_to->groups()->exists($contact->groups)) {
                         $contact_to->groups()->attach($contact->groups);
                     }
                 }
@@ -886,7 +885,7 @@ class ContactController extends Controller
             }
 
             // Send request for delete avatars from storage
-            if(!empty($avatars)){
+            if (!empty($avatars)) {
                 PubSub::publish(
                     'DeleteAvatars',
                     [
@@ -1317,11 +1316,16 @@ class ContactController extends Controller
      */
     public function importJson(Request $request)
     {
+        // Validate input
+        $this->validate($request, [
+            'contacts' => 'array'
+        ]);
+
         try {
             foreach ($request->get('contacts') as $lead) {
                 // First, Create contact
                 $contact = new Contact();
-                $contact->fill($lead);
+                $contact->write_as_name = $request->get('display_name', '');
                 $contact->user_id = (string)Auth::user()->getAuthIdentifier();
                 $contact->save();
 
@@ -1399,8 +1403,9 @@ class ContactController extends Controller
         try {
             $response = $client->request('GET', config('settings.api.files.version') . "/files?entity=contact&entity_id={$id}", [
                 'headers' => [
-                    'user-id' => '1000',
+                    'user-id' => Auth::user()->getAuthIdentifier(),
                     'Accept' => 'application/json',
+                    'Content-Type' => 'application/json'
                 ]
             ]);
 

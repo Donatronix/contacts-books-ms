@@ -24,7 +24,7 @@ class GroupFactory extends Factory
         return [
             'id' => $this->faker->uuid(),
             'name' => $this->faker->words(3),
-            'user_id' => $this->faker->randomElement(explode(',', env('SUMRA_USERS'))),
+            'user_id' => $this->faker->randomElement(config('settings.default_users_ids'))
         ];
     }
 }
