@@ -56,6 +56,10 @@ class Handler extends ExceptionHandler
             return response()->json(config('constants.errors.' . $className . 'NotFound'), 404);
         }
 
+        if($exception instanceof ValidationException) {
+            return response()->json($exception->errors(), $exception->status);
+        }
+
         return parent::render($request, $exception);
     }
 }
