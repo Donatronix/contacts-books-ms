@@ -11,6 +11,7 @@ $router->group([
     /**
      * Contacts
      */
+    $router->get('/test', 'ContactController@test');
     $router->get('/', 'ContactController@index');
     $router->post('/', 'ContactController@store');
     $router->get('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@show');

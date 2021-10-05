@@ -27,7 +27,8 @@ class ContactFactory extends Factory
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName,
             'suffix_name' => $this->faker->suffix,
-            'birthday' => $this->faker->date($format = 'Y-m-d', $max = 'now')
+            'birthday' => $this->faker->date($format = 'Y-m-d', $max = 'now'),
+            'is_favorite' => $this->faker->boolean
         ];
     }
 }
