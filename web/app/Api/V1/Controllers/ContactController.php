@@ -1325,7 +1325,7 @@ class ContactController extends Controller
             foreach ($request->get('contacts') as $lead) {
                 // First, Create contact
                 $contact = new Contact();
-                $contact->write_as_name = $request->get('display_name', '');
+                $contact->write_as_name = $lead['display_name'] ?? '';
                 $contact->user_id = (string)Auth::user()->getAuthIdentifier();
                 $contact->save();
 
