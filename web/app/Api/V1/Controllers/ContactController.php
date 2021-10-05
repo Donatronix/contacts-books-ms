@@ -1317,13 +1317,21 @@ class ContactController extends Controller
      */
     public function importJson(Request $request)
     {
+        // Validate input
+        $this->validate($request, [
+            'contacts' => 'array'
+        ]);
+
         try {
             foreach ($request->get('contacts') as $lead) {
                 // First, Create contact
                 $contact = new Contact();
-                $contact->fill($lead);
+                $contact->fill($request->all());
+//                $contact->birthday = Carbon::parse($request->get('birthday'));
+                $contact->write_as_name = $request->get('display_name', '');
                 $contact->user_id = (string)Auth::user()->getAuthIdentifier();
                 $contact->save();
+
 
                 // Save contact's phones
                 if (isset($lead['phones']) && count($lead['phones']) > 0) {
