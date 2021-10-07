@@ -22,7 +22,7 @@ class EmailController extends Controller
      * Store a newly contact email in storage.
      *
      * @OA\Post(
-     *     path="/v1/contacts/emails",
+     *     path="/emails",
      *     summary="Save a new email for current contact",
      *     tags={"Contact Emails"},
      *
@@ -146,7 +146,7 @@ class EmailController extends Controller
      * Update email for current contact
      *
      * @OA\Put(
-     *     path="/v1/contacts/emails/{id}",
+     *     path="/emails/{id}",
      *     summary="Update email for current contact",
      *     description="Update email for current contact",
      *     tags={"Contact Emails"},
@@ -285,7 +285,7 @@ class EmailController extends Controller
      * Delete contact email from storage.
      *
      * @OA\Delete(
-     *     path="/v1/contacts/emails/{id}",
+     *     path="/emails/{id}",
      *     summary="Delete contact email from storage",
      *     description="Delete contact email from storage",
      *     tags={"Contact Emails"},

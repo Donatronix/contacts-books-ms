@@ -22,7 +22,7 @@ class GroupController extends Controller
      * List of contact's groups
      *
      * @OA\Get(
-     *     path="/v1/contacts/groups",
+     *     path="/groups",
      *     summary="Load contact's groups list",
      *     description="Load contact's groups list",
      *     tags={"Contact Groups"},
@@ -89,7 +89,7 @@ class GroupController extends Controller
      * Save contact's group data
      *
      * @OA\Post(
-     *     path="/v1/contacts/groups",
+     *     path="/groups",
      *     summary="Save contact's group data",
      *     description="Save contact's group data",
      *     tags={"Contact Groups"},
@@ -175,7 +175,7 @@ class GroupController extends Controller
      * Update contact's group data
      *
      * @OA\Put(
-     *     path="/v1/contacts/groups/{id}",
+     *     path="/groups/{id}",
      *     summary="Update contact's group data",
      *     description="Update contact's group data",
      *     tags={"Contact Groups"},
@@ -286,7 +286,7 @@ class GroupController extends Controller
      * Delete contact's group
      *
      * @OA\Delete(
-     *     path="/v1/contacts/groups/{id}",
+     *     path="/groups/{id}",
      *     summary="Delete contact's group",
      *     description="Delete contact's group",
      *     tags={"Contact Groups"},

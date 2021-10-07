@@ -22,7 +22,7 @@ class PhoneController extends Controller
      * Save a new phone number for current contact
      *
      * @OA\Post(
-     *     path="/v1/contacts/phones",
+     *     path="/phones",
      *     summary="Save a new phone number for current contact",
      *     tags={"Contact Phones"},
      *
@@ -146,7 +146,7 @@ class PhoneController extends Controller
      * Update phone number for current contact
      *
      * @OA\Put(
-     *     path="/v1/contacts/phones/{id}",
+     *     path="/phones/{id}",
      *     summary="Update phone number for current contact",
      *     description="Update phone number for current contact",
      *     tags={"Contact Phones"},
@@ -285,7 +285,7 @@ class PhoneController extends Controller
      * Delete contact phone number from storage
      *
      * @OA\Delete(
-     *     path="/v1/contacts/phones/{id}",
+     *     path="/phones/{id}",
      *     summary="Delete contact phone number from storage",
      *     description="Delete contact phone number from storage",
      *     tags={"Contact Phones"},

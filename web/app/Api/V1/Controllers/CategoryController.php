@@ -17,7 +17,7 @@ class CategoryController extends Controller
      * List of categories
      *
      * @OA\Get(
-     *     path="/v1/contacts/categories",
+     *     path="/categories",
      *     summary="Load categories list",
      *     description="Load user's categories list",
      *     tags={"Categories"},

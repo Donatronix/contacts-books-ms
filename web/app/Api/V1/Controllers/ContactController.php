@@ -30,7 +30,7 @@ class ContactController extends Controller
      * User's contact list
      *
      * @OA\Get(
-     *     path="/v1/contacts",
+     *     path="/contacts",
      *     summary="Load user's contact list",
      *     description="Load user's contact list",
      *     tags={"Contacts"},
@@ -292,7 +292,7 @@ class ContactController extends Controller
      * Save user's contacts
      *
      * @OA\Post(
-     *     path="/v1/contacts",
+     *     path="/contacts",
      *     summary="Save user's contacts",
      *     description="Save user's contacts",
      *     tags={"Contacts"},
@@ -446,7 +446,7 @@ class ContactController extends Controller
      * Get detail info about contact
      *
      * @OA\Get(
-     *     path="/v1/contacts/{id}",
+     *     path="/contacts/{id}",
      *     summary="Get detail info about contact",
      *     description="Get detail info about contact",
      *     tags={"Contacts"},
@@ -545,7 +545,7 @@ class ContactController extends Controller
      * Update user's contact (in JSON format)
      *
      * @OA\Put(
-     *     path="/v1/contacts/{id}",
+     *     path="/contacts/{id}",
      *     summary="Update user's contacts in JSON format",
      *     description="Update user's contacts in JSON format",
      *     tags={"Contacts"},
@@ -636,7 +636,7 @@ class ContactController extends Controller
      * Delete selected contact / contacts
      *
      * @OA\Delete(
-     *     path="/v1/contacts/{id}",
+     *     path="/contacts/{id}",
      *     summary="Delete selected contact / contacts",
      *     description="Delete selected contact / contacts",
      *     tags={"Contacts"},
@@ -754,7 +754,7 @@ class ContactController extends Controller
      * Merge selected contacts to one
      *
      * @OA\Post(
-     *     path="/v1/contacts/merge",
+     *     path="/contacts/merge",
      *     summary="Merge selected contacts to one",
      *     tags={"Contacts"},
      *
@@ -917,7 +917,7 @@ class ContactController extends Controller
      * Add / delete contacts to/from favorites
      *
      * @OA\Get(
-     *     path="/v1/contacts/{id}/favorite",
+     *     path="/contacts/{id}/favorite",
      *     summary="Add / delete contacts to / from favorites",
      *     tags={"Contacts"},
      *
@@ -992,7 +992,7 @@ class ContactController extends Controller
      * Join contacts to selected groups
      *
      * @OA\Post(
-     *     path="/v1/contacts/join-groups",
+     *     path="/contacts/join-groups",
      *     summary="Join contacts to selected groups",
      *     description="Join contacts to selected groups",
      *     tags={"Contacts"},
@@ -1093,7 +1093,7 @@ class ContactController extends Controller
      * Batch Import user's contacts using saved file (Google CSV, Outlook CSV, vCard, etc.)
      *
      * @OA\Post(
-     *     path="/v1/contacts/import/file",
+     *     path="/contacts/import/file",
      *     summary="Batch Import user's contacts using saved file (Google CSV, Outlook CSV, vCard, etc)",
      *     description="Batch Import user's contacts using saved file (Google CSV, Outlook CSV, vCard, etc)",
      *     tags={"Contacts"},
@@ -1203,7 +1203,7 @@ class ContactController extends Controller
      * Batch Import contacts using json data
      *
      * @OA\Post(
-     *     path="/v1/contacts/import/json",
+     *     path="/contacts/import/json",
      *     summary="Batch import user's contacts using json data",
      *     description="Batch save user's contacts using json data",
      *     tags={"Contacts"},

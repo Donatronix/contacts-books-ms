@@ -7,7 +7,7 @@ return [
         | Edit to set the api's title
         |--------------------------------------------------------------------------
          */
-        'title' => 'Swagger Lume API',
+        'title' => env('APP_NAME', 'Swagger API'),
     ],
 
     'routes' => [
@@ -16,32 +16,32 @@ return [
         | Route for accessing api documentation interface
         |--------------------------------------------------------------------------
          */
-        'api' => '/api/documentation',
+        'api' => setPath('documentation'),
 
         /*
         |--------------------------------------------------------------------------
         | Route for accessing parsed swagger annotations.
         |--------------------------------------------------------------------------
          */
-        'docs' => '/docs',
+        'docs' => setPath('docs'),
 
         /*
         |--------------------------------------------------------------------------
         | Route for Oauth2 authentication callback.
         |--------------------------------------------------------------------------
         */
-        'oauth2_callback' => '/api/oauth2-callback',
+        'oauth2_callback' => setPath('oauth2-callback'),
 
         /*
         |--------------------------------------------------------------------------
         | Route for serving assets
         |--------------------------------------------------------------------------
         */
-        'assets' => '/swagger-ui-assets',
+        'assets' => setPath('swagger-ui-assets'),
 
         /*
         |--------------------------------------------------------------------------
-        | Middleware allows to prevent unexpected access to API documentation
+        | Middleware allows preventing unexpected access to API documentation
         |--------------------------------------------------------------------------
          */
         'middleware' => [
@@ -65,7 +65,7 @@ return [
         | File name of the generated json documentation file
         |--------------------------------------------------------------------------
         */
-        'docs_json' => 'api-docs.json',
+        'docs_json' => 'api-docs.yaml',
 
         /*
         |--------------------------------------------------------------------------
@@ -167,7 +167,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Configs plugin allows to fetch external configs instead of passing them to SwaggerUIBundle.
+    | Configs plugin allows fetching external configs instead of passing them to SwaggerUIBundle.
     | See more at: https://github.com/swagger-api/swagger-ui#configs-plugin
     |--------------------------------------------------------------------------
     */
@@ -182,12 +182,12 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'operations_sort' => env('L5_SWAGGER_OPERATIONS_SORT', null),
+    'operations_sort' => env('L5_SWAGGER_OPERATIONS_SORT', 'alpha'),
 
     /*
     |--------------------------------------------------------------------------
     | Uncomment to pass the validatorUrl parameter to SwaggerUi init on the JS
-    | side.  A null value here disables validation.
+    | side. A null value here disables validation.
     |--------------------------------------------------------------------------
     */
 
@@ -195,10 +195,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Uncomment to add constants which can be used in anotations
+    | Uncomment to add constants which can be used in annotations
     |--------------------------------------------------------------------------
      */
     'constants' => [
-        // 'SWAGGER_LUME_CONST_HOST' => env('SWAGGER_LUME_CONST_HOST', 'http://my-default-host.com'),
+        'SWAGGER_LUME_CONST_HOST' => env('SWAGGER_LUME_CONST_HOST', config('app.url') . setPath()),
     ],
 ];
+
+function setPath ($slug = null) {
+    return preg_replace('!/+!', '/', sprintf(
+        "/%s/%s/%s",
+        env('APP_API_PREFIX', ''),
+        env('APP_API_VERSION', ''),
+        $slug
+    ));
+}

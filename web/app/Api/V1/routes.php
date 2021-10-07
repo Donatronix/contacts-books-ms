@@ -4,24 +4,27 @@
  * @var Laravel\Lumen\Routing\Router $router
  */
 $router->group([
-    'prefix' => 'contacts',
+    'prefix' => env('APP_API_VERSION', ''),
     'namespace' => '\App\Api\V1\Controllers',
     'middleware' => 'checkUser'
 ], function ($router) {
     /**
      * Contacts
      */
-    $router->get('/test', 'ContactController@test');
-    $router->get('/', 'ContactController@index');
-    $router->post('/', 'ContactController@store');
-    $router->get('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@show');
-    $router->get('/{id:[a-fA-F0-9\-]{36}}/favorite', 'ContactController@favorite');
-    $router->put('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@update');
-    $router->delete('/{id}', 'ContactController@destroy');
-    $router->post('/merge', 'ContactController@merge');
-    $router->post('/join-groups', 'ContactController@joinGroups');
-    $router->post('/import/file', 'ContactController@importFile');
-    $router->post('/import/json', 'ContactController@importJson');
+    $router->group([
+        'prefix' => 'contacts',
+    ], function ($router) {
+        $router->get('/', 'ContactController@index');
+        $router->post('/', 'ContactController@store');
+        $router->get('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@show');
+        $router->get('/{id:[a-fA-F0-9\-]{36}}/favorite', 'ContactController@favorite');
+        $router->put('/{id:[a-fA-F0-9\-]{36}}', 'ContactController@update');
+        $router->delete('/{id}', 'ContactController@destroy');
+        $router->post('/merge', 'ContactController@merge');
+        $router->post('/join-groups', 'ContactController@joinGroups');
+        $router->post('/import/file', 'ContactController@importFile');
+        $router->post('/import/json', 'ContactController@importJson');
+    });
 
     /**
      * Contacts Categories

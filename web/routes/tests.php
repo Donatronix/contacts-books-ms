@@ -16,7 +16,7 @@
 
 Route::group(
     [
-        'prefix' => env('APP_API_PREFIX') . '/tests'
+        'prefix' => 'tests'
     ],
     function ($router) {
         $router->get('db-test', function () {
@@ -26,14 +26,5 @@ Route::group(
         });
 
         $router->get('contacts', 'PagesController@index');
-
-        /**
-         *  For test
-         */
-        $router->get('run', '\App\Services\Import@run');
-        $router->post('test', '\App\Services\Import@exec');
-
-        $router->get('run2', '\App\Services\CsvParser@run');
-        $router->post('test2', '\App\Services\CsvParser@test');
     }
 );
