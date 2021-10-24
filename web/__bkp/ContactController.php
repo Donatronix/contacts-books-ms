@@ -92,20 +92,6 @@ class ContactController extends Controller
             ], 400);
 
         $result = $this->save($userID, $json, $deleteAbsent);
-
-        if ($result == 'Ok')
-            return response()->jsonApi([
-                'type' => 'success',
-                'title' => 'Contacts are saved',
-                'message' => 'Contacts are saved'
-            ], 200);
-        else {
-            return response()->jsonApi([
-                'type' => 'danger',
-                'title' => 'Contacts are not saved',
-                'message' => $result
-            ], 400);
-        }
     }
 
     /***********************************
@@ -311,18 +297,8 @@ RETURN person";
                     $client->run($query);
                 }
             }
-
-            return response()->jsonApi([
-                'type' => 'success',
-                'title' => 'Contacts are deleted',
-                'message' => 'Contacts are deleted'
-            ], 200);
         } catch (Exception $e) {
-            return response()->jsonApi([
-                'type' => 'danger',
-                'title' => 'Contacts are not saved',
-                'message' => $e->getMessage()
-            ], 400);
+
         }
     }
 }
