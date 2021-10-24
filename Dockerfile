@@ -1,96 +1,54 @@
-###################  This Dockerfile is made of two parts:  ###################
-#
-# 1. The first part extends a PHP composer image so that you can install the application's dependencies.
+FROM webdevops/php-nginx:8.0-alpine
+LABEL Maintainer="Ihor Porokhnenko <ihor.porokhnenko@gmail.com>"
+LABEL Description="Lightweight container with Nginx & PHP-FPM 8 based on Alpine Linux."
 
-FROM composer:latest as build
+# Do a single run command to make the intermediary containers smaller.
+RUN set -ex
 
-LABEL maintainer="Ihor Porokhnenko <ihor.porokhnenko@gmail.com>"
+## Update package list
+RUN apk update
 
-RUN apk update && apk add --no-cache \
-        php8-intl \
-        icu-dev \
-        gmp-dev \
-        libpng \
-        libpng-dev
+## Install packages necessary during the build phase
+RUN apk --no-cache add \
+    mc \
+    nano
 
-#RUN docker-php-ext-configure intl
-RUN docker-php-ext-install \
-    intl \
-    sockets \
-    bcmath \
-    gmp \
-    gd \
-    && apk del libpng-dev
-    #libjpeg-turbo-dev libwebp-dev zlib-dev libxpm-dev
+## Clean apk cache after all installed packages
+RUN rm -rf /var/cache/apk/*
 
-COPY ./web      /app
-COPY ./pubsub   /pubsub
-COPY ./json-api /json-api
-#COPY ./baum    /baum
+# Configure nginx
+#RUN rm -f /etc/nginx/http.d/default.conf
+#COPY config/nginx/nginx.conf /etc/nginx/nginx.conf
+#COPY config/nginx/http.d/app.conf /etc/nginx/http.d/app.conf
 
-WORKDIR /app
-RUN rm -rf .idea
+COPY config/vhost.conf /opt/docker/etc/nginx/vhost.conf
+COPY config/vhost.ssl.conf /opt/docker/etc/nginx/vhost.ssl.conf
+COPY config/vhost.common.d/ /opt/docker/etc/nginx/vhost.common.d/
+
+# Configure PHP-FPM
+#COPY config/php/fpm-pool.conf /etc/php8/php-fpm.d/www.conf
+#COPY config/php/php.ini /etc/php8/conf.d/custom.ini
+
+## Copy existing application contents to workdir
+COPY --chown=nginx:nginx ./web /var/www/html
+COPY --chown=nginx:nginx ./pubsub /var/www/pubsub
+COPY --chown=nginx:nginx ./json-api /var/www/json-api
+
+## Set work directory
+WORKDIR /var/www/html
+
+## Set writable dirs
+RUN chmod -R 777 /var/www/html/storage/*
+
+## Remove unneeded files
+RUN rm -rf /var/www/html/.idea
+RUN find /var/www/html/storage/framework/ -type f -name "*.php" -delete
+RUN rm -rf -R /var/www/html/storage/logs/*.log
+RUN rm -rf /var/www/html/.editorconfig
+RUN rm -rf /var/www/html/.env.example
+RUN rm -rf /var/www/html/.gitignore
+RUN rm -rf /var/www/html/.styleci.yml
+
+## Composer packages install & update
 RUN composer -v install
 RUN composer -v update
-
-# 2. The second part creates a final Docker image with an Apache web server to serve the application
-
-FROM php:8.0.6-apache-buster
-
-COPY --from=build /app /var/www/html
-COPY --from=build /pubsub /var/www/pubsub
-COPY --from=build /json-api /var/www/json-api
-
-# make sure apt is up to date
-RUN apt update --fix-missing && apt upgrade -y
-
-RUN apt install -y \
-        mc \
-        curl \
-        g++ \
-        openssh-client \
-        build-essential \
-        libssl-dev \
-        zlib1g-dev \
-        libicu-dev \
-        libgmp-dev \
-        libpng-dev \
-        libjpeg-dev \
-        libjpeg62-turbo-dev \
-        #libwebp-dev
-        #libxpm-dev
-        libfreetype6-dev \
-        libzip-dev \
-        libonig-dev
-
-#RUN docker-php-ext-configure gd \
-#    --with-freetype=/usr/include/ \
-#    --with-jpeg=/usr/include/ \
-#    --with-webp=/usr/include/
-
-RUN docker-php-ext-install -j$(nproc) \
-    pdo \
-    pdo_mysql \
-    intl \
-    sockets \
-    bcmath \
-    gmp \
-    zip \
-    mbstring
-
-RUN pecl install xdebug-3.0.3
-
-#RUN docker-php-ext-configure xdebug
-RUN docker-php-ext-enable \
-    xdebug
-
-# Configure Apache
-COPY conf/vhost.conf /etc/apache2/sites-available/000-default.conf
-RUN echo "Listen 8080" > /etc/apache2/ports.conf
-RUN echo "Listen 8443" >> /etc/apache2/ports.conf
-EXPOSE 8443 8080
-
-RUN chown -R www-data:www-data /var/www/html \
-    && a2enmod rewrite ssl headers
-
-USER www-data

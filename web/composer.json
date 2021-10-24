@@ -1,13 +1,16 @@
 {
-    "name": "kus/contacts-book",
+    "name": "kus/contacts-book-ms",
     "description": "Contacts Book API Microservice",
     "type": "project",
     "private": true,
     "require": {
-        "php": "^7.4|^8.0",
+        "php": "^8.0",
         "darkaonline/swagger-lume": "~8",
         "doctrine/dbal": "~3",
+        "ext-json": "*",
+        "ext-openssl": "*",
         "guzzlehttp/guzzle": "~7",
+        "fruitcake/laravel-cors": "~2",
         "laravel/lumen-framework": "~8",
         "phpoffice/phpspreadsheet": "~1",
         "sumra/json-api": "*",
@@ -17,10 +20,11 @@
     "require-dev": {
         "fakerphp/faker": "~1",
         "mockery/mockery": "~1",
-        "phpunit/phpunit": "~9"
+        "phpunit/phpunit": "dev-master"
     },
     "autoload": {
         "psr-4": {
+            "Tests\\": "tests/",
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"

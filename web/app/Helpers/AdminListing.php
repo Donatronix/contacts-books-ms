@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AdminListing
@@ -17,52 +16,52 @@ class AdminListing
     /**
      * @var Model
      */
-    protected $model;
+    protected Model $model;
 
     /**
      * @var Builder
      */
-    protected $query;
+    protected Builder $query;
 
     /**
      * @var int
      */
-    protected $currentPage;
+    protected int $currentPage;
 
     /**
      * @var int
      */
-    protected $perPage;
+    protected int $limit;
 
     /**
      * @var string
      */
-    protected $pageColumnName = 'page';
+    protected string $pageColumnName = 'page';
 
     /**
      * @var bool
      */
-    protected $hasPagination = false;
+    protected bool $hasPagination = false;
 
     /**
      * @var string
      */
-    protected $orderBy;
+    protected string $sortBy;
 
     /**
      * @var string
      */
-    protected $orderDirection = 'asc';
+    protected string $sortOrder = 'asc';
 
     /**
      * @var string
      */
-    protected $search;
+    protected string $search;
 
     /**
      * @var array
      */
-    protected $searchIn = [];
+    protected array $searchIn = [];
 
     /**
      * @param $modelName
@@ -96,7 +95,7 @@ class AdminListing
 
         $this->model = $model;
         $this->query = $this->model->newQuery();
-        $this->orderBy = $this->model->getKeyName();
+        $this->sortBy = $this->model->getKeyName();
 
         return $this;
     }
@@ -112,20 +111,19 @@ class AdminListing
      *
      * This method does not perform any authorization nor validation.
      *
-     * @param Request  $request
-     * @param array    $columns
-     * @param array    $searchIn array of columns which should be searched in (only text, character varying or primary key are allowed)
-     * @param callable $modifyQuery
+     * @param \Illuminate\Http\Request $request
+     * @param array|string[]           $columns
+     * @param array|null               $searchIn  array of columns which should be searched in (only text, character varying or primary key are allowed)
+     * @param callable|null            $modifyQuery
      *
-     * @return LengthAwarePaginator|Collection The result is either LengthAwarePaginator (when pagination was attached) or simple Collection otherwise
-     * @throws Exception
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection The result is either LengthAwarePaginator (when pagination was attached) or simple Collection otherwise
      */
-    public function processRequestAndGet(Request $request, array $columns = ['*'], $searchIn = null, callable $modifyQuery = null)
+    public function processRequestAndGet(Request $request, array $columns = ['*'], array $searchIn = null, callable $modifyQuery = null)
     {
         // attach ordering rule
         $this->attachOrdering(
-            $request->input('orderBy', $this->model->getKeyName()),
-            $request->input('orderDirection', 'asc')
+            $request->input('sort.by', $this->model->getKeyName()),
+            $request->input('sort.order', 'asc')
         );
 
         // Attach search rule
@@ -135,7 +133,7 @@ class AdminListing
         if (!$request->input('bulk')) {
             $this->attachPagination(
                 $request->input('page', 1),
-                $request->input('per_page', $request->cookie('per_page', 10))
+                $request->input('limit', $request->cookie('limit', 10))
             );
         }
 
@@ -157,17 +155,17 @@ class AdminListing
      * Attach the ordering functionality
      *
      * Any repeated call to this method is going to have no effect and original ordering is going to be used.
-     * This is due to the limitation of the Illuminate\Database\Eloquent\Builder.
+     * This is due to the limitation of to Illuminate\Database\Eloquent\Builder.
      *
-     * @param        $orderBy
-     * @param string $orderDirection
+     * @param        $sortBy
+     * @param string $sortOrder
      *
      * @return $this
      */
-    public function attachOrdering($orderBy, $orderDirection = 'asc'): self
+    public function attachOrdering($sortBy, string $sortOrder = 'asc'): self
     {
-        $this->orderBy = $orderBy;
-        $this->orderDirection = $orderDirection;
+        $this->sortBy = $sortBy;
+        $this->sortOrder = $sortOrder;
 
         return $this;
     }
@@ -180,7 +178,7 @@ class AdminListing
      *
      * @return $this
      */
-    public function attachSearch($search, array $searchIn): self
+    public function attachSearch(string $search, array $searchIn): self
     {
         $this->search = $search;
         $this->searchIn = $searchIn;
@@ -189,17 +187,101 @@ class AdminListing
     }
 
     /**
+     * Attach the pagination functionality
+     *
+     * @param     $currentPage
+     * @param int $limit
+     *
+     * @return $this
+     */
+    public function attachPagination($currentPage, int $limit = 10): self
+    {
+        $this->hasPagination = true;
+        $this->currentPage = (int)$currentPage;
+        $this->limit = (int)$limit;
+
+        return $this;
+    }
+
+    /**
+     * Modify built query in any way
+     *
+     * @param callable $modifyQuery
+     *
+     * @return $this
+     */
+    public function modifyQuery(callable $modifyQuery): self
+    {
+        $modifyQuery($this->query);
+
+        return $this;
+    }
+
+    /**
+     * Execute query and get data
+     * The result is either LengthAwarePaginator (when pagination was attached) or simple Collection otherwise
+     *
+     * @param array|string[] $columns
+     *
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|Builder[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function get(array $columns = ['*'])
+    {
+        $columns = collect($columns)->map(function ($column) {
+            return $this->materializeColumnName($this->parseFullColumnName($column));
+        })->toArray();
+
+        $this->query->sortBy($this->sortBy, $this->sortOrder);
+        $this->buildSearch();
+
+        // execute query
+        if ($this->hasPagination) {
+            $result = $this->query->paginate($this->limit, $columns, $this->pageColumnName, $this->currentPage);
+        } else {
+            $result = $this->query->get($columns);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $column
+     *
+     * @return string
+     */
+    protected function materializeColumnName($column): string
+    {
+        return $column['table'] . '.' . $column['column'];
+    }
+
+    /**
+     * @param $column
+     *
+     * @return array
+     */
+    protected function parseFullColumnName($column): array
+    {
+        if (Str::contains($column, '.')) {
+            [$table, $column] = explode('.', $column, 2);
+        } else {
+            $table = $this->model->getTable();
+        }
+
+        return compact('table', 'column');
+    }
+
+    /**
      * Build search query
      */
     private function buildSearch(): void
     {
         // when passed null, search is disabled
-        if ($this->searchIn === null || !is_array($this->searchIn) || count($this->searchIn) === 0) {
+        if (!is_array($this->searchIn) || count($this->searchIn) === 0) {
             return;
         }
 
         // if empty string, then we don't search at all
-        $search = trim((string)$this->search);
+        $search = trim($this->search);
         if ($search === '') {
             return;
         }
@@ -236,89 +318,5 @@ class AdminListing
     private function searchLike($query, $column, $token): void
     {
         $query->orWhere($this->materializeColumnName($column), 'like', '%' . $token . '%');
-    }
-
-    /**
-     * Attach the pagination functionality
-     *
-     * @param     $currentPage
-     * @param int $perPage
-     *
-     * @return $this
-     */
-    public function attachPagination($currentPage, $perPage = 10): self
-    {
-        $this->hasPagination = true;
-        $this->currentPage = (int)$currentPage;
-        $this->perPage = (int)$perPage;
-
-        return $this;
-    }
-
-    /**
-     * Modify built query in any way
-     *
-     * @param callable $modifyQuery
-     *
-     * @return $this
-     */
-    public function modifyQuery(callable $modifyQuery): self
-    {
-        $modifyQuery($this->query);
-
-        return $this;
-    }
-
-    /**
-     * Execute query and get data
-     * The result is either LengthAwarePaginator (when pagination was attached) or simple Collection otherwise
-     *
-     * @param array|string[] $columns
-     *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|Builder[]|\Illuminate\Database\Eloquent\Collection
-     */
-    public function get(array $columns = ['*'])
-    {
-        $columns = collect($columns)->map(function ($column) {
-            return $this->materializeColumnName($this->parseFullColumnName($column));
-        })->toArray();
-
-        $this->query->orderBy($this->orderBy, $this->orderDirection);
-        $this->buildSearch();
-
-        // execute query
-        if ($this->hasPagination) {
-            $result = $this->query->paginate($this->perPage, $columns, $this->pageColumnName, $this->currentPage);
-        } else {
-            $result = $this->query->get($columns);
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param $column
-     *
-     * @return array
-     */
-    protected function parseFullColumnName($column): array
-    {
-        if (Str::contains($column, '.')) {
-            [$table, $column] = explode('.', $column, 2);
-        } else {
-            $table = $this->model->getTable();
-        }
-
-        return compact('table', 'column');
-    }
-
-    /**
-     * @param $column
-     *
-     * @return string
-     */
-    protected function materializeColumnName($column): string
-    {
-        return $column['table'] . '.' . $column['column'];
     }
 }

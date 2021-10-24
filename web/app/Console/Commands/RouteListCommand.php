@@ -24,7 +24,7 @@ class RouteListCommand extends Command
     /*
      * Routes list
      */
-    protected $routes = [];
+    protected array $routes = [];
 
     /**
      * Execute the console command.
@@ -41,7 +41,7 @@ class RouteListCommand extends Command
      *
      * @return bool
      */
-    public function displayRoutes()
+    public function displayRoutes(): bool
     {
         $headers = ['Method', 'URI', 'Name', 'Action', 'Middleware', 'Map To'];
 
@@ -62,6 +62,8 @@ class RouteListCommand extends Command
 
         $this->info("Route found: " . count($this->routes) . $str);
         $this->table($headers, $this->routes);
+
+        return true;
     }
 
     /**
@@ -69,35 +71,22 @@ class RouteListCommand extends Command
      *
      * @return bool
      */
-    public function generateRoutes()
+    public function generateRoutes(): bool
     {
         $routes = property_exists(app(), 'router') ? app()->router->getRoutes() : app()->getRoutes();
+
         foreach ($routes as $route) {
-            array_push($this->routes, [
+            $this->routes[] = [
                 'method' => $route['method'],
                 'uri' => $route['uri'],
                 'name' => $this->getRouteName($route),
                 'action' => $this->getRouteAction($route),
                 'middleware' => $this->getRouteMiddleware($route),
                 'map' => $this->getRouteMapTo($route)
-            ]);
+            ];
         }
-    }
 
-    /**
-     * Apply filters on routes if user provide
-     */
-    private function applyFilters()
-    {
-        $availableOptions = ['name', 'method', 'uri', 'action', 'middleware'];
-        foreach ($this->options() as $key => $option) {
-            if (in_array($key, $availableOptions, true) && null != $option) {
-                foreach ($this->routes as $index => $route) {
-                    if (!str_contains(strtolower($route[$key]), strtolower($option)))
-                        unset($this->routes[$index]);
-                }
-            }
-        }
+        return true;
     }
 
     /**
@@ -125,15 +114,15 @@ class RouteListCommand extends Command
     }
 
     /**
-     *  Get where the route map to
+     *  Check if the route is closure or controller route
      *
      * @param $route
      *
-     * @return string
+     * @return bool
      */
-    private function getRouteMapTo($route): string
+    private function isClosureRoute($route): bool
     {
-        return (!$this->isClosureRoute($route)) ? $route['action']['uses'] : '';
+        return !isset($route['action']['uses']);
     }
 
     /**
@@ -153,15 +142,31 @@ class RouteListCommand extends Command
     }
 
     /**
-     *  Check if the route is closure or controller route
+     *  Get where the route map to
      *
      * @param $route
      *
-     * @return bool
+     * @return string
      */
-    private function isClosureRoute($route): bool
+    private function getRouteMapTo($route): string
     {
-        return !isset($route['action']['uses']);
+        return (!$this->isClosureRoute($route)) ? $route['action']['uses'] : '';
+    }
+
+    /**
+     * Apply filters on routes if user provide
+     */
+    private function applyFilters()
+    {
+        $availableOptions = ['name', 'method', 'uri', 'action', 'middleware'];
+        foreach ($this->options() as $key => $option) {
+            if (in_array($key, $availableOptions, true) && null != $option) {
+                foreach ($this->routes as $index => $route) {
+                    if (!str_contains(strtolower($route[$key]), strtolower($option)))
+                        unset($this->routes[$index]);
+                }
+            }
+        }
     }
 
     /**

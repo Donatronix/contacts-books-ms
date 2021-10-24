@@ -7,7 +7,7 @@ return [
         | Edit to set the api's title
         |--------------------------------------------------------------------------
          */
-        'title' => env('APP_NAME', 'Swagger API'),
+        'title' => env('APP_NAME', 'Swagger API') . ', Version ' . env('APP_API_VERSION'),
     ],
 
     'routes' => [
@@ -16,14 +16,14 @@ return [
         | Route for accessing api documentation interface
         |--------------------------------------------------------------------------
          */
-        'api' => setPath('documentation'),
+        'api' => setPath('/'),
 
         /*
         |--------------------------------------------------------------------------
         | Route for accessing parsed swagger annotations.
         |--------------------------------------------------------------------------
          */
-        'docs' => setPath('docs'),
+        'docs' => setPath('docs-export'),
 
         /*
         |--------------------------------------------------------------------------
@@ -37,7 +37,7 @@ return [
         | Route for serving assets
         |--------------------------------------------------------------------------
         */
-        'assets' => setPath('swagger-ui-assets'),
+        'assets' => setPath('ui-assets'),
 
         /*
         |--------------------------------------------------------------------------
@@ -171,7 +171,6 @@ return [
     | See more at: https://github.com/swagger-api/swagger-ui#configs-plugin
     |--------------------------------------------------------------------------
     */
-
     'additional_config_url' => null,
 
     /*
@@ -181,7 +180,6 @@ return [
     | Default is the order returned by the server unchanged.
     |--------------------------------------------------------------------------
     */
-
     'operations_sort' => env('L5_SWAGGER_OPERATIONS_SORT', 'alpha'),
 
     /*
@@ -190,7 +188,6 @@ return [
     | side. A null value here disables validation.
     |--------------------------------------------------------------------------
     */
-
     'validator_url' => null,
 
     /*
@@ -199,11 +196,16 @@ return [
     |--------------------------------------------------------------------------
      */
     'constants' => [
-        'SWAGGER_LUME_CONST_HOST' => env('SWAGGER_LUME_CONST_HOST', config('app.url') . setPath()),
+        'SWAGGER_TITLE' => config('app.name'),
+        'SWAGGER_DESCRIPTION' => config('app.name') . (env('APP_API_VERSION', 'latest') !== null ? ', Version ' . env('APP_API_VERSION', 'latest') : ''),
+        'SWAGGER_VERSION' => env('APP_API_VERSION', ''),
+        'SWAGGER_CONST_HOST' => env('SWAGGER_CONST_HOST', config('app.url') . setPath()),
+        'SWAGGER_SUPPORT_EMAILS' => "support@" . env('APP_PLATFORM') . '.com'
     ],
 ];
 
-function setPath ($slug = null) {
+function setPath($slug = null): array|string|null
+{
     return preg_replace('!/+!', '/', sprintf(
         "/%s/%s/%s",
         env('APP_API_PREFIX', ''),

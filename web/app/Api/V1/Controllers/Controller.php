@@ -6,21 +6,21 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 
 /**
  * @OA\Info(
- *     title="Contacts Book API Microservice",
- *     description="This is API of Contacts Book Microservice",
- *     version="V1",
+ *     title=SWAGGER_TITLE,
+ *     description=SWAGGER_DESCRIPTION,
+ *     version=SWAGGER_VERSION,
  *
  *     @OA\Contact(
- *         email="admin@sumra.net",
- *         name="Sumra Group Support Team"
+ *         email=SWAGGER_SUPPORT_EMAILS,
+ *         name="Support Team"
  *     )
  * )
  */
 
 /**
- *  @OA\Server(
- *      url=SWAGGER_LUME_CONST_HOST,
- *      description="Contacts Book API Microservice, Version 1"
+ * @OA\Server(
+ *      url=SWAGGER_CONST_HOST,
+ *      description=SWAGGER_DESCRIPTION
  * )
  */
 
