@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Traits\OwnerTrait;
-use App\Traits\UuidTrait;
+use Sumra\SDK\Traits\OwnerTrait;
+use Sumra\SDK\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;

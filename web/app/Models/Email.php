@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use App\Traits\UuidTrait;
+use Sumra\SDK\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\Rule;
+use JetBrains\PhpStorm\ArrayShape;
 
 class Email extends Model
 {
@@ -46,6 +47,7 @@ class Email extends Model
     /**
      * @return array[]
      */
+    #[ArrayShape(['email' => "array", 'type' => "string", 'is_default' => "string"])]
     public static function validationRules(): array
     {
         return [

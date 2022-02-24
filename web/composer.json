@@ -5,17 +5,14 @@
     "private": true,
     "require": {
         "php": "^8.0",
-        "darkaonline/swagger-lume": "~8",
         "doctrine/dbal": "~3",
         "ext-json": "*",
         "ext-openssl": "*",
         "guzzlehttp/guzzle": "~7",
-        "fruitcake/laravel-cors": "~2",
         "laravel/lumen-framework": "~8",
         "phpoffice/phpspreadsheet": "~1",
         "sumra/json-api": "*",
-        "sumra/pubsub": "*",
-        "vladimir-yuldashev/laravel-queue-rabbitmq": "~11"
+        "sumra/pubsub": "*"
     },
     "require-dev": {
         "fakerphp/faker": "~1",

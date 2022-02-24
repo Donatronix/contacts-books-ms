@@ -138,7 +138,7 @@ class ContactController extends Controller
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="not found"
+     *         description="Not found"
      *     )
      * )
      *
@@ -317,18 +317,21 @@ class ContactController extends Controller
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/Contact")
      *     ),
-     *
      *     @OA\Response(
      *         response="200",
      *         description="Success send data"
      *     ),
      *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
+     *         response="201",
+     *         description="Applicant created"
      *     ),
      *     @OA\Response(
      *         response=400,
      *         description="Invalid request"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
      *     ),
      *     @OA\Response(
      *         response=404,
@@ -352,7 +355,7 @@ class ContactController extends Controller
             $contact->fill($request->all());
             $contact->birthday = Carbon::parse($request->get('birthday'));
             $contact->write_as_name = $request->get('display_name');
-            $contact->user_id = (string)Auth::user()->getAuthIdentifier();
+            $contact->user_id = Auth::user()->getAuthIdentifier();
             $contact->save();
 
             // Save contact's phones
@@ -569,22 +572,21 @@ class ContactController extends Controller
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         required=true,
      *         description="Contacts ID",
      *         example="0aa06e6b-35de-3235-b925-b0c43f8f7c75",
+     *         required=true,
      *         @OA\Schema(
      *             type="string"
      *         )
      *     ),
-     *
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/Contact")
      *     ),
      *
      *     @OA\Response(
-     *          response="200",
-     *          description="Successfully save"
+     *         response="200",
+     *         description="Successfully save"
      *     ),
      *     @OA\Response(
      *         response="500",
@@ -598,7 +600,7 @@ class ContactController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(Request $request, $id)
     {
         // Validate input
         $this->validate($request, Contact::rules());
@@ -660,16 +662,17 @@ class ContactController extends Controller
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         required=true,
      *         description="Contacts ID",
      *         example="0aa06e6b-35de-3235-b925-b0c43f8f7c75",
-     *         @OA\Schema (
+     *         required=true,
+     *         @OA\Schema(
      *             type="string"
      *         )
      *     ),
      *     @OA\RequestBody(
      *         @OA\JsonContent(
      *             type="object",
+     *
      *             @OA\Property(
      *                 property="ids",
      *                 type="array",
@@ -890,7 +893,7 @@ class ContactController extends Controller
                     'DeleteAvatars',
                     [
                         'entity' => 'contact',
-                        'user_id' => (string)Auth::user()->getAuthIdentifier(),
+                        'user_id' => Auth::user()->getAuthIdentifier(),
                         'avatars' => $avatars
                     ],
                     config('settings.exchange_queue.files')
@@ -1326,7 +1329,7 @@ class ContactController extends Controller
                 // First, Create contact
                 $contact = new Contact();
                 $contact->write_as_name = $lead['display_name'] ?? '';
-                $contact->user_id = (string)Auth::user()->getAuthIdentifier();
+                $contact->user_id = Auth::user()->getAuthIdentifier();
                 $contact->save();
 
                 // Save contact's phones
@@ -1369,13 +1372,12 @@ class ContactController extends Controller
     }
 
     /**
-     * Contact's not found
+     * Get applicant object
      *
      * @param $id
-     *
      * @return mixed
      */
-    private function getObject($id)
+    private function getObject($id): mixed
     {
         try {
             return Contact::findOrFail($id);
@@ -1383,7 +1385,7 @@ class ContactController extends Controller
             return response()->jsonApi([
                 'type' => 'danger',
                 'title' => "Get contact object",
-                'message' => "Contact with #{$id} not found: {$e->getMessage()}"
+                'message' => "Contact with id #{$id} not found: {$e->getMessage()}"
             ], 404);
         }
     }

@@ -8,7 +8,6 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -124,19 +123,23 @@ class GroupController extends Controller
      *
      *     @OA\Response(
      *         response="200",
-     *         description="Success send data"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
+     *         description="Successfully save"
      *     ),
      *     @OA\Response(
      *         response=400,
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
      *         response=404,
      *         description="not found"
+     *     ),
+     *     @OA\Response(
+     *         response="500",
+     *         description="Unknown error"
      *     )
      * )
      *
@@ -147,6 +150,7 @@ class GroupController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Validate input
         $this->validate($request, Group::validationRules());
 
         try {
@@ -206,6 +210,7 @@ class GroupController extends Controller
      *         )
      *     ),
      *     @OA\RequestBody(
+     *         required=true,
      *         @OA\JsonContent(
      *             type="object",
      *
@@ -346,7 +351,7 @@ class GroupController extends Controller
             return $group;
         }
 
-        // Try detach contacts and delete group
+        // Try to detach contacts and delete group
         try {
             $group->contacts()->detach();
             $group->delete();

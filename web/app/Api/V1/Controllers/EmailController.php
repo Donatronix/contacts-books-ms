@@ -5,11 +5,9 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\Email;
-use App\Models\Phone;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Class EmailController
@@ -24,6 +22,7 @@ class EmailController extends Controller
      * @OA\Post(
      *     path="/emails",
      *     summary="Save a new email for current contact",
+     *     description="Save a new email for current contact",
      *     tags={"Contact Emails"},
      *
      *     security={{
@@ -75,8 +74,20 @@ class EmailController extends Controller
      *     ),
      *
      *     @OA\Response(
-     *          response="200",
-     *          description="Successfully save"
+     *         response="200",
+     *         description="Successfully save"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid request"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="not found"
      *     ),
      *     @OA\Response(
      *         response="500",
@@ -176,7 +187,6 @@ class EmailController extends Controller
      *             type="string"
      *         )
      *     ),
-     *
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -202,7 +212,6 @@ class EmailController extends Controller
      *             )
      *         )
      *     ),
-     *
      *     @OA\Response(
      *         response="200",
      *         description="Successfully save"

@@ -78,13 +78,13 @@ $app->configure('settings');
 
 $app->middleware([
   //  \Fruitcake\Cors\HandleCors::class,
-    \App\Http\Middleware\TrimStrings::class,
+    \Sumra\SDK\Middleware\TrimStrings::class,
 ]);
 
 $app->routeMiddleware([
     //'auth' => App\Http\Middleware\Authenticate::class,
-    'checkUser' => App\Http\Middleware\CheckUserMiddleware::class,
-    'checkAdmin' => App\Http\Middleware\CheckAdminMiddleware::class,
+    'checkUser' => \Sumra\SDK\Middleware\CheckUserMiddleware::class,
+    'checkAdmin' => \Sumra\SDK\Middleware\CheckAdminMiddleware::class,
 ]);
 
 /*

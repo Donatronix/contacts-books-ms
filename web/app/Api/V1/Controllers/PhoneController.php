@@ -5,11 +5,9 @@ namespace App\Api\V1\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use App\Models\Phone;
-use App\Models\Group;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Class PhoneController
@@ -24,6 +22,7 @@ class PhoneController extends Controller
      * @OA\Post(
      *     path="/phones",
      *     summary="Save a new phone number for current contact",
+     *     description="Save a new phone number for current contact",
      *     tags={"Contact Phones"},
      *
      *     security={{
@@ -75,8 +74,20 @@ class PhoneController extends Controller
      *     ),
      *
      *     @OA\Response(
-     *          response="200",
-     *          description="Successfully save"
+     *         response="200",
+     *         description="Successfully save"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid request"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="not found"
      *     ),
      *     @OA\Response(
      *         response="500",
@@ -176,7 +187,6 @@ class PhoneController extends Controller
      *             type="string"
      *         )
      *     ),
-     *
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -202,7 +212,6 @@ class PhoneController extends Controller
      *             )
      *         )
      *     ),
-     *
      *     @OA\Response(
      *         response="200",
      *         description="Successfully save"
@@ -337,7 +346,7 @@ class PhoneController extends Controller
             return $phone;
         }
 
-        // Try to delete phome
+        // Try to delete phone
         try {
             $phone->delete();
 
@@ -371,7 +380,7 @@ class PhoneController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => "Get Contact's phone number",
+                'title' => "Get contact's phone number",
                 'message' => "Contact's phone number with id #{$id} not found",
                 'data' => null
             ], 404);
