@@ -1,56 +1,73 @@
-#!/bin/bash -x
+#!/bin/bash
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
+B='\e[1m'
+RED='\e[31m'
+GREEN='\e[32m'
+CYAN='\e[36m'
+NC='\e[0m' # No Color
 
-git submodule init
-git submodule update --remote
-REVISION=`git rev-parse --short HEAD`
-
-BRANCH=`git status |head -n 1|awk '{print $3}'`
-DEPLOY_NAME=`basename $(git remote show -n origin | grep URL|head -1 | cut -d: -f2-)|awk -F '.' '{print $1}'`
+REVISION=$(git rev-parse --short HEAD)
+BRANCH=$(git status | head -n 1 | awk '{print $3}')
+DEPLOY_NAME=$(basename $(git remote show -n origin | grep URL | head -1 | cut -d: -f2-) | awk -F '.' '{print $1}')
 DOCKER_ECR_REPO_URL="005279544259.dkr.ecr.us-west-2.amazonaws.com"
 
 case "$1" in
 build)
-    echo "${GREEN}Start Build${NC}"
-    echo "Deploy Name: $DEPLOY_NAME"
-    echo "Branch: $BRANCH"
-    echo "Rev: $REVISION"
-    docker build -f Dockerfile -t $DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION .
-    ;;
+  echo ""
+  echo -e "${B}${GREEN}1. ### UPDATE GIT SUBMODULE ###${NC}"
+  git submodule init
+  git submodule update --remote
+
+  echo -e "${B}${GREEN}2. ### START BUILD ###${NC}"
+  echo -e "${CYAN}Deploy Name: $DEPLOY_NAME${NC}"
+  echo -e "${CYAN}Branch: $BRANCH${NC}"
+  echo -e "${CYAN}Rev: $REVISION${NC}"
+
+  docker build -f Dockerfile -t $DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION .
+  ;;
 push)
-    echo "${GREEN}Push Docker IMAGE Build ${NC}"
-    echo "Deploy Name: $DEPLOY_NAME"
-    echo "Branch: $BRANCH"
-    echo "Rev: $REVISION"
-    docker push $DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION
-    ;;
+  echo ""
+  echo -e "${B}${GREEN}### PUSH DOCKER IMAGE BUILD ###${NC}"
+  echo -e "${CYAN}Deploy Name: $DEPLOY_NAME${NC}"
+  echo -e "${CYAN}Branch: $BRANCH${NC}"
+  echo -e "${CYAN}Rev: $REVISION${NC}"
+
+  docker push $DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION
+  ;;
 start)
-    printf "%sGenerate docker-compose%s\n" "$GREEN" "$NC"
-    echo "Deploy Name: $DEPLOY_NAME"
-    echo "Branch: $BRANCH"
-    echo "Rev: $REVISION"
-    cat compose-tmpl.yaml | grep -v "#"  > docker-compose.yaml
-    sed -i"" "s~{{DEPLOY_NAME}}~$DEPLOY_NAME~" docker-compose.yaml
-    sed -i"" "s~{{DOCKER_IMAGE}}~$DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION~" docker-compose.yaml
-    echo "Run docker-compose up"
-    docker-compose stop
-    docker-compose up -d
-    ;;
+  echo ""
+  echo -e "${B}${GREEN}1. ### GENERATE DOCKER-COMPOSE ###${NC}"
+  echo -e "${CYAN}Deploy Name: $DEPLOY_NAME${NC}"
+  echo -e "${CYAN}Branch: $BRANCH${NC}"
+  echo -e "${CYAN}Rev: $REVISION${NC}"
+
+  cat compose-tmpl.yaml | grep -v "#" >docker-compose.yaml
+  sed -i"" "s~{{DEPLOY_NAME}}~$DEPLOY_NAME~" docker-compose.yaml
+  sed -i"" "s~{{DOCKER_IMAGE}}~$DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION~" docker-compose.yaml
+
+  echo -e "${B}${GREEN}2. ### RUN DOCKER CONTAINER ###${NC}"
+  docker-compose stop
+  docker-compose up -d
+  ;;
 stop)
-    echo "${GREEN}Stop docker-compose${NC}\n"
-    docker-compose stop
-    ;;
+  echo ""
+  echo -e "${B}${GREEN}### STOP DOCKER CONTAINER ###${NC}\n"
+  docker-compose stop
+  ;;
 login)
-    echo "${GREEN}Login to Elastic Container Registry${NC}\n"
-    aws ecr get-login --region us-west-2 --no-include-email |sh
-    ;;
+  echo ""
+  echo -e "${B}${GREEN}### LOGIN TO AWS ELASTIC CONTAINER REGISTRY ###${NC}\n"
+  aws ecr get-login-password --region us-west-2 | docker login \
+      --username AWS \
+      --password-stdin ${DOCKER_ECR_REPO_URL}
+  ;;
 rm)
-    echo "${GREEN}Stop docker-compose${NC}\n"
-    docker-compose rm -f
-    ;;
-*) echo "${RED}Command $1 is not implemented${NC}\n"
-   ;;
+  echo ""
+  echo -e "${B}${GREEN}### REMOVE DOCKER CONTAINER ###${NC}\n"
+  docker-compose rm -f
+  ;;
+*)
+  echo ""
+  echo -e "${B}${RED}Command $1 is not implemented${NC}\n"
+  ;;
 esac
