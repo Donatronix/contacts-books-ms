@@ -31,8 +31,7 @@ COPY config/vhost.common.d/ /opt/docker/etc/nginx/vhost.common.d/
 
 ## Copy existing application contents to workdir
 COPY --chown=nginx:nginx ./web /var/www/html
-COPY --chown=nginx:nginx ./pubsub /var/www/pubsub
-COPY --chown=nginx:nginx ./json-api /var/www/json-api
+COPY --chown=nginx:nginx ./sumra-sdk /var/www/sumra-sdk
 
 ## Set work directory
 WORKDIR /var/www/html

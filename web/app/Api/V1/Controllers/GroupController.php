@@ -262,7 +262,7 @@ class GroupController extends Controller
 
         // Read contact group model
         $group = $this->getObject($id);
-        if (is_a($group, 'Sumra\JsonApi\JsonApiResponse')) {
+        if (is_a($group, 'Sumra\SDK\JsonApiResponse')) {
             return $group;
         }
 
@@ -347,7 +347,7 @@ class GroupController extends Controller
     {
         // Read contact group model
         $group = $this->getObject($id);
-        if (is_a($group, 'Sumra\JsonApi\JsonApiResponse')) {
+        if (is_a($group, 'Sumra\SDK\JsonApiResponse')) {
             return $group;
         }
 

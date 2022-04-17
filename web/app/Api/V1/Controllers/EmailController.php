@@ -252,7 +252,7 @@ class EmailController extends Controller
 
         // Read contact group model
         $email = $this->getObject($id);
-        if (is_a($email, 'Sumra\JsonApi\JsonApiResponse')) {
+        if (is_a($email, 'Sumra\SDK\JsonApiResponse')) {
             return $email;
         }
 
@@ -336,13 +336,13 @@ class EmailController extends Controller
      *
      * @param $id
      *
-     * @return mixed|\Sumra\JsonApi\JsonApiResponse
+     * @return mixed|\Sumra\SDK\JsonApiResponse
      */
     public function destroy($id)
     {
         // Read contact group model
         $phone = $this->getObject($id);
-        if (is_a($phone, 'Sumra\JsonApi\JsonApiResponse')) {
+        if (is_a($phone, 'Sumra\SDK\JsonApiResponse')) {
             return $phone;
         }
 

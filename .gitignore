@@ -1,7 +1,6 @@
-/.idea
+.idea
 /baum
-/json-api
 /logs/*
-/pubsub
+/sumra-sdk
 docker-compose.yaml
 xdebug.ini
