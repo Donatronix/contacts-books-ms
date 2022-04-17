@@ -12,14 +12,13 @@ services:
       - '18107:443'
     environment:
       - WEB_DOCUMENT_ROOT=/var/www/html/public
-#      - WEB_ALIAS_DOMAIN=api.sumrameet.com
       - PHP_DISMOD=apcu,calendar,exif,gd,imagick,imap,ioncube,mongodb,ldap,pcntl,pdo_pgsql,pgsql,shmop,soap,sysvmsg,sysvsem,sysvshm,vips
       - PHP_DISPLAY_ERRORS=1
       - LOG_STDERR=/var/log/vhost-error.log
     volumes:
       - ./web:/var/www/html:rw
-#      - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:rw
-#      - ./conf/.env_local:/app/.env:rw
+      - ./logs:/var/log/nginx:rw
+#     - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:rw
 #    command: /bin/bash -c "php artisan swagger-lume:generate && php artisan queue:listen rabbitmq --queue=ContactsBookMS --timeout=0 > /dev/null"
 
 networks:

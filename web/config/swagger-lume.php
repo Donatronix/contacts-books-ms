@@ -16,28 +16,28 @@ return [
         | Route for accessing api documentation interface
         |--------------------------------------------------------------------------
          */
-        'api' => setPath('/'),
+        'api' => setPath('/docs'),
 
         /*
         |--------------------------------------------------------------------------
         | Route for accessing parsed swagger annotations.
         |--------------------------------------------------------------------------
          */
-        'docs' => setPath('docs-export'),
+        'docs' => setPath('docs/export'),
 
         /*
         |--------------------------------------------------------------------------
         | Route for Oauth2 authentication callback.
         |--------------------------------------------------------------------------
         */
-        'oauth2_callback' => setPath('oauth2-callback'),
+        'oauth2_callback' => setPath('docs/oauth2-callback'),
 
         /*
         |--------------------------------------------------------------------------
         | Route for serving assets
         |--------------------------------------------------------------------------
         */
-        'assets' => setPath('ui-assets'),
+        'assets' => setPath('docs/ui-assets'),
 
         /*
         |--------------------------------------------------------------------------

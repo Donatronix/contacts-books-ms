@@ -13,13 +13,13 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
+        //
     ];
 
     /**
      * Define the application's command schedule.
      *
-     * @param \Illuminate\Console\Scheduling\Schedule $schedule
-     *
+     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule): void
@@ -30,9 +30,6 @@ class Kernel extends ConsoleKernel
     /**
      * Get the timezone that should be used by default for scheduled events.
      *
-     * @return string
-     */
-    /**
      * @return string
      */
     protected function scheduleTimezone(): string
