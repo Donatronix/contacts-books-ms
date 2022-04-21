@@ -1275,12 +1275,6 @@ class ContactController extends Controller
      *                             type="string",
      *                             example="client1@client.com"
      *                         )
-     *                     ),
-     *                     @OA\Property(
-     *                         property="is_shared",
-     *                         type="boolean",
-     *                         description="Need shared contacts data (1, 0, true, false)",
-     *                         example="false"
      *                     )
      *                 )
      *             )
