@@ -1049,7 +1049,7 @@ class ContactController extends Controller
             ], 400);
         }
     }
-  
+
     /**
      * Save user's contacts
      *
@@ -1149,42 +1149,8 @@ class ContactController extends Controller
      *                 property="contacts",
      *                 type="array",
      *                 description="User contacts array in JSON",
-     *
      *                 @OA\Items(
-     *                     type="object",
-     *
-     *                     @OA\Property(
-     *                         property="display_name",
-     *                         type="string",
-     *                         description="Display name data in string",
-     *                         example=""
-     *                     ),
-     *                     @OA\Property(
-     *                         property="avatar",
-     *                         type="string",
-     *                         description="Photo body in base64 format",
-     *                         example=""
-     *                     ),
-     *                     @OA\Property(
-     *                         property="phones",
-     *                         type="array",
-     *                         description="Contacts phones / Msisdns data in JSON",
-     *
-     *                         @OA\Items(
-     *                             type="string",
-     *                             example="+3521234562545"
-     *                         )
-     *                     ),
-     *                     @OA\Property(
-     *                         property="emails",
-     *                         type="array",
-     *                         description="Contacts emails",
-     *
-     *                         @OA\Items(
-     *                             type="string",
-     *                             example="client1@client.com"
-     *                         )
-     *                     )
+     *                    ref="#/components/schemas/Contact"
      *                 )
      *             )
      *         )
@@ -1249,10 +1215,10 @@ class ContactController extends Controller
 
     /**
      * Store JSON Data
-     * 
+     *
      * @param string $key
      * @param array $inputData
-     * 
+     *
      * @return mixed
     */
     private function getArrayKey(string $key, array $inputData):null|string
@@ -1262,21 +1228,21 @@ class ContactController extends Controller
         }else{
             return array_key_exists($key,$inputData)?$inputData[$key]:null;
         }
-        
-        
+
+
     }
-     
+
     /**
      * Store JSON Data
-     * 
+     *
      * @param array $inputData
      * @return Illuminate\Http\JsonResponse
     */
     private function storeContacts(array $inputData): JsonResponse
-    { 
+    {
         // Validate input
         Validator::make($inputData, Contact::rules());
-        
+
         try {
             // First, Create contact
             $contact = new Contact();
@@ -1320,7 +1286,7 @@ class ContactController extends Controller
                 }
             }
 
-            
+
             // Save contact's works if exist
             if (array_key_exists("works",$inputData) && count($inputData["works"]) > 0) {
                 for ($i = 0; $i<count($inputData["works"]); ++$i) {
@@ -1347,7 +1313,7 @@ class ContactController extends Controller
 
             // Save contact's sites if exist
             if (array_key_exists("sites",$inputData) && count($inputData["sites"]) > 0) {
-                
+
                 for ($i = 0; $i<count($inputData["sites"]); ++$i) {
                     $row = new Site();
                     if(is_array($inputData["sites"][$i])){
@@ -1372,7 +1338,7 @@ class ContactController extends Controller
 
             // Save contact's relations if exist
             if (array_key_exists("relations",$inputData) && count($inputData["relations"]) > 0) {
-                
+
                 for ($i = 0; $i<count($inputData["relations"]); ++$i) {
                     $row = new Relation();
                     if(is_array($inputData["relations"][$i])){
