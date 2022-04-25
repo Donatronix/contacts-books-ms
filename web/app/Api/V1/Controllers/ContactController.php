@@ -1149,8 +1149,456 @@ class ContactController extends Controller
      *                 property="contacts",
      *                 type="array",
      *                 description="User contacts array in JSON",
-     *                 @OA\Items(
-     *                    ref="#/components/schemas/Contact"
+     *                 example ={{
+     *                       "prefix_name": "Test 1",
+     *                       "first_name": "test1",
+     *                       "middle_name": "demomid1",
+     *                       "last_name": "demolast1",
+     *                       "suffix_name": "77oo",
+     *                       "display_name": "disask1",
+     *                       "nickname": "sparks1",
+     *                       "birthday": "1984-10-25",
+     *                       "avatar": "",
+     *                       "note": "We love this work 1",
+     *                       "phones": {
+     *                           {
+     *                              "phone": "(222)-566-6554",
+     *                              "type": "home",
+     *                              "is_default": "true"
+     *                           },
+     *                           {
+     *                              "phone": "(555)-564-8454",
+     *                              "type": "mobile",
+     *                              "is_default": "true"
+     *                           }
+     *                       },
+     *                       "emails": {
+     *                           {
+     *                              "email": "test1@innovate.com",
+     *                              "type": "home",
+     *                              "is_default": true
+     *                           }
+     *                       },
+     *                       "works": {
+     *                           {
+     *                              "company": "",
+     *                              "department": "",
+     *                              "post": ""
+     *                           }
+     *                      },
+     *                       "addresses": {
+     *                           {
+     *                              "country": "",
+     *                              "address_string1": "",
+     *                              "address_string2": "",
+     *                              "city": "",
+     *                              "provinces": "",
+     *                              "postcode": "",
+     *                              "po_box": "",
+     *                              "type": "",
+     *                          }
+     *                       },
+     *                       "sites": {
+     *                          {
+     *                               "url": "test@tes.com",
+     *                               "type": "home",
+     *                              "is_default": true
+     *                           }
+     *                       },
+     *                       "chats": {
+     *                           {
+     *                              "chat": "test@tes.com",
+     *                              "type": "home",
+     *                              "is_default": true
+     *                           }
+     *                       },
+     *                       "relations": {
+     *                           {
+     *                              "relation": "test@tes.com",
+     *                              "type": "home",
+     *                              "is_default": true
+     *                           }
+     *                       },
+     *                      "is_favorite": false
+     *                   },
+     *                   {
+     *                       "prefix_name": "Test 2",
+     *                       "first_name": "test2",
+     *                       "middle_name": "demomid2",
+     *                       "last_name": "demolast2",
+     *                       "suffix_name": "77oo",
+     *                       "display_name": "disask2",
+     *                       "nickname": "spark2",
+     *                       "birthday": "1984-10-26",
+     *                       "avatar": "",
+     *                       "note": "We love this work 2",
+     *                       "phones": {
+     *                           {
+     *                              "phone": "(222)-566-6554",
+     *                              "type": "home",
+     *                              "is_default": "true"
+     *                           },
+     *                           {
+     *                              "phone": "(555)-564-8454",
+     *                              "type": "home",
+     *                              "is_default": "false"
+     *                           }
+     *                       },
+     *                       "emails": {
+     *                           {
+     *                              "email": "test1@innovate.com",
+     *                              "type": "home",
+     *                              "is_default": true
+     *                           }
+     *                       },
+     *                       "works": {
+     *                           {
+     *                              "company": "",
+     *                              "department": "",
+     *                              "post": ""
+     *                           }
+     *                      },
+     *                       "addresses": {
+     *                           {
+     *                              "country": "",
+     *                              "address_string1": "",
+     *                              "address_string2": "",
+     *                              "city": "",
+     *                              "provinces": "",
+     *                              "postcode": "",
+     *                              "po_box": "",
+     *                              "type": "",
+     *                          }
+     *                       },
+     *                       "sites": {
+     *                          {
+     *                              "url": "test@tes.com",
+     *                              "type": "home",
+     *                              "is_default": true
+     *                           }
+     *                       },
+     *                       "chats": {
+     *                           {
+     *                              "chat": "test@tes.com",
+     *                              "type": "home",
+     *                              "is_default": true
+     *                           }
+     *                       },
+     *                       "relations": {
+     *                           {
+     *                              "relation": "test@tes.com",
+     *                              "type": "home",
+     *                              "is_default": true
+     *                           }
+     *                       },
+     *                      "is_favorite": false
+     *                   }},
+     *                   @OA\Items(
+     *                      @OA\Property(
+     *                           property="prefix_name",
+     *                           type="string",
+     *                           description="Prefix of contact name",
+     *                           example="Test 1"
+     *                       ),
+     *                       @OA\Property(
+     *                           property="first_name",
+     *                           type="string",
+     *                           description="First name in string",
+     *                           example="test1"
+     *                       ),
+     *                       @OA\Property(
+     *                           property="middle_name",
+     *                           type="string",
+     *                           description="Display name data in string",
+     *                           example="demomid1"
+     *                       ),
+     *                       @OA\Property(
+     *                           property="last_name",
+     *                           type="string",
+     *                           description="Display name data in string",
+     *                           example="demolast1"
+     *                       ),
+     *                       @OA\Property(
+     *                           property="suffix_name",
+     *                           type="string",
+     *                           description="Display name data in string",
+     *                           example="77oo"
+     *                       ),
+     *                       @OA\Property(
+     *                           property="display_name",
+     *                           type="string",
+     *                           description="Display name data in string",
+     *                           example="disask1"
+     *                       ),
+     *                       @OA\Property(
+     *                           property="nickname",
+     *                           type="string",
+     *                           description="Nickname of contact",
+     *                           example="sparks1"
+     *                       ),
+     *                       @OA\Property(
+     *                           property="birthday",
+     *                           type="date",
+     *                           description="Birthday date of contact",
+     *                           example="1984-10-25"
+     *                       ),
+     *                       @OA\Property(
+     *                           property="avatar",
+     *                           type="string",
+     *                           description="Photo body in base64 format",
+     *                           example=""
+     *                       ),
+     *                       @OA\Property(
+     *                           property="note",
+     *                           type="string",
+     *                           description="Contact note",
+     *                           example="We love this work 1"
+     *                       ),
+     *                       @OA\Property(
+     *                           property="phones",
+     *                           type="array",
+     *                           description="Contacts phones / Msisdns data in JSON",
+     *                           example = {{
+     *                              "phone":"(222)-566-6554",
+     *                              "type":"home",
+     *                              "is_default":"true"
+     *                             },
+     *                             {
+     *  *                           "phone":"(555)-564-8454",
+     *                              "type":"mobile",
+     *                              "is_default":"true"
+     *                            }},
+     *                           @OA\Items(
+     *                               type="object",
+     *
+     *                               @OA\Property(
+     *                                   property="phone",
+     *                                   type="string",
+     *                                   description="Phone number of contact",
+     *                                   example="(555)-777-1234"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="type",
+     *                                   type="string",
+     *                                   description="Phone type (home, work, cell, etc)",
+     *                                   enum={"home", "work", "cell", "other", "main", "homefax", "workfax", "googlevoice", "pager"}
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="is_default",
+     *                                   type="boolean",
+     *                                   description="Phone by default. Accept 1, 0, true, false",
+     *                                   example="false"
+     *                               )
+     *                           )
+     *                       ),
+     *                       @OA\Property(
+     *                           property="emails",
+     *                           type="array",
+     *                           description="Contacts emails",
+     *
+     *                           @OA\Items(
+     *                               type="object",
+     *
+     *                               @OA\Property(
+     *                                   property="email",
+     *                                   type="string",
+     *                                   description="Email of contact",
+     *                                   example="test1@innovate.com"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="type",
+     *                                   type="string",
+     *                                   description="Email type (home, work, etc)",
+     *                                   enum={"home", "work", "other", "main"}
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="is_default",
+     *                                   type="boolean",
+     *                                   description="Email by default. Accept 1, 0, true, false",
+     *                                   example="true"
+     *                               )
+     *                           )
+     *                       ),
+     *                       @OA\Property(
+     *                           property="works",
+     *                           type="array",
+     *                           description="Contacts phones / Msisdns data in JSON",
+     *                       @OA\Items(
+     *                               type="object",
+     *
+     *                               @OA\Property(
+     *                                   property="company",
+     *                                   type="string",
+     *                                   description="Company",
+     *                                   example="crypto 1"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="department",
+     *                                   type="string",
+     *                                   description="Department",
+     *                                   example="Demo contact 1"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="post",
+     *                                   type="string",
+     *                                   description="Post",
+     *                                   example="Software officer"
+     *                               )
+     *                           )
+     *                       ),
+     *                       @OA\Property(
+     *                           property="addresses",
+     *                           type="array",
+     *                           description="Contacts phones / Msisdns data in JSON",
+     *                           @OA\Items(
+     *                               type="object",
+     *
+     *                               @OA\Property(
+     *                                   property="country",
+     *                                   type="string",
+     *                                   description="country",
+     *                                   example="London 1"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="address_string1",
+     *                                   type="string",
+     *                                   description="Department",
+     *                                   example="2 Kinston Road, Ginsburge"
+     *                               ),
+     *                                @OA\Property(
+     *                                   property="address_string2",
+     *                                   type="string",
+     *                                   description="Post",
+     *                                   example="US"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="city",
+     *                                   type="string",
+     *                                   description="Post",
+     *                                   example="Paris1"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="provinces",
+     *                                   type="string",
+     *                                   description="Post",
+     *                                   example="West1"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="postcode",
+     *                                   type="string",
+     *                                   description="Post",
+     *                                   example="dte4s541"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="po_box",
+     *                                   type="string",
+     *                                   description="Post",
+     *                                   example=""
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="type",
+     *                                   type="string",
+     *                                   description="Post",
+     *                                   example=""
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="is_default",
+     *                                   type="boolean",
+     *                                   description="Post",
+     *                                   example="true"
+     *                               )
+     *                           )
+     *                       ),
+     *                       @OA\Property(
+     *                           property="sites",
+     *                           type="array",
+     *                           description="Sites",
+     *
+     *                           @OA\Items(
+     *                               type="object",
+     *
+     *                               @OA\Property(
+     *                                   property="url",
+     *                                   type="string",
+     *                                   description="Site url",
+     *                                   example="test@tes.com"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="type",
+     *                                   type="string",
+     *                                   description="Email type (home, work, etc)",
+     *                                   enum={"home", "work", "other", "main"}
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="is_default",
+     *                                   type="boolean",
+     *                                   description="Email by default. Accept 1, 0, true, false",
+     *                                   example="true"
+     *                               )
+     *                           )
+     *                       ),
+     *                       @OA\Property(
+     *                           property="chats",
+     *                           type="array",
+     *                           description="Sites",
+     *
+     *                           @OA\Items(
+     *                               type="object",
+     *
+     *                               @OA\Property(
+     *                                   property="chat",
+     *                                   type="string",
+     *                                   description="Site url",
+     *                                   example="test@tes.com"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="type",
+     *                                   type="string",
+     *                                   description="Email type (home, work, etc)",
+     *                                   enum={"home", "work", "other", "main"}
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="is_default",
+     *                                   type="boolean",
+     *                                   description="Email by default. Accept 1, 0, true, false",
+     *                                   example="true"
+     *                               )
+     *                           )
+     *                       ),
+     *                       @OA\Property(
+     *                           property="relations",
+     *                           type="array",
+     *                           description="Relations",
+     *
+     *                           @OA\Items(
+     *                               type="object",
+     *
+     *                               @OA\Property(
+     *                                       property="relation",
+     *                                   type="string",
+     *                                   description="Site url",
+     *                                   example="test@tes.com"
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="type",
+     *                                   type="string",
+     *                                   description="Email type (home, work, etc)",
+     *                                   enum={"home", "work", "other", "main"}
+     *                               ),
+     *                               @OA\Property(
+     *                                   property="is_default",
+     *                                   type="boolean",
+     *                                   description="Email by default. Accept 1, 0, true, false",
+     *                                   example="true"
+     *                               )
+     *                               )
+     *                       ),
+     *                       @OA\Property(
+     *                           property="is_favorite",
+     *                           type="boolean",
+     *                           description="Need shared contacts data (1, 0, true, false)",
+     *                           example="false"
+     *                       )
      *                 )
      *             )
      *         )
@@ -1203,6 +1651,7 @@ class ContactController extends Controller
                 'title' => "Batch import of contacts",
                 'message' => "Contacts was imported successfully"
             ], 200);
+            
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
