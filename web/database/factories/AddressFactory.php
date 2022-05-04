@@ -24,16 +24,18 @@ class AddressFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => $this->faker->uuid(),
-            'country' => $this->faker->country,
-            'provinces' => $this->faker->state,
-            'city' => $this->faker->city,
-            'address_string1' => $this->faker->address,
-            'address_string1' => $this->faker->address,
-            'type' => $this->faker->randomElement(['home', 'work', 'another']),
-            'postcode' => $this->faker->postcode,
             'po_box' => $this->faker->postcode,
-            'is_default' => $this->faker->boolean(),
+            'postcode' => $this->faker->postcode,
+            'address_string1' => $this->faker->address,
+            'address_string2' => $this->faker->address,
+            'city' => $this->faker->city,
+            'provinces' => $this->faker->state,
+            'country' => $this->faker->country,
+            'type' => $this->faker->randomElement([
+                'home',
+                'work',
+                'another'
+            ]),
             'contact_id' => function () {
                 return Contact::all()->random()->id;
             }

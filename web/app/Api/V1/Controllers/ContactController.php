@@ -4,23 +4,15 @@ namespace App\Api\V1\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
-use App\Models\Email;
-use App\Models\Phone;
-use App\Models\Work;
-use App\Models\Address;
-use App\Models\Site;
-use App\Models\Chat;
-use App\Models\Relation;
+use App\Services\ContactHelper;
 use App\Services\Import;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Sumra\SDK\JsonApiResponse;
 use Sumra\SDK\PubSub;
 
@@ -194,10 +186,10 @@ class ContactController extends Controller
                             ->orWhere('nickname', 'like', "%{$search}%")
                             ->orWhere('note', 'like', "%{$search}%")
                             ->orWhereHas('emails', function ($q) use ($search) {
-                                return $q->where('email', 'like', "%{$search}%");
+                                return $q->where('value', 'like', "%{$search}%");
                             })
                             ->orWhereHas('phones', function ($q) use ($search) {
-                                return $q->where('phone', 'like', "%{$search}%");
+                                return $q->where('value', 'like', "%{$search}%");
                             });
                     });
                 });
@@ -233,10 +225,10 @@ class ContactController extends Controller
                 $object->setAttribute('avatar', $this->getImagesFromRemote($object->id));
 
                 $email = $object->emails->first();
-                $object->setAttribute('email', $email ? $email->email : null);
+                $object->setAttribute('email', $email ? $email->value : null);
 
                 $phone = $object->phones->first();
-                $object->setAttribute('phone', $phone ? sprintf('%s (%s)', $phone->phone, $phone->type) : null);
+                $object->setAttribute('phone', $phone ? sprintf('%s (%s)', $phone->value, $phone->type) : null);
 
                 unset(
                     $object->name,
@@ -287,6 +279,86 @@ class ContactController extends Controller
             return response()->jsonApi([
                 'type' => 'danger',
                 'title' => "Get contacts list",
+                'message' => $e->getMessage(),
+                'data' => null
+            ], 400);
+        }
+    }
+
+    /**
+     * Save user's contacts
+     *
+     * @OA\Post(
+     *     path="/contacts",
+     *     summary="Save user's contacts",
+     *     description="Save user's contacts",
+     *     tags={"Contacts"},
+     *
+     *     security={{
+     *         "default": {
+     *             "ManagerRead",
+     *             "User",
+     *             "ManagerWrite"
+     *         }
+     *     }},
+     *     x={
+     *         "auth-type": "Application & Application User",
+     *         "throttling-tier": "Unlimited",
+     *         "wso2-application-security": {
+     *             "security-types": {"oauth2"},
+     *             "optional": "false"
+     *         }
+     *     },
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Contact")
+     *     ),
+     *     @OA\Response(
+     *         response="200",
+     *         description="Success send data"
+     *     ),
+     *     @OA\Response(
+     *         response="201",
+     *         description="Applicant created"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid request"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="not found"
+     *     )
+     * )
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function store(Request $request): JsonResponse
+    {
+        // Validate input
+        //$this->validate($request, Contact::rules());
+
+        try {
+            $contact = ContactHelper::save($request->all());
+
+            return response()->jsonApi([
+                'type' => 'success',
+                'title' => "Adding new contact",
+                'message' => "User's contacts successfully saved",
+                'data' => $contact->toArray()
+            ], 200);
+        } catch (Exception $e) {
+            return response()->jsonApi([
+                'type' => 'danger',
+                'title' => "Adding new contact",
                 'message' => $e->getMessage(),
                 'data' => null
             ], 400);
@@ -1025,7 +1097,7 @@ class ContactController extends Controller
     {
         // Validate input
         $this->validate($request, [
-            'contacts' => 'file|mimes:csv,vcf,vcard,txt,xls,xlsx',
+            'contacts' => 'required|file|mimes:csv,vcf,vcard,txt,xls,xlsx',
             'group_id' => 'nullable|string|max:36'
         ]);
 
@@ -1048,67 +1120,6 @@ class ContactController extends Controller
                 'data' => null
             ], 400);
         }
-    }
-
-    /**
-     * Save user's contacts
-     *
-     * @OA\Post(
-     *     path="/contacts",
-     *     summary="Save user's contacts",
-     *     description="Save user's contacts",
-     *     tags={"Contacts"},
-     *
-     *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
-     *     }},
-     *     x={
-     *         "auth-type": "Application & Application User",
-     *         "throttling-tier": "Unlimited",
-     *         "wso2-application-security": {
-     *             "security-types": {"oauth2"},
-     *             "optional": "false"
-     *         }
-     *     },
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Contact")
-     *     ),
-     *     @OA\Response(
-     *         response="200",
-     *         description="Success send data"
-     *     ),
-     *     @OA\Response(
-     *         response="201",
-     *         description="Applicant created"
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid request"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="not found"
-     *     )
-     * )
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function store(Request $request): JsonResponse
-    {
-        return $this->storeContacts($request->all());
     }
 
     /**
@@ -1150,43 +1161,43 @@ class ContactController extends Controller
      *                 type="array",
      *                 description="User contacts array in JSON",
      *                 example ={{
-     *                       "prefix_name": "Test 1",
-     *                       "first_name": "test1",
-     *                       "middle_name": "demomid1",
-     *                       "last_name": "demolast1",
-     *                       "suffix_name": "77oo",
-     *                       "display_name": "disask1",
-     *                       "nickname": "sparks1",
-     *                       "birthday": "1984-10-25",
-     *                       "avatar": "",
-     *                       "note": "We love this work 1",
-     *                       "phones": {
+     *                     "prefix_name": "Test 1",
+     *                     "first_name": "test1",
+     *                     "middle_name": "demomid1",
+     *                     "last_name": "demolast1",
+     *                     "suffix_name": "77oo",
+     *                     "display_name": "disask1",
+     *                     "nickname": "sparks1",
+     *                     "birthday": "1984-10-25",
+     *                     "avatar": "",
+     *                     "note": "We love this work 1",
+     *                     "phones": {
      *                           {
-     *                              "phone": "(222)-566-6554",
+     *                              "value": "(222)-566-6554",
      *                              "type": "home",
      *                              "is_default": "true"
      *                           },
      *                           {
-     *                              "phone": "(555)-564-8454",
+     *                              "value": "(555)-564-8454",
      *                              "type": "mobile",
      *                              "is_default": "true"
      *                           }
-     *                       },
-     *                       "emails": {
+     *                     },
+     *                     "emails": {
      *                           {
-     *                              "email": "test1@innovate.com",
+     *                              "value": "test1@innovate.com",
      *                              "type": "home",
      *                              "is_default": true
      *                           }
-     *                       },
-     *                       "works": {
+     *                     },
+     *                     "works": {
      *                           {
      *                              "company": "",
      *                              "department": "",
      *                              "post": ""
      *                           }
-     *                      },
-     *                       "addresses": {
+     *                     },
+     *                     "addresses": {
      *                           {
      *                              "country": "",
      *                              "address_string1": "",
@@ -1197,68 +1208,67 @@ class ContactController extends Controller
      *                              "po_box": "",
      *                              "type": "",
      *                          }
-     *                       },
-     *                       "sites": {
+     *                     },
+     *                     "sites": {
      *                          {
      *                               "url": "test@tes.com",
      *                               "type": "home",
      *                              "is_default": true
      *                           }
-     *                       },
-     *                       "chats": {
+     *                     },
+     *                     "chats": {
      *                           {
      *                              "chat": "test@tes.com",
      *                              "type": "home",
      *                              "is_default": true
      *                           }
-     *                       },
-     *                       "relations": {
+     *                     },
+     *                     "relations": {
+     *                         {
+     *                             "value": "Jhon Smith",
+     *                             "type": "brother"
+     *                         }
+     *                     },
+     *                     "is_favorite": false
+     *                 },
+     *                 {
+     *                     "prefix_name": "Test 2",
+     *                     "first_name": "test2",
+     *                     "middle_name": "demomid2",
+     *                     "last_name": "demolast2",
+     *                     "suffix_name": "77oo",
+     *                     "display_name": "disask2",
+     *                     "nickname": "spark2",
+     *                     "birthday": "1984-10-26",
+     *                     "avatar": "",
+     *                     "note": "We love this work 2",
+     *                     "phones": {
      *                           {
-     *                              "relation": "test@tes.com",
-     *                              "type": "home",
-     *                              "is_default": true
-     *                           }
-     *                       },
-     *                      "is_favorite": false
-     *                   },
-     *                   {
-     *                       "prefix_name": "Test 2",
-     *                       "first_name": "test2",
-     *                       "middle_name": "demomid2",
-     *                       "last_name": "demolast2",
-     *                       "suffix_name": "77oo",
-     *                       "display_name": "disask2",
-     *                       "nickname": "spark2",
-     *                       "birthday": "1984-10-26",
-     *                       "avatar": "",
-     *                       "note": "We love this work 2",
-     *                       "phones": {
-     *                           {
-     *                              "phone": "(222)-566-6554",
+     *                              "value": "(222)-566-6554",
      *                              "type": "home",
      *                              "is_default": "true"
      *                           },
      *                           {
-     *                              "phone": "(555)-564-8454",
+     *                              "value": "(555)-564-8454",
      *                              "type": "home",
      *                              "is_default": "false"
      *                           }
-     *                       },
-     *                       "emails": {
+     *                     },
+     *                     "emails": {
      *                           {
-     *                              "email": "test1@innovate.com",
+     *                              "value": "test1@innovate.com",
      *                              "type": "home",
      *                              "is_default": true
      *                           }
-     *                       },
-     *                       "works": {
+     *                     },
+     *                     "works": {
      *                           {
      *                              "company": "",
      *                              "department": "",
      *                              "post": ""
      *                           }
-     *                      },
-     *                       "addresses": {
+     *                     },
+     *                     "addresses": {
      *                           {
      *                              "country": "",
      *                              "address_string1": "",
@@ -1269,336 +1279,31 @@ class ContactController extends Controller
      *                              "po_box": "",
      *                              "type": "",
      *                          }
-     *                       },
-     *                       "sites": {
+     *                     },
+     *                     "sites": {
      *                          {
      *                              "url": "test@tes.com",
      *                              "type": "home",
      *                              "is_default": true
      *                           }
-     *                       },
-     *                       "chats": {
-     *                           {
-     *                              "chat": "test@tes.com",
-     *                              "type": "home",
-     *                              "is_default": true
-     *                           }
-     *                       },
-     *                       "relations": {
-     *                           {
-     *                              "relation": "test@tes.com",
-     *                              "type": "home",
-     *                              "is_default": true
-     *                           }
-     *                       },
-     *                      "is_favorite": false
-     *                   }},
-     *                   @OA\Items(
-     *                      @OA\Property(
-     *                           property="prefix_name",
-     *                           type="string",
-     *                           description="Prefix of contact name",
-     *                           example="Test 1"
-     *                       ),
-     *                       @OA\Property(
-     *                           property="first_name",
-     *                           type="string",
-     *                           description="First name in string",
-     *                           example="test1"
-     *                       ),
-     *                       @OA\Property(
-     *                           property="middle_name",
-     *                           type="string",
-     *                           description="Display name data in string",
-     *                           example="demomid1"
-     *                       ),
-     *                       @OA\Property(
-     *                           property="last_name",
-     *                           type="string",
-     *                           description="Display name data in string",
-     *                           example="demolast1"
-     *                       ),
-     *                       @OA\Property(
-     *                           property="suffix_name",
-     *                           type="string",
-     *                           description="Display name data in string",
-     *                           example="77oo"
-     *                       ),
-     *                       @OA\Property(
-     *                           property="display_name",
-     *                           type="string",
-     *                           description="Display name data in string",
-     *                           example="disask1"
-     *                       ),
-     *                       @OA\Property(
-     *                           property="nickname",
-     *                           type="string",
-     *                           description="Nickname of contact",
-     *                           example="sparks1"
-     *                       ),
-     *                       @OA\Property(
-     *                           property="birthday",
-     *                           type="date",
-     *                           description="Birthday date of contact",
-     *                           example="1984-10-25"
-     *                       ),
-     *                       @OA\Property(
-     *                           property="avatar",
-     *                           type="string",
-     *                           description="Photo body in base64 format",
-     *                           example=""
-     *                       ),
-     *                       @OA\Property(
-     *                           property="note",
-     *                           type="string",
-     *                           description="Contact note",
-     *                           example="We love this work 1"
-     *                       ),
-     *                       @OA\Property(
-     *                           property="phones",
-     *                           type="array",
-     *                           description="Contacts phones / Msisdns data in JSON",
-     *                           example = {{
-     *                              "phone":"(222)-566-6554",
-     *                              "type":"home",
-     *                              "is_default":"true"
-     *                             },
-     *                             {
-     *  *                           "phone":"(555)-564-8454",
-     *                              "type":"mobile",
-     *                              "is_default":"true"
-     *                            }},
-     *                           @OA\Items(
-     *                               type="object",
-     *
-     *                               @OA\Property(
-     *                                   property="phone",
-     *                                   type="string",
-     *                                   description="Phone number of contact",
-     *                                   example="(555)-777-1234"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="type",
-     *                                   type="string",
-     *                                   description="Phone type (home, work, cell, etc)",
-     *                                   enum={"home", "work", "cell", "other", "main", "homefax", "workfax", "googlevoice", "pager"}
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="is_default",
-     *                                   type="boolean",
-     *                                   description="Phone by default. Accept 1, 0, true, false",
-     *                                   example="false"
-     *                               )
-     *                           )
-     *                       ),
-     *                       @OA\Property(
-     *                           property="emails",
-     *                           type="array",
-     *                           description="Contacts emails",
-     *
-     *                           @OA\Items(
-     *                               type="object",
-     *
-     *                               @OA\Property(
-     *                                   property="email",
-     *                                   type="string",
-     *                                   description="Email of contact",
-     *                                   example="test1@innovate.com"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="type",
-     *                                   type="string",
-     *                                   description="Email type (home, work, etc)",
-     *                                   enum={"home", "work", "other", "main"}
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="is_default",
-     *                                   type="boolean",
-     *                                   description="Email by default. Accept 1, 0, true, false",
-     *                                   example="true"
-     *                               )
-     *                           )
-     *                       ),
-     *                       @OA\Property(
-     *                           property="works",
-     *                           type="array",
-     *                           description="Contacts phones / Msisdns data in JSON",
-     *                       @OA\Items(
-     *                               type="object",
-     *
-     *                               @OA\Property(
-     *                                   property="company",
-     *                                   type="string",
-     *                                   description="Company",
-     *                                   example="crypto 1"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="department",
-     *                                   type="string",
-     *                                   description="Department",
-     *                                   example="Demo contact 1"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="post",
-     *                                   type="string",
-     *                                   description="Post",
-     *                                   example="Software officer"
-     *                               )
-     *                           )
-     *                       ),
-     *                       @OA\Property(
-     *                           property="addresses",
-     *                           type="array",
-     *                           description="Contacts phones / Msisdns data in JSON",
-     *                           @OA\Items(
-     *                               type="object",
-     *
-     *                               @OA\Property(
-     *                                   property="country",
-     *                                   type="string",
-     *                                   description="country",
-     *                                   example="London 1"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="address_string1",
-     *                                   type="string",
-     *                                   description="Department",
-     *                                   example="2 Kinston Road, Ginsburge"
-     *                               ),
-     *                                @OA\Property(
-     *                                   property="address_string2",
-     *                                   type="string",
-     *                                   description="Post",
-     *                                   example="US"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="city",
-     *                                   type="string",
-     *                                   description="Post",
-     *                                   example="Paris1"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="provinces",
-     *                                   type="string",
-     *                                   description="Post",
-     *                                   example="West1"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="postcode",
-     *                                   type="string",
-     *                                   description="Post",
-     *                                   example="dte4s541"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="po_box",
-     *                                   type="string",
-     *                                   description="Post",
-     *                                   example=""
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="type",
-     *                                   type="string",
-     *                                   description="Post",
-     *                                   example=""
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="is_default",
-     *                                   type="boolean",
-     *                                   description="Post",
-     *                                   example="true"
-     *                               )
-     *                           )
-     *                       ),
-     *                       @OA\Property(
-     *                           property="sites",
-     *                           type="array",
-     *                           description="Sites",
-     *
-     *                           @OA\Items(
-     *                               type="object",
-     *
-     *                               @OA\Property(
-     *                                   property="url",
-     *                                   type="string",
-     *                                   description="Site url",
-     *                                   example="test@tes.com"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="type",
-     *                                   type="string",
-     *                                   description="Email type (home, work, etc)",
-     *                                   enum={"home", "work", "other", "main"}
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="is_default",
-     *                                   type="boolean",
-     *                                   description="Email by default. Accept 1, 0, true, false",
-     *                                   example="true"
-     *                               )
-     *                           )
-     *                       ),
-     *                       @OA\Property(
-     *                           property="chats",
-     *                           type="array",
-     *                           description="Sites",
-     *
-     *                           @OA\Items(
-     *                               type="object",
-     *
-     *                               @OA\Property(
-     *                                   property="chat",
-     *                                   type="string",
-     *                                   description="Site url",
-     *                                   example="test@tes.com"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="type",
-     *                                   type="string",
-     *                                   description="Email type (home, work, etc)",
-     *                                   enum={"home", "work", "other", "main"}
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="is_default",
-     *                                   type="boolean",
-     *                                   description="Email by default. Accept 1, 0, true, false",
-     *                                   example="true"
-     *                               )
-     *                           )
-     *                       ),
-     *                       @OA\Property(
-     *                           property="relations",
-     *                           type="array",
-     *                           description="Relations",
-     *
-     *                           @OA\Items(
-     *                               type="object",
-     *
-     *                               @OA\Property(
-     *                                       property="relation",
-     *                                   type="string",
-     *                                   description="Site url",
-     *                                   example="test@tes.com"
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="type",
-     *                                   type="string",
-     *                                   description="Email type (home, work, etc)",
-     *                                   enum={"home", "work", "other", "main"}
-     *                               ),
-     *                               @OA\Property(
-     *                                   property="is_default",
-     *                                   type="boolean",
-     *                                   description="Email by default. Accept 1, 0, true, false",
-     *                                   example="true"
-     *                               )
-     *                               )
-     *                       ),
-     *                       @OA\Property(
-     *                           property="is_favorite",
-     *                           type="boolean",
-     *                           description="Need shared contacts data (1, 0, true, false)",
-     *                           example="false"
-     *                       )
+     *                     },
+     *                     "chats": {
+     *                         {
+     *                             "chat": "test@tes.com",
+     *                             "type": "home",
+     *                             "is_default": true
+     *                         }
+     *                     },
+     *                     "relations": {
+     *                         {
+     *                             "value": "Eduard Torwarlds",
+     *                             "type": "manager"
+     *                         }
+     *                     },
+     *                     "is_favorite": false
+     *                 }},
+     * 	               @OA\Items(
+     *                     ref="#/components/schemas/Contact"
      *                 )
      *             )
      *         )
@@ -1643,7 +1348,7 @@ class ContactController extends Controller
 
         try {
             foreach ($request->get('contacts') as $lead) {
-                $this->storeContacts($lead);
+                ContactHelper::save($lead);
             }
 
             return response()->jsonApi([
@@ -1651,7 +1356,6 @@ class ContactController extends Controller
                 'title' => "Batch import of contacts",
                 'message' => "Contacts was imported successfully"
             ], 200);
-            
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -1661,164 +1365,11 @@ class ContactController extends Controller
         }
     }
 
-
-    /**
-     * Store JSON Data
-     *
-     * @param string $key
-     * @param array $inputData
-     *
-     * @return mixed
-    */
-    private function getArrayKey(string $key, array $inputData):null|string
-    {
-        if($key==="birthday"){
-            return array_key_exists($key,$inputData)?Carbon::parse($inputData[$key]):null;
-        }else{
-            return array_key_exists($key,$inputData)?$inputData[$key]:null;
-        }
-
-
-    }
-
-    /**
-     * Store JSON Data
-     *
-     * @param array $inputData
-     * @return Illuminate\Http\JsonResponse
-    */
-    private function storeContacts(array $inputData): JsonResponse
-    {
-        // Validate input
-        Validator::make($inputData, Contact::rules());
-
-        try {
-            // First, Create contact
-            $contact = new Contact();
-            $contact->prefix_name = $this->getArrayKey("prefix_name", $inputData);
-            $contact->first_name = $this->getArrayKey("first_name", $inputData);
-            $contact->middle_name = $this->getArrayKey("middle_name", $inputData);
-            $contact->last_name = $this->getArrayKey("last_name", $inputData);
-            $contact->suffix_name = $this->getArrayKey("suffix_name", $inputData);
-            $contact->write_as_name = $this->getArrayKey("display_name", $inputData);
-            $contact->nickname = $this->getArrayKey("nickname", $inputData);
-            $contact->birthday = $this->getArrayKey("birthday", $inputData);
-            $contact->note = $this->getArrayKey("note", $inputData);
-            $contact->user_id = Auth::user()->getAuthIdentifier();
-            $contact->save();
-
-            // Save contact's phones
-            if (array_key_exists("phones",$inputData) && count($inputData["phones"]) > 0) {
-                for ($i = 0; $i<count($inputData["phones"]); ++$i) {
-                    $row = new Phone();
-                    if(is_array($inputData["phones"][$i])){
-                        $row->fill($inputData["phones"][$i]);
-                    }elseif(is_string($inputData["phones"][$i])){
-                        $row->phone = $inputData["phones"][$i];
-                    }
-                    $row->contact()->associate($contact);
-                    $row->save();
-                }
-            }
-
-            // Save contact's emails
-            if (array_key_exists("emails",$inputData) && count($inputData["emails"]) > 0) {
-                for ($i = 0; $i<count($inputData["emails"]); ++$i) {
-                    $row = new Email();
-                    if(is_array($inputData["emails"][$i])){
-                        $row->fill($inputData["emails"][$i]);
-                    }elseif(is_string($inputData["emails"][$i])){
-                        $row->email = $inputData["emails"][$i];
-                    }
-                    $row->contact()->associate($contact);
-                    $row->save();
-                }
-            }
-
-
-            // Save contact's works if exist
-            if (array_key_exists("works",$inputData) && count($inputData["works"]) > 0) {
-                for ($i = 0; $i<count($inputData["works"]); ++$i) {
-                    $row = new Work();
-                    if(is_array($inputData["works"][$i])){
-                        $row->fill($inputData["works"][$i]);
-                    }
-                    $row->contact()->associate($contact);
-                    $row->save();
-                }
-            }
-
-            // Save contact's addresses if exist
-            if (array_key_exists("addresses",$inputData) && count($inputData["addresses"]) > 0) {
-                for ($i = 0; $i<count($inputData["addresses"]); ++$i) {
-                    $row = new Address();
-                    if(is_array($inputData["addresses"][$i])){
-                        $row->fill($inputData["addresses"][$i]);
-                    }
-                    $row->contact()->associate($contact);
-                    $row->save();
-                }
-            }
-
-            // Save contact's sites if exist
-            if (array_key_exists("sites",$inputData) && count($inputData["sites"]) > 0) {
-
-                for ($i = 0; $i<count($inputData["sites"]); ++$i) {
-                    $row = new Site();
-                    if(is_array($inputData["sites"][$i])){
-                        $row->fill($inputData["sites"][$i]);
-                    }
-                    $row->contact()->associate($contact);
-                    $row->save();
-                }
-            }
-
-            // Save contact's chats if exist
-            if (array_key_exists("chats",$inputData) && count($inputData["chats"]) > 0) {
-                for ($i = 0; $i<count($inputData["chats"]); ++$i) {
-                    $row = new Chat();
-                    if(is_array($inputData["chats"][$i])){
-                        $row->fill($inputData["chats"][$i]);
-                    }
-                    $row->contact()->associate($contact);
-                    $row->save();
-                }
-            }
-
-            // Save contact's relations if exist
-            if (array_key_exists("relations",$inputData) && count($inputData["relations"]) > 0) {
-
-                for ($i = 0; $i<count($inputData["relations"]); ++$i) {
-                    $row = new Relation();
-                    if(is_array($inputData["relations"][$i])){
-                        $row->fill($inputData["relations"][$i]);
-                    }
-                    $row->contact()->associate($contact);
-                    $row->save();
-                }
-            }
-
-            // Return response
-            return response()->jsonApi([
-                'type' => 'success',
-                'title' => "Adding new contact",
-                'message' => "User's contacts successfully saved",
-                'data' => $contact->toArray()
-            ], 200);
-        } catch (Exception $e) {
-            return response()->jsonApi([
-                'type' => 'danger',
-                'title' => "Adding new contact",
-                'message' => $e->getMessage(),
-                'data' => null
-            ], 400);
-        }
-    }
-
     /**
      * Get applicant object
      *
      * @param $id
+     *
      * @return mixed
      */
     private function getObject($id): mixed
@@ -1862,7 +1413,6 @@ class ContactController extends Controller
                     $images = $response['attributes']['path'];
                 }
             }
-
         } catch (Exception $e) {
         }
 

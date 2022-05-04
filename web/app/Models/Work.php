@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Models;
 
 use Sumra\SDK\Traits\UuidTrait;
@@ -14,14 +13,24 @@ class Work extends Model
     use UuidTrait;
 
     /**
+     * Off updated_at column
+     */
+    const UPDATED_AT = null;
+
+    /**
      * @var string[]
      */
     protected $fillable = [
-        'user_id',
         'company',
         'department',
-        'post',
-        'contact_id',
+        'post'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $hidden = [
+        'created_at'
     ];
 
     /**

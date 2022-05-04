@@ -2,23 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Address;
-use App\Models\Chat;
-use App\Models\Contact;
-use App\Models\Email;
-use App\Models\Phone;
-use App\Models\Group;
-use App\Models\Relation;
-use App\Models\Site;
-use App\Models\Work;
 use App\Services\Imports\Vcard;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use PubSub;
 
 class Import
 {
@@ -85,172 +71,25 @@ class Import
     public function insertContactToDB($data_arr): array
     {
         try {
-            // Read user Id
-            $user_id = (string)Auth::user()->getAuthIdentifier();
-
-            // Read selected custom group
-            $selectedGroup = request()->get('group_id', null);
-
             $info_send_rabbitmq_body = [];
 
             $totalAdded = 0;
-            foreach ($data_arr as $param) {
-                // First, Create contact
-                $contact = new Contact();
-                $contact->fill($param);
+            foreach ($data_arr as $inputData) {
+               // dd($inputData);
 
-                if (isset($param['birthday']) && !empty($param['birthday'])) {
-                    $contact->birthday = Carbon::parse($param['birthday']);
+                $result = ContactHelper::save($inputData);
+
+                if ($result['contact']) {
+                    $totalAdded++;
                 }
 
-                $contact->user_id = $user_id;
-                $contact->save();
-
-                // Save contact's phones
-                if (isset($param['phones'])) {
-                    $count = sizeof($param['phones']);
-
-                    foreach ($param['phones'] as $key => $item) {
-                        $row = new Phone();
-                        $row->phone = str_replace(['(', ')', ' ', '-'], '', $param['phones'][$key]['value']);
-                        $row->type = !isset($param['phones'][$key]['type']) ?? 'other';
-                        $row->is_default = $count == 1 || $key == 0;
-                        $row->contact()->associate($contact);
-                        $row->save();
-                    }
+                if($result['avatar']){
+                    $info_send_rabbitmq_body[] = $result['avatar'];
                 }
-
-                // Save contact's emails
-                if (isset($param['emails'])) {
-                    $count = sizeof($param['phones']);
-
-                    foreach ($param['emails'] as $key => $item) {
-                        $row = new Email();
-                        $row->email = $param['emails'][$key]['value'];
-                        $row->type = !isset($param['emails'][$key]['type']) ?? 'other';
-                        $row->is_default = $count == 1 || $key == 0;
-                        $row->contact()->associate($contact);
-                        $row->save();
-                    }
-                }
-
-                // Save contact's sites if exist
-                if (isset($param['sites'])) {
-                    foreach ($param['sites'] as $key => $item) {
-                        $row = new Site();
-                        $row->url = $param['sites'][$key]['value'];
-                        $row->type = !isset($param['sites'][$key]['type']) ?? 'other';
-                        $row->contact()->associate($contact);
-                        $row->save();
-                    }
-                }
-
-                // Save contact's relations if exist
-                if (isset($param['relations'])) {
-                    foreach ($param['relations'] as $key => $item) {
-                        $row = new Relation();
-                        $row->relation = $param['relations'][$key]['value'];
-                        $row->type = !isset($param['relations'][$key]['type']) ?? 'other';
-                        $row->contact()->associate($contact);
-                        $row->save();
-                    }
-                }
-
-                // Save contact's chats if exist
-                if (isset($param['chats'])) {
-                    foreach ($param['chats'] as $key => $item) {
-                        $row = new Chat();
-                        if (is_array($item)) {
-                            $row->chat = $param['chats'][$key]['value'];
-                            $row->type = $param['chats'][$key]['type'];
-                        } else {
-                            $row->chat = $item;
-                            $row->type = $key;
-                        }
-                        $row->contact()->associate($contact);
-                        $row->save();
-                    }
-                }
-
-                // Save contact's addresses if exist
-                if (isset($param['addresses'])) {
-                    foreach ($param['addresses'] as $key => $item) {
-                        $row = new Address();
-                        $row->fill($item);
-                        $row->is_default = $key == 0;
-                        $row->contact()->associate($contact);
-                        $row->save();
-                    }
-                }
-
-                // Save contact's works if exist
-                if (isset($param['company_info'])) {
-                    $row = new Work();
-
-                    foreach ($param['company_info'] as $key => $value) {
-                        $row->{$key} = $value;
-                    }
-
-                    $row->contact()->associate($contact);
-                    $row->save();
-                }
-
-                // Add contact to group
-                // If user select custom group
-                if ($selectedGroup){
-                    $group = Group::find($selectedGroup);
-                    if($group){
-                        $contact->groups()->attach($group);
-                    }
-                }
-
-                // If user not select custom group and has groups in file
-                if (isset($param['groups']) && !$selectedGroup) {
-                    foreach ($param['groups'] as $name) {
-                        if(Str::endsWith($name, 'starred')){
-                            $contact->is_favorite = true;
-                            $contact->save();
-
-                            continue;
-                        }
-
-                        $group = Group::byOwner()->where('name', $name)->first();
-                        if(!$group){
-                            $group = Group::create([
-                                'name' => $name,
-                                'user_id' => (string)Auth::user()->getAuthIdentifier()
-                            ]);
-                        }
-
-                        $contact->groups()->attach($group);
-                    }
-                }
-
-                // Save
-                if (isset($param['photo'])) {
-                    $file_check_data = Import::checkFileFormat($param['photo']);
-
-                    if ($file_check_data) {
-                        $info_send_rabbitmq_body[] = [
-                            'entity_id' => $contact->id,
-                            'url' => preg_replace('/[^[:print:]]+/', '', $param['photo'])
-                        ];
-                    }
-                }
-
-                $totalAdded++;
             }
 
-            // Send to batch process contact;s avatars
-            if (!empty($info_send_rabbitmq_body)) {
-                $info_send_rabbitmq = [
-                    'entity' => 'contact',
-                    'user_id' => $user_id,
-                    'avatars' => $info_send_rabbitmq_body
-                ];
-
-                PubSub::publish('SaveAvatars', $info_send_rabbitmq, config('settings.exchange_queue.files'));
-            }
+            // Send to batch process contact's avatars
+            ContactHelper::saveAvatars($info_send_rabbitmq_body);
 
             // Return result
             return [
@@ -259,23 +98,6 @@ class Import
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
-    }
-
-    /**
-     * @param $file
-     *
-     * @return bool
-     */
-    public static function checkFileFormat($file): bool
-    {
-        $avatar = strtolower(substr($file, -3));
-        $result_file = false;
-
-        if ($avatar == 'jpg' || $avatar == 'gif' || $avatar == 'png' || $avatar == 'bmp' || $avatar == 'jpeg' || $avatar == 'tiff' || $avatar == 'webp') {
-            $result_file = true;
-        }
-
-        return $result_file;
     }
 
     /**

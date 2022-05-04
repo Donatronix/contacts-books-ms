@@ -24,10 +24,13 @@ class SiteFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => $this->faker->uuid(),
-            'url' => $this->faker->url,
-            'type' => $this->faker->randomElement(['profile', 'blog', 'homepage', 'work']),
-            'is_default' => $this->faker->boolean(),
+            'value' => $this->faker->url,
+            'type' => $this->faker->randomElement([
+                'profile',
+                'blog',
+                'homepage',
+                'work'
+            ]),
             'contact_id' => function () {
                 return Contact::all()->random()->id;
             },

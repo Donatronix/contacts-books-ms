@@ -15,16 +15,12 @@ class CreateRelationsTable extends Migration
     {
         Schema::create('relations', function (Blueprint $table) {
             $table->uuid('id')->primary();
-
-            $table->string('relation')->nullable()->comment('a description of the relationship by the user');
-            $table->string('type', 30)->nullable()->comment('types of relationships from the google contacts service');
-            $table->boolean('is_default')->default(false);
+            $table->string('value');
+            $table->string('type', 25)->default('other');
 
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-
-            $table->timestamps();
         });
     }
 

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Database\Factories;
 
 use App\Models\Contact;
@@ -24,10 +23,23 @@ class RelationFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => $this->faker->uuid(),
-            'relation' => $this->faker->word(),
-            'type' => $this->faker->randomElement(['spouse', 'child', 'mother', 'father', 'parent', 'brother', 'sister', 'friend', 'relative', 'manager', 'assistant', 'referred_by', 'partner', 'domestic_partner']),
-            'is_default' => $this->faker->boolean(),
+            'value' => $this->faker->word(),
+            'type' => $this->faker->randomElement([
+                'spouse',
+                'child',
+                'mother',
+                'father',
+                'parent',
+                'brother',
+                'sister',
+                'friend',
+                'relative',
+                'manager',
+                'assistant',
+                'referred_by',
+                'partner',
+                'domestic_partner'
+            ]),
             'contact_id' => function () {
                 return Contact::all()->random()->id;
             }

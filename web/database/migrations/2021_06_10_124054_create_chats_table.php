@@ -11,20 +11,20 @@ class CreateChatsTable extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('chats', function (Blueprint $table) {
             $table->uuid('id')->primary();
-
-            $table->text('chat')->nullable()->comment('chat link');
-            $table->string('type', 30)->nullable()->comment('the name of the chat provided by Google contacts');
+            $table->string('value');
+            $table->string('type', 30)->default('other');
             $table->boolean('is_default')->default(false);
 
-            $table->foreignUuid('contact_id')->constrained()
+            $table->foreignUuid('contact_id')
+                ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
 
-            $table->timestamps();
+            $table->dateTime('created_at');
         });
     }
 
@@ -33,7 +33,7 @@ class CreateChatsTable extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('chats');
     }

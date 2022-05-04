@@ -2,27 +2,26 @@
 
 namespace Database\Seeders;
 
-use App\Models\Address;
+use App\Models\Chat;
 use App\Models\Contact;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 
-class AddressSeeder extends Seeder
+class ChatsTableSeeder extends Seeder
 {
     /**
-     * Run the database seeders.
+     * Run the database seeds.
      *
      * @return void
      */
     public function run()
     {
         $faker = Faker::create('en_GB');
-
         $contacts = Contact::all();
 
         foreach ($contacts as $contact) {
-            for ($i = 0; $i <= $faker->numberBetween(1, 5); $i++) {
-                $data = Address::factory()->create([
+            for ($i = 0; $i <= $faker->numberBetween(1, 3); $i++) {
+                $data = Chat::factory()->create([
                     'is_default' => $i === 0
                 ]);
                 $data->contact()->associate($contact);

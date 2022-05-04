@@ -24,11 +24,9 @@ class WorkFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => $this->faker->uuid(),
             'company' => $this->faker->word(),
             'department' => $this->faker->word(),
             'post' => $this->faker->word(),
-            'is_default' => $this->faker->boolean(),
             'contact_id' => function () {
                 return Contact::all()->random()->id;
             },

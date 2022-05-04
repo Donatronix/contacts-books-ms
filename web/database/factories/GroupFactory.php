@@ -22,7 +22,6 @@ class GroupFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => $this->faker->uuid(),
             'name' => $this->faker->words(3),
             'user_id' => $this->faker->randomElement(config('settings.default_users_ids'))
         ];

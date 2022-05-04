@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Models;
 
 use Sumra\SDK\Traits\UuidTrait;
@@ -14,12 +13,17 @@ class Site extends Model
     use UuidTrait;
 
     /**
+     * Off created_at & updated_at column
+     */
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
+
+    /**
      * @var string[]
      */
     protected $fillable = [
-        'site',
-        'type',
-        'contact_id',
+        'value',
+        'type'
     ];
 
     /**

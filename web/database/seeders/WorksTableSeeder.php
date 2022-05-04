@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\Contact;
-use App\Models\Relation;
+use App\Models\Work;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 
-class RelationSeeder extends Seeder
+class WorksTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -17,12 +17,12 @@ class RelationSeeder extends Seeder
     public function run()
     {
         $faker = Faker::create('en_GB');
+
         $contacts = Contact::all();
+
         foreach ($contacts as $contact) {
-            for ($i = 0; $i <= $faker->numberBetween(1, 5); $i++) {
-                $data = Relation::factory()->create([
-                    'is_default' => $i === 0
-                ]);
+            for ($i = 0; $i <= $faker->numberBetween(1, 2); $i++) {
+                $data = Work::factory()->create();
                 $data->contact()->associate($contact);
                 $data->save();
             }

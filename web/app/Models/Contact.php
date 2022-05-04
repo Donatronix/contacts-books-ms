@@ -284,28 +284,20 @@ use Illuminate\Support\Str;
  *     @OA\Property(
  *         property="relations",
  *         type="array",
- *         description="Relations",
- *
+ *         description="Working relations with anybody",
  *         @OA\Items(
  *             type="object",
- *
  *             @OA\Property(
- *                 property="relation",
+ *                 property="value",
  *                 type="string",
- *                 description="Site url",
- *                 example="test@tes.com"
+ *                 description="Value of relations",
+ *                 example="Jhonny Michael"
  *             ),
  *             @OA\Property(
  *                 property="type",
  *                 type="string",
- *                 description="Email type (home, work, etc)",
- *                 enum={"home", "work", "other", "main"}
- *             ),
- *             @OA\Property(
- *                 property="is_default",
- *                 type="boolean",
- *                 description="Email by default. Accept 1, 0, true, false",
- *                 example="true"
+ *                 description="Type of relations",
+ *                 enum={"other", "spouse", "child", "mother", "father", "parent", "brother", "sister", "friend", "relative", "manager", "assistant", "referred_by", "partner", "domestic_partner"}
  *             )
  *         )
  *     ),

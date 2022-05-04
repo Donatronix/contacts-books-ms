@@ -47,7 +47,7 @@ class PhoneController extends Controller
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="phone",
+     *                 property="value",
      *                 type="string",
      *                 description="Phone number of contact",
      *                 example="(555)-777-1234"
@@ -140,7 +140,7 @@ class PhoneController extends Controller
             return response()->jsonApi([
                 'type' => 'success',
                 'title' => 'Adding new phone number',
-                'message' => "Contact's phone number {$phone->phone} successfully added",
+                'message' => "Contact's phone number {$phone->value} successfully added",
                 'data' => $phone->toArray()
             ], 200);
         } catch (Exception $e) {
@@ -193,7 +193,7 @@ class PhoneController extends Controller
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="phone",
+     *                 property="value",
      *                 type="string",
      *                 description="Phone number of contact",
      *                 example="(555)-777-1234"
@@ -277,7 +277,7 @@ class PhoneController extends Controller
             return response()->jsonApi([
                 'type' => 'success',
                 'title' => 'Changing phone number',
-                'message' => "Phone number {$phone->phone} successfully updated",
+                'message' => "Phone number {$phone->value} successfully updated",
                 'data' => $phone->toArray()
             ], 200);
         } catch (Exception $e) {

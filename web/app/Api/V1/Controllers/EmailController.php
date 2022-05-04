@@ -47,7 +47,7 @@ class EmailController extends Controller
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="email",
+     *                 property="value",
      *                 type="string",
      *                 description="Email of contact",
      *                 example="test@tes.com"
@@ -140,7 +140,7 @@ class EmailController extends Controller
             return response()->jsonApi([
                 'type' => 'success',
                 'title' => 'Adding new email',
-                'message' => "Contact's email {$email->email} successfully added",
+                'message' => "Contact's email {$email->value} successfully added",
                 'data' => $email->toArray()
             ], 200);
         } catch (Exception $e) {
@@ -193,7 +193,7 @@ class EmailController extends Controller
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="email",
+     *                 property="value",
      *                 type="string",
      *                 description="Email of contact",
      *                 example="test@tes.com"
@@ -277,7 +277,7 @@ class EmailController extends Controller
             return response()->jsonApi([
                 'type' => 'success',
                 'title' => 'Changing contact email',
-                'message' => "Contact email {$email->email} successfully updated",
+                'message' => "Contact email {$email->value} successfully updated",
                 'data' => $email->toArray()
             ], 200);
         } catch (Exception $e) {

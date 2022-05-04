@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Models;
 
 use Sumra\SDK\Traits\UuidTrait;
@@ -14,12 +13,31 @@ class Chat extends Model
     use UuidTrait;
 
     /**
+     * Off updated_at column
+     */
+    const UPDATED_AT = null;
+
+    /**
+     * @var string[]
+     */
+    protected $casts = [
+        'is_default' => 'boolean'
+    ];
+
+    /**
      * @var string[]
      */
     protected $fillable = [
-        'chat',
+        'value',
         'type',
-        'contact_id',
+        'is_default'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $hidden = [
+        'created_at'
     ];
 
     /**

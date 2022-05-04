@@ -15,11 +15,12 @@ class CreatePhonesTable extends Migration
     {
         Schema::create('phones', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('phone');
-            $table->string('type', 30)->nullable()->comment('a field type for a phone that denotes a group, such as home');
+            $table->string('value', 18);
+            $table->string('type', 15)->default('other');
             $table->boolean('is_default')->default(false);
 
-            $table->foreignUuid('contact_id')->constrained()
+            $table->foreignUuid('contact_id')
+                ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
 

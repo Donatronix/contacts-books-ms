@@ -21,7 +21,7 @@ class EmailsTableSeeder extends Seeder
         $contacts = Contact::all();
 
         foreach ($contacts as $contact) {
-            for ($x = 0; $x <= $faker->numberBetween(1, 5); $x++) {
+            for ($x = 0; $x <= $faker->numberBetween(1, 3); $x++) {
                 $row = Email::factory()->create([
                     'is_default' => $x === 0
                 ]);

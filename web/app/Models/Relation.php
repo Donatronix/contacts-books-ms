@@ -13,12 +13,17 @@ class Relation extends Model
     use UuidTrait;
 
     /**
+     * Off created_at & updated_at column
+     */
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
+
+    /**
      * @var string[]
      */
     protected $fillable = [
-        'relation',
-        'type',
-        'contact_id',
+        'value',
+        'type'
     ];
 
     /**

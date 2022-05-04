@@ -29,7 +29,7 @@ class Phone extends Model
      * @var string[]
      */
     protected $fillable = [
-        'phone',
+        'value',
         'type',
         'is_default'
     ];
@@ -39,7 +39,6 @@ class Phone extends Model
      */
     protected $hidden = [
         'created_at',
-        'updated_at',
         'pivot'
     ];
 
@@ -49,16 +48,16 @@ class Phone extends Model
     public static function validationRules(): array
     {
         return [
-            'phone' => [
+            'value' => [
                 'required',
-                'max:17',
+                'max:18',
                 'regex:/^(\+)?[0-9\(\)\.\-\+]{5,17}/',
                 Rule::unique('phones')->where(function ($q) {
                     return $q->where('contact_id', request()->get('contact_id'));
                 })
             ],
-            'type' => 'string|max:30',
             'is_default' => 'boolean',
+            'type' => 'string|max:15'
         ];
     }
 

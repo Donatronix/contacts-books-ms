@@ -14,17 +14,29 @@ class Address extends Model
     use UuidTrait;
 
     /**
+     * Off updated_at column
+     */
+    const UPDATED_AT = null;
+
+    /**
      * @var string[]
      */
     protected $fillable = [
-        'country',
-        'provinces',
-        'city',
-        'address',
-        'type',
         'postcode',
         'po_box',
-        'contact_id'
+        'address_string1',
+        'address_string2',
+        'city',
+        'provinces',
+        'country',
+        'type'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $hidden = [
+        'created_at'
     ];
 
     /**

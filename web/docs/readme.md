@@ -137,7 +137,6 @@ address | Residence address. **Consists of two parameters**: *address string1* -
 type | The type of address to be grouped, such as home. if not specified, another is specified by default | varchar(30) | another | N
 postcode | The zip code of the contact | varchar(10) | 02000 | N
 po_box | User PO Box | varchar(10) | 123456 | N
-is_default | Default contact | tinyint(1) | 1 | N
 contact_id | The uuid of the user who uploaded the contact | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 
 === Request body ===
@@ -276,8 +275,7 @@ user_id | Contact UUID | char(36) | 93ca3bee-7612-42fe-9fee-58620860f026 | N
 Parameter  | Description | Type | Example | Required
 ---------  | ----------- | ---- | ------- | --------
 id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
-is_default | Default relation | tinyint(1) | 1 | N
-relation | A description of the relationship by the user | varchar(255) | gog | N
+value | A description of the relationship by the user | varchar(255) | gog | N
 type | Types of relationships from the google contacts service | varchar(30) | father | N
 contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 
@@ -303,7 +301,6 @@ Parameter  | Description | Type | Example | Required
 id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
 url | Site name | varchar(255) | gen-ka.gs | N
 type | Site type for grouping | varchar(30) | homepage | N
-is_default | Default site | tinyint(1) | 1 | N
 contact_id | Contact UUID | char(36) | 93ca1f66-28dc-4319-9ab3-8dc564bfc663 | Y
 
 === Request body ===
@@ -328,7 +325,6 @@ Parameter  | Description | Type | Example | Required
 id         | User UUID  | char(36) | 93ca1f66-4753-4438-906b-f412c815f4f1 | Y
 'company' | Company contact | varchar(100) | kettle | N
 'department' | Department of the company where the contact works | varchar(100) | best | N
-'is_default' | Default site | tinyint(1) | 1 | N
 'post' | User position at work | varchar(50) | nothing too | N
 'contact_id' | Contact UUID | char(36) | 993ca3bee-71b3-492c-a440-7aca1e8321a8 | Y
 

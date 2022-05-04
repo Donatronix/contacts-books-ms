@@ -15,18 +15,15 @@ class CreateWorksTable extends Migration
     {
         Schema::create('works', function (Blueprint $table) {
             $table->uuid('id')->primary();
-
-            $table->string('company', 100)->default('');
-            $table->string('department', 100)->default('');
-            $table->string('post', 50)->default('')->comment('user position at work');
-
-            $table->boolean('is_default')->default(false);
+            $table->string('company', 100)->nullable();
+            $table->string('department', 100)->nullable();
+            $table->string('post', 50)->nullable();
 
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
 
-            $table->timestamps();
+            $table->dateTime('created_at');
         });
     }
 

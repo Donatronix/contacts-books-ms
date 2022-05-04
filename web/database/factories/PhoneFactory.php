@@ -23,9 +23,18 @@ class PhoneFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => $this->faker->uuid(),
-            'phone' => $this->faker->phoneNumber(),
-            'type' => $this->faker->randomElement(['home', 'work', 'cell', 'other', 'main', 'homefax', 'workfax', 'googlevoice', 'pager']),
+            'value' => $this->faker->phoneNumber(),
+            'type' => $this->faker->randomElement([
+                'other',
+                'cell',
+                'main',
+                'home',
+                'work',
+                'homefax',
+                'workfax',
+                'pager',
+                'googlevoice'
+            ]),
             'is_default' => $this->faker->boolean(),
             'contact_id' => function () {
                 return Contact::all()->random()->id;

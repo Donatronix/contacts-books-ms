@@ -23,9 +23,12 @@ class EmailFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => $this->faker->uuid(),
-            'email' => $this->faker->email(),
-            'type' => $this->faker->randomElement(['home', 'work', 'other']),
+            'value' => $this->faker->email(),
+            'type' => $this->faker->randomElement([
+                'home',
+                'work',
+                'other'
+            ]),
             'is_default' => $this->faker->boolean(),
             'contact_id' => function () {
                 return Contact::all()->random()->id;

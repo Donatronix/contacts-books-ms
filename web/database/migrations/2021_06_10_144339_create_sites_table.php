@@ -15,16 +15,12 @@ class CreateSitesTable extends Migration
     {
         Schema::create('sites', function (Blueprint $table) {
             $table->uuid('id')->primary();
-
-            $table->string('url')->nullable();
-            $table->string('type', 30)->nullable()->comment('site type for grouping');
-            $table->boolean('is_default')->default(false);
+            $table->string('value');
+            $table->string('type', 25)->default('other');
 
             $table->foreignUuid('contact_id')->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
-
-            $table->timestamps();
         });
     }
 

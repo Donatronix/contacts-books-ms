@@ -19,13 +19,13 @@ class DatabaseSeeder extends Seeder
             GroupsTableSeeder::class,
             ContactsTableSeeder::class,
             ContactsToGroupsTableSeeder::class,
-            EmailsTableSeeder::class,
             PhonesTableSeeder::class,
-            WorkSeeder::class,
-            AddressSeeder::class,
-            SiteSeeder::class,
-            ChatSeeder::class,
-            RelationSeeder::class,
+            EmailsTableSeeder::class,
+            ChatsTableSeeder::class,
+            AddressesTableSeeder::class,
+            WorksTableSeeder::class,
+            SitesTableSeeder::class,
+            RelationsTableSeeder::class,
         ]);
     }
 }

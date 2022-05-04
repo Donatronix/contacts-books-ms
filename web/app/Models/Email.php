@@ -30,7 +30,7 @@ class Email extends Model
      * @var string[]
      */
     protected $fillable = [
-        'email',
+        'value',
         'type',
         'is_default'
     ];
@@ -40,7 +40,6 @@ class Email extends Model
      */
     protected $hidden = [
         'created_at',
-        'updated_at',
         'pivot'
     ];
 
@@ -51,7 +50,7 @@ class Email extends Model
     public static function validationRules(): array
     {
         return [
-            'email' => [
+            'value' => [
                 'required',
                 'max:200',
                 'regex:/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}/',
@@ -59,8 +58,8 @@ class Email extends Model
                     return $q->where('contact_id', request()->get('contact_id'));
                 })
             ],
-            'type' => 'string|max:30',
             'is_default' => 'boolean',
+            'type' => 'string|max:30'
         ];
     }
 

@@ -15,11 +15,12 @@ class CreateEmailsTable extends Migration
     {
         Schema::create('emails', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('email');
-            $table->string('type', 30)->nullable()->comment('the type of email field, for example: home, work, etc.');
+            $table->string('value');
+            $table->string('type', 20)->default('other');
             $table->boolean('is_default')->default(false);
 
-            $table->foreignUuid('contact_id')->constrained()
+            $table->foreignUuid('contact_id')
+                ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
 
