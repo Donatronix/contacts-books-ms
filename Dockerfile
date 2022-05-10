@@ -44,7 +44,7 @@ RUN rm -rf /var/www/html/.env.production
 
 ## Set writable dirs
 RUN chown -R nginx:nginx /var/www/html
+RUN chmod -R 777 /var/www/html/storage/
 
-## Composer packages install & update
-RUN composer -v install
-RUN composer -v update
+## Composer packages install
+RUN composer install
