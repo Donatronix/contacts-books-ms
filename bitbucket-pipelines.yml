@@ -7,7 +7,7 @@ pipelines:
           name: Build Image
           image: atlassian/pipelines-awscli
           services:
-            - docker:latest
+            - docker
           script:
             - apk --update --no-cache add openssh-client
             - ./deploy.sh build
