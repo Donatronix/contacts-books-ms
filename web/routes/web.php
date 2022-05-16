@@ -18,6 +18,15 @@ $router->group([
     include base_path('app/Api/V1/routes.php');
 });
 
-if (file_exists(__DIR__ . '/tests.php')) {
-    require_once(__DIR__ . '/tests.php');
-}
+/*-------------------------
+   T E S T S  Routes
+-------------------------- */
+$router->group([
+    'prefix' => env('APP_API_PREFIX', '') . '/tests'
+], function ($router) {
+    $router->get('db-test', function () {
+        if (DB::connection()->getDatabaseName()) {
+            echo "Connected successfully to database: " . DB::connection()->getDatabaseName();
+        }
+    });
+});

@@ -1,5 +1,12 @@
-.idea
-.gitignore
-.editorconfig
-.env.example
-.styleci.yml
+**/__bkp
+**/.idea
+**/.env
+**/.editorconfig
+**/.gitignore
+**/.gitkeep
+**/.env.example
+**/.styleci.yml
+**/vendor
+**/composer.lock
+**/*.log
+web/storage/**/*.php
