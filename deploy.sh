@@ -6,10 +6,12 @@ GREEN='\e[32m'
 CYAN='\e[36m'
 NC='\e[0m' # No Color
 
+DOCKER_ECR_REPO_URL="005279544259.dkr.ecr.us-west-2.amazonaws.com"
+
 REVISION=$(git rev-parse --short HEAD)
 BRANCH=$(git status | head -n 1 | awk '{print $3}')
 DEPLOY_NAME=$(basename $(git remote show -n origin | grep URL | head -1 | cut -d: -f2-) | awk -F '.' '{print $1}')
-DOCKER_ECR_REPO_URL="005279544259.dkr.ecr.us-west-2.amazonaws.com"
+DOCKER_IMAGE=$DOCKER_ECR_REPO_URL/$DEPLOY_NAME
 
 case "$1" in
 build)
@@ -23,7 +25,7 @@ build)
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
 
-  docker build -f Dockerfile -t $DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION .
+  docker build -f Dockerfile -t $DOCKER_IMAGE:$BRANCH-$REVISION -t $DOCKER_IMAGE:latest .
   ;;
 push)
   echo ""
@@ -32,7 +34,7 @@ push)
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
 
-  docker push $DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION
+  docker image push --all-tags $DOCKER_IMAGE
   ;;
 start)
   echo ""
@@ -43,7 +45,7 @@ start)
 
   cat compose-tmpl.yaml | grep -v "#" >docker-compose.yaml
   sed -i"" "s~{{DEPLOY_NAME}}~$DEPLOY_NAME~" docker-compose.yaml
-  sed -i"" "s~{{DOCKER_IMAGE}}~$DOCKER_ECR_REPO_URL/$DEPLOY_NAME:$BRANCH-$REVISION~" docker-compose.yaml
+  sed -i"" "s~{{DOCKER_IMAGE}}~$DOCKER_IMAGE:$BRANCH-$REVISION~" docker-compose.yaml
 
   echo -e "${B}${GREEN}2. ### RUN DOCKER CONTAINER ###${NC}"
   docker-compose stop
@@ -57,9 +59,15 @@ stop)
 login)
   echo ""
   echo -e "${B}${GREEN}### LOGIN TO AWS ELASTIC CONTAINER REGISTRY ###${NC}\n"
-  aws ecr get-login-password --region us-west-2 | docker login \
+#  aws ecr get-login-password --region us-west-2 | docker login \
+#      --username AWS \
+#      --password-stdin ${DOCKER_ECR_REPO_URL}
+
+  echo $(aws ecr get-login-password --region us-west-2 | docker login \
       --username AWS \
-      --password-stdin ${DOCKER_ECR_REPO_URL}
+      --password-stdin ${DOCKER_ECR_REPO_URL}) > /dev/null
+#  sh login.sh
+#  rm login.sh
   ;;
 rm)
   echo ""
