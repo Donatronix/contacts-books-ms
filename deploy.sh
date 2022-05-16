@@ -59,13 +59,9 @@ stop)
 login)
   echo ""
   echo -e "${B}${GREEN}### LOGIN TO AWS ELASTIC CONTAINER REGISTRY ###${NC}\n"
-  aws ecr get-login-password --region us-west-2 | docker login \
+  echo $(aws ecr get-login-password --region us-west-2 | docker login \
       --username AWS \
-      --password-stdin ${DOCKER_ECR_REPO_URL}
-
-#  echo $(aws ecr get-login-password --region us-west-2 | docker login \
-#      --username AWS \
-#      --password-stdin ${DOCKER_ECR_REPO_URL}) > /dev/null
+      --password-stdin ${DOCKER_ECR_REPO_URL}) > /dev/null
 #  sh login.sh
 #  rm login.sh
   ;;
