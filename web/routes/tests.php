@@ -5,7 +5,7 @@
 -------------------------- */
 
 Route::group([
-    'prefix' => env('APP_API_PREFIX') . '/tests'
+    'prefix' => env('APP_API_PREFIX', '') . '/tests'
 ], function ($router) {
     $router->get('db-test', function () {
         if (DB::connection()->getDatabaseName()) {

@@ -88,7 +88,7 @@ use Illuminate\Support\Str;
  *             type="object",
  *
  *             @OA\Property(
- *                 property="phone",
+ *                 property="value",
  *                 type="string",
  *                 description="Phone number of contact",
  *                 example="(555)-777-1234"
@@ -116,7 +116,7 @@ use Illuminate\Support\Str;
  *             type="object",
  *
  *             @OA\Property(
- *                 property="email",
+ *                 property="value",
  *                 type="string",
  *                 description="Email of contact",
  *                 example="test@tes.com"
@@ -131,6 +131,34 @@ use Illuminate\Support\Str;
  *                 property="is_default",
  *                 type="boolean",
  *                 description="Email by default. Accept 1, 0, true, false",
+ *                 example="true"
+ *             )
+ *         )
+ *     ),
+ *     @OA\Property(
+ *         property="chats",
+ *         type="array",
+ *         description="Sites",
+ *
+ *         @OA\Items(
+ *             type="object",
+ *
+ *             @OA\Property(
+ *                 property="value",
+ *                 type="string",
+ *                 description="Messanger username",
+ *                 example="@test2test"
+ *             ),
+ *             @OA\Property(
+ *                 property="type",
+ *                 type="string",
+ *                 description="Messanger type (skype, telegram, viber, etc)",
+ *                 enum={"skype", "telegram", "viber", "other"}
+ *             ),
+ *             @OA\Property(
+ *                 property="is_default",
+ *                 type="boolean",
+ *                 description="Messanger by default. Accept 1, 0, true, false",
  *                 example="true"
  *             )
  *         )
@@ -234,50 +262,16 @@ use Illuminate\Support\Str;
  *             type="object",
  *
  *             @OA\Property(
- *                 property="url",
+ *                 property="value",
  *                 type="string",
  *                 description="Site url",
- *                 example="test@tes.com"
+ *                 example="test.com"
  *             ),
  *             @OA\Property(
  *                 property="type",
  *                 type="string",
- *                 description="Email type (home, work, etc)",
+ *                 description="Site type (home, work, etc)",
  *                 enum={"home", "work", "other", "main"}
- *             ),
- *             @OA\Property(
- *                 property="is_default",
- *                 type="boolean",
- *                 description="Email by default. Accept 1, 0, true, false",
- *                 example="true"
- *             )
- *         )
- *     ),
- *     @OA\Property(
- *         property="chats",
- *         type="array",
- *         description="Sites",
- *
- *         @OA\Items(
- *             type="object",
- *
- *             @OA\Property(
- *                 property="chat",
- *                 type="string",
- *                 description="Site url",
- *                 example="test@tes.com"
- *             ),
- *             @OA\Property(
- *                 property="type",
- *                 type="string",
- *                 description="Email type (home, work, etc)",
- *                 enum={"home", "work", "other", "main"}
- *             ),
- *             @OA\Property(
- *                 property="is_default",
- *                 type="boolean",
- *                 description="Email by default. Accept 1, 0, true, false",
- *                 example="true"
  *             )
  *         )
  *     ),

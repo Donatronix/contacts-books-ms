@@ -28,17 +28,7 @@ COPY --chown=nginx:nginx ./sumra-sdk /var/www/sumra-sdk
 ## Set work directory
 WORKDIR /var/www/html
 
-## Remove unneeded files
-RUN rm -rf /var/www/html/.idea
-RUN find /var/www/html/storage/framework/ -type f -name "*.php" -delete
-RUN rm -rf -R /var/www/html/storage/logs/*.log
-RUN rm -rf /var/www/html/.editorconfig
-RUN rm -rf /var/www/html/.gitignore
-RUN rm -rf /var/www/html/.styleci.yml
-RUN rm -rf /var/www/html/.env.example
-
 ## Update env
-RUN rm -rf /var/www/html/.env
 RUN cp -f .env.production .env
 RUN rm -rf /var/www/html/.env.production
 
