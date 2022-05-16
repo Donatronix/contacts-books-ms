@@ -112,8 +112,7 @@ class ContactHelper
 
                     if (is_string($chat)) {
                         $chat = [
-                            'value' => $chat,
-                            'type' => $key
+                            'value' => $chat
                         ];
                     }
 
@@ -130,6 +129,10 @@ class ContactHelper
             // Save contact's addresses if exist
             if (isset($inputData['addresses'])) {
                 foreach ($inputData['addresses'] as $address) {
+                    if (empty($address)) {
+                        continue;
+                    }
+
                     if (is_string($address)) {
                         $address = [
                             'value' => $address
@@ -148,6 +151,10 @@ class ContactHelper
             // Save contact's sites if exist
             if (isset($inputData['sites'])) {
                 foreach ($inputData['sites'] as $site) {
+                    if (empty($site)) {
+                        continue;
+                    }
+
                     if (is_string($site)) {
                         $site = [
                             'value' => $site
@@ -166,6 +173,10 @@ class ContactHelper
             // Save contact's works if exist
             if (isset($inputData['works'])) {
                 foreach ($inputData['works'] as $work) {
+                    if (empty($work)) {
+                        continue;
+                    }
+
                     $row = new Work();
 
                     if (is_array($work)) {
@@ -192,21 +203,21 @@ class ContactHelper
             // Save contact's relations if exist
             if (isset($inputData['relations'])) {
                 foreach ($inputData['relations'] as $relation) {
+                    if (empty($relation)) {
+                        continue;
+                    }
+
                     if (is_string($relation)) {
-                        $data = [
-                            'value' => $relation,
-                            'type' => 'other'
-                        ];
-                    } else {
-                        $data = [
-                            'value' => $relation['value'],
-                            'type' => $relation['type'] ?? 'other'
+                        $relation = [
+                            'value' => $relation
                         ];
                     }
 
+                    $relation['type'] = $relation['type'] ?? 'other';
+
                     // Save data
                     $row = new Relation();
-                    $row->fill($data);
+                    $row->fill($relation);
                     $row->contact()->associate($contact);
                     $row->save();
                 }
