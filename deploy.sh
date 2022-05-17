@@ -34,7 +34,7 @@ push)
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
 
-  docker image push --all-tags $DOCKER_IMAGE
+  docker push -a $DOCKER_IMAGE
   ;;
 start)
   echo ""
