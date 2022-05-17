@@ -34,7 +34,8 @@ push)
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
 
-  docker image push $DOCKER_IMAGE
+  docker push $DOCKER_IMAGE:$BRANCH-$REVISION
+  docker push $DOCKER_IMAGE:latest
   ;;
 start)
   echo ""
@@ -59,15 +60,11 @@ stop)
 login)
   echo ""
   echo -e "${B}${GREEN}### LOGIN TO AWS ELASTIC CONTAINER REGISTRY ###${NC}\n"
-#  echo $(aws ecr get-login-password --region us-west-2 | docker login \
-#      --username AWS \
-#      --password-stdin ${DOCKER_ECR_REPO_URL}) > login.sh
-
-      aws ecr get-login-password --region us-west-2 | docker login \
+  echo $(aws ecr get-login-password --region us-west-2 | docker login \
       --username AWS \
-      --password-stdin ${DOCKER_ECR_REPO_URL}
-  #sh login.sh
-#  rm login.sh
+      --password-stdin ${DOCKER_ECR_REPO_URL}) > login.sh
+  sh login.sh
+  rm login.sh
   ;;
 rm)
   echo ""
