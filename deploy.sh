@@ -34,7 +34,7 @@ push)
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
 
-  docker image push --all-tags $DOCKER_IMAGE
+  docker image push $DOCKER_IMAGE
   ;;
 start)
   echo ""
@@ -62,8 +62,6 @@ login)
   echo $(aws ecr get-login-password --region us-west-2 | docker login \
       --username AWS \
       --password-stdin ${DOCKER_ECR_REPO_URL}) > /dev/null
-#  sh login.sh
-#  rm login.sh
   ;;
 rm)
   echo ""
