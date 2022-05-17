@@ -207,13 +207,13 @@ class ContactController extends Controller
 
             if (!empty($sort['by']) && $sort['by'] === 'email') {
                 $contactsQuery->whereHas('emails', function ($q) use ($sort) {
-                    return $q->orderBy($sort['by'], $sort['order']);
+                    return $q->orderBy('value', $sort['order']);
                 });
             }
 
             if (!empty($sort['by']) && $sort['by'] === 'phone') {
                 $contactsQuery->whereHas('phones', function ($q) use ($sort) {
-                    return $q->orderBy($sort['by'], $sort['order']);
+                    return $q->orderBy('value', $sort['order']);
                 });
             }
 
