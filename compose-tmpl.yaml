@@ -19,7 +19,6 @@ services:
       - ./web:/var/www/html:rw
       - ./logs:/var/log/nginx:rw
 #     - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:rw
-#    command: /bin/bash -c "php artisan swagger-lume:generate && php artisan queue:listen rabbitmq --queue=ContactsBookMS --timeout=0 > /dev/null"
 
 networks:
   kus-net:
