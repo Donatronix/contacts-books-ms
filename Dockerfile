@@ -1,4 +1,4 @@
-FROM webdevops/php-nginx:8.0-alpine
+FROM webdevops/php-nginx:8.1-alpine
 LABEL Maintainer="Ihor Porokhnenko <ihor.porokhnenko@gmail.com>"
 LABEL Description="Lightweight container with Nginx & PHP-FPM 8 based on Alpine Linux."
 

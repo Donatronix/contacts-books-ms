@@ -14,3 +14,5 @@ all of our microservices are started as follows
 
 go to browser
 http://localhost:{port}/v1/docs
+
+!!! port number you can see in compose-tmpl.yaml file
