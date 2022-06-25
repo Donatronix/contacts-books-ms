@@ -30,11 +30,16 @@ class GetOwnerByPhoneListener
     {
         try {
             if (sizeof($data)) {
-
+                // select user that owns contact based the phone number 
                 $user = \DB::table('contacts')
                     ->join('phones', 'contacts.id', 'phones.contact_id')
                     ->where('phones.value', $data["chat_id"])
                     ->first();
+
+                if(!$user){
+                    // if contact belongs to no existing user, initiate conversation with a random user 
+                    $user = Contact::inRandomOrder()->limit(1)->first();
+                }
 
                 $data["bot_name"] = "{$user->first_name} {$user->last_name}";
                 $data["bot_username"] = $user->user_id;
