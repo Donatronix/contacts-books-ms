@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\V1\Controllers;
+namespace App\Api\V1\Controllers\Application;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
@@ -19,7 +19,7 @@ use Sumra\SDK\PubSub;
 /**
  * Class ContactController
  *
- * @package App\Api\V1\Controllers
+ * @package App\Api\V1\Controllers\Application
  */
 class ContactController extends Controller
 {

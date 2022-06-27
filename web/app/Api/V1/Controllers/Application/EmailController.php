@@ -1,97 +1,29 @@
 <?php
 
-namespace App\Api\V1\Controllers;
+namespace App\Api\V1\Controllers\Application;
 
 use App\Http\Controllers\Controller;
-use App\Models\Group;
+use App\Models\Contact;
+use App\Models\Email;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 /**
- * Class ContactController
+ * Class EmailController
  *
- * @package App\Api\V1\Controllers
+ * @package App\Api\V1\Controllers\Application
  */
-class GroupController extends Controller
+class EmailController extends Controller
 {
     /**
-     * List of contact's groups
-     *
-     * @OA\Get(
-     *     path="/groups",
-     *     summary="Load contact's groups list",
-     *     description="Load contact's groups list",
-     *     tags={"Contact Groups"},
-     *
-     *     security={{
-     *         "default": {
-     *             "ManagerRead",
-     *             "User",
-     *             "ManagerWrite"
-     *         }
-     *     }},
-     *     x={
-     *         "auth-type": "Application & Application User",
-     *         "throttling-tier": "Unlimited",
-     *         "wso2-application-security": {
-     *             "security-types": {"oauth2"},
-     *             "optional": "false"
-     *         }
-     *     },
-     *
-     *     @OA\Response(
-     *         response="200",
-     *         description="Success send data"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid request"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="not found"
-     *     )
-     * )
-     *
-     * @return \Illuminate\Http\JsonResponse|mixed
-     */
-    public function index()
-    {
-        try {
-            // Get groups list
-            $groups = Group::byOwner()->get();
-
-            // Return response
-            return response()->jsonApi([
-                'type' => 'success',
-                'title' => "Contacts groups list",
-                'message' => 'List of contacts groups successfully received',
-                'data' => $groups->toArray()
-            ], 200);
-        } catch (Exception $e) {
-            return response()->jsonApi([
-                'type' => 'danger',
-                'title' => "Contacts groups list",
-                'message' => $e->getMessage()
-            ], 400);
-        }
-    }
-
-    /**
-     * Save contact's group data
+     * Store a newly contact email in storage.
      *
      * @OA\Post(
-     *     path="/groups",
-     *     summary="Save contact's group data",
-     *     description="Save contact's group data",
-     *     tags={"Contact Groups"},
+     *     path="/emails",
+     *     summary="Save a new email for current contact",
+     *     description="Save a new email for current contact",
+     *     tags={"Contact Emails"},
      *
      *     security={{
      *         "default": {
@@ -112,11 +44,31 @@ class GroupController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
+     *             type="object",
+     *
      *             @OA\Property(
-     *                 property="name",
-     *                 type="text",
-     *                 description="Contact group Name",
-     *                 example="My Group 1"
+     *                 property="value",
+     *                 type="string",
+     *                 description="Email of contact",
+     *                 example="test@tes.com"
+     *             ),
+     *             @OA\Property(
+     *                 property="type",
+     *                 type="string",
+     *                 description="Email type (home, work, etc)",
+     *                 enum={"home", "work", "other", "main"}
+     *             ),
+     *             @OA\Property(
+     *                 property="is_default",
+     *                 type="boolean",
+     *                 description="Email by default. Accept 1, 0, true, false",
+     *                 example="true"
+     *             ),
+     *             @OA\Property(
+     *                 property="contact_id",
+     *                 type="string",
+     *                 description="Contact ID",
+     *                 example="9406d5e9-2273-4807-8761-d5397205112b3"
      *             )
      *         )
      *     ),
@@ -148,27 +100,53 @@ class GroupController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         // Validate input
-        $this->validate($request, Group::validationRules());
+        $this->validate($request, Email::validationRules());
 
+        $contactId = $request->get('contact_id', null);
         try {
-            $group = Group::create([
-                'name' => $request->get('name', null),
-                'user_id' => (string)Auth::user()->getAuthIdentifier()
-            ]);
+            $contact = Contact::findOrFail($contactId);
+        } catch (ModelNotFoundException $e) {
+            return response()->jsonApi([
+                'type' => 'danger',
+                'title' => "Get contact object",
+                'message' => "Contact with id #{$contactId} not found: " . $e->getMessage(),
+                'data' => null
+            ], 404);
+        }
 
+        // Try to add new email
+        try {
+            // Reset is_default for other emails
+            if ($request->boolean('is_default')) {
+                foreach ($contact->emails as $oldEmail) {
+                    $oldEmail->is_default = false;
+                    $oldEmail->save();
+                }
+            }
+
+            // Create new
+            $email = new Email();
+            $email->fill($request->all());
+            $email->contact()->associate($contact);
+            $email->save();
+
+            // Remove contact object from response
+            unset($email->contact);
+
+            // Return response to client
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => 'Adding a contact group',
-                'message' => "Group {$group->name} successfully added",
-                'data' => $group->toArray()
+                'title' => 'Adding new email',
+                'message' => "Contact's email {$email->value} successfully added",
+                'data' => $email->toArray()
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => 'Adding a contact group',
+                'title' => 'Adding new email',
                 'message' => $e->getMessage(),
                 'data' => null
             ], 400);
@@ -176,13 +154,13 @@ class GroupController extends Controller
     }
 
     /**
-     * Update contact's group data
+     * Update email for current contact
      *
      * @OA\Put(
-     *     path="/groups/{id}",
-     *     summary="Update contact's group data",
-     *     description="Update contact's group data",
-     *     tags={"Contact Groups"},
+     *     path="/emails/{id}",
+     *     summary="Update email for current contact",
+     *     description="Update email for current contact",
+     *     tags={"Contact Emails"},
      *
      *     security={{
      *         "default": {
@@ -203,7 +181,7 @@ class GroupController extends Controller
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="Group Id",
+     *         description="Email Id",
      *         required=true,
      *         @OA\Schema(
      *             type="string"
@@ -215,10 +193,22 @@ class GroupController extends Controller
      *             type="object",
      *
      *             @OA\Property(
-     *                 property="name",
+     *                 property="value",
      *                 type="string",
-     *                 description="Name of group",
-     *                 example="My Group 111"
+     *                 description="Email of contact",
+     *                 example="test@tes.com"
+     *             ),
+     *             @OA\Property(
+     *                 property="type",
+     *                 type="string",
+     *                 description="Email type (home, work, etc)",
+     *                 enum={"home", "work", "other", "main"}
+     *             ),
+     *             @OA\Property(
+     *                 property="is_default",
+     *                 type="boolean",
+     *                 description="Email by default. Accept 1, 0, true, false",
+     *                 example="true"
      *             )
      *         )
      *     ),
@@ -255,32 +245,45 @@ class GroupController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function update(Request $request, $id): JsonResponse
+    public function update(Request $request, $id): \Illuminate\Http\JsonResponse
     {
         // Validate input
-        $this->validate($request, Group::validationRules());
+        $this->validate($request, Email::validationRules());
 
         // Read contact group model
-        $group = $this->getObject($id);
-        if (is_a($group, 'Sumra\SDK\JsonApiResponse')) {
-            return $group;
+        $email = $this->getObject($id);
+        if (is_a($email, 'Sumra\SDK\JsonApiResponse')) {
+            return $email;
         }
 
-        // Try update group model
+        // Try update email data
         try {
-            $group->name = $request->get('name', null);
-            $group->save();
+            // Reset is_default for other emails
+            if ($request->boolean('is_default') && $email->contact) {
+                foreach ($email->contact->emails as $oldEmail) {
+                    $oldEmail->is_default = false;
+                    $oldEmail->save();
+                }
+            }
 
+            // Update data
+            $email->fill($request->all());
+            $email->save();
+
+            // Remove contact object from response
+            unset($email->contact);
+
+            // Return response to client
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => 'Change a contact group',
-                'message' => "Group {$group->name} successfully updated",
-                'data' => $group->toArray()
+                'title' => 'Changing contact email',
+                'message' => "Contact email {$email->value} successfully updated",
+                'data' => $email->toArray()
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => 'Change a contact group',
+                'title' => 'Changing contact email',
                 'message' => $e->getMessage(),
                 'data' => null
             ], 400);
@@ -288,13 +291,13 @@ class GroupController extends Controller
     }
 
     /**
-     * Delete contact's group
+     * Delete contact email from storage.
      *
      * @OA\Delete(
-     *     path="/groups/{id}",
-     *     summary="Delete contact's group",
-     *     description="Delete contact's group",
-     *     tags={"Contact Groups"},
+     *     path="/emails/{id}",
+     *     summary="Delete contact email from storage",
+     *     description="Delete contact email from storage",
+     *     tags={"Contact Emails"},
      *
      *     security={{
      *         "default": {
@@ -316,56 +319,47 @@ class GroupController extends Controller
      *         name="id",
      *         in="path",
      *         required=true,
-     *         description="Group ID",
+     *         description="Email Id",
      *         @OA\Schema(
      *             type="string"
      *         )
      *     ),
      *     @OA\Response(
      *         response="200",
-     *         description="Success send data"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthorized"
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid request"
+     *         description="Successfully delete"
      *     ),
      *     @OA\Response(
      *         response="404",
-     *         description="Group not found"
+     *         description="Contact email not found"
      *     )
      * )
      *
      * @param $id
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return mixed|\Sumra\SDK\JsonApiResponse
      */
-    public function destroy($id): JsonResponse
+    public function destroy($id)
     {
         // Read contact group model
-        $group = $this->getObject($id);
-        if (is_a($group, 'Sumra\SDK\JsonApiResponse')) {
-            return $group;
+        $phone = $this->getObject($id);
+        if (is_a($phone, 'Sumra\SDK\JsonApiResponse')) {
+            return $phone;
         }
 
-        // Try to detach contacts and delete group
+        // Try to delete email
         try {
-            $group->contacts()->detach();
-            $group->delete();
+            $phone->delete();
 
             return response()->jsonApi([
                 'type' => 'success',
-                'title' => "Delete of contact's group",
-                'message' => 'Group of contacts is successfully deleted',
+                'title' => "Delete of contact's email",
+                'message' => 'Email of contacts is successfully deleted',
                 'data' => null
             ], 200);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => "Delete of contact's group",
+                'title' => "Delete of contact's email",
                 'message' => $e->getMessage(),
                 'data' => null
             ], 400);
@@ -373,7 +367,7 @@ class GroupController extends Controller
     }
 
     /**
-     * Get Contact's group object
+     * Get contact's email object
      *
      * @param $id
      *
@@ -382,12 +376,12 @@ class GroupController extends Controller
     private function getObject($id)
     {
         try {
-            return Group::findOrFail($id);
+            return Email::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
                 'type' => 'danger',
-                'title' => "Get contact's group",
-                'message' => "Contact's group #{$id} not found",
+                'title' => "Get contact's email",
+                'message' => "Contact's email with id #{$id} not found",
                 'data' => null
             ], 404);
         }

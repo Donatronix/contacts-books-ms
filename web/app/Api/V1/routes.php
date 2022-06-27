@@ -12,9 +12,10 @@ $router->group([
      */
 
     /**
-     * PRIVATE ACCESS
+     * APPLICATION ACCESS
      */
     $router->group([
+        'namespace' => 'Application',
         'middleware' => 'checkUser'
     ], function ($router) {
         /**
