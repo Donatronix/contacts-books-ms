@@ -9,13 +9,23 @@ $router->group([
 ], function ($router) {
     /**
      * PUBLIC ACCESS
-     */
-
-    /**
-     * PRIVATE ACCESS
+     *
+     * level with free access to the endpoint
      */
     $router->group([
-        'middleware' => 'checkUser'
+        'namespace' => 'Public'
+    ], function ($router) {
+        //
+    });
+
+    /**
+     * USER APPLICATION PRIVATE ACCESS
+     *
+     * Application level for users
+     */
+    $router->group([
+        'namespace' => 'Application',
+        'middleware' => 'checkUser',
     ], function ($router) {
         /**
          * Contacts
@@ -81,6 +91,8 @@ $router->group([
 
     /**
      * ADMIN PANEL ACCESS
+     *
+     * Admin / super admin access level (E.g CEO company)
      */
     $router->group([
         'prefix' => 'admin',
@@ -90,6 +102,18 @@ $router->group([
             'checkAdmin'
         ]
     ], function ($router) {
+        //
+    });
 
+    /**
+     * WEBHOOKS
+     *
+     * Access level of external / internal software services
+     */
+    $router->group([
+        'prefix' => 'webhooks',
+        'namespace' => 'Webhooks'
+    ], function ($router) {
+        //
     });
 });

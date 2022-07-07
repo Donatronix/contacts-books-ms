@@ -18,6 +18,6 @@ class InvitedReferralListener
 
         // Send result by pubsub
         \PubSub::transaction(function () {})
-            ->publish('InvitedReferralResponse', $data, config('settings.exchange_queue.referrals'));
+            ->publish('InvitedReferralResponse', $data, config('settings.pubsub_receiver.referrals'));
     }
 }

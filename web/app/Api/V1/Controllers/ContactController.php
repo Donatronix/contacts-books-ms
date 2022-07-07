@@ -130,11 +130,11 @@ class ContactController extends Controller
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
-     *         response=400,
+     *         response="400",
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
-     *         response=404,
+     *         response="404",
      *         description="Not found"
      *     )
      * )
@@ -323,7 +323,7 @@ class ContactController extends Controller
      *         description="Applicant created"
      *     ),
      *     @OA\Response(
-     *         response=400,
+     *         response="400",
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
@@ -331,8 +331,8 @@ class ContactController extends Controller
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="not found"
+     *         response="404",
+     *         description="Not Found"
      *     )
      * )
      *
@@ -614,12 +614,12 @@ class ContactController extends Controller
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
-     *         response=400,
+     *         response="400",
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="not found"
+     *         response="404",
+     *         description="Not Found"
      *     )
      * )
      *
@@ -816,7 +816,7 @@ class ContactController extends Controller
                         'user_id' => Auth::user()->getAuthIdentifier(),
                         'avatars' => $avatars
                     ],
-                    config('settings.exchange_queue.files')
+                    config('settings.pubsub_receiver.files')
                 );
             }
 
@@ -1065,7 +1065,7 @@ class ContactController extends Controller
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
-     *         response=400,
+     *         response="400",
      *         description="Invalid request"
      *     ),
      *
@@ -1176,7 +1176,7 @@ class ContactController extends Controller
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
-     *         response=400,
+     *         response="400",
      *         description="Invalid request"
      *     ),
      *     @OA\Response(

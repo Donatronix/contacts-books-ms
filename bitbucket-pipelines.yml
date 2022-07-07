@@ -9,24 +9,43 @@ pipelines:
           services:
             - docker
           script:
+            - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            - export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
             - apk --update --no-cache add openssh-client
+            - chmod 700 deploy.sh
             - ./deploy.sh build
             - ./deploy.sh login
             - ./deploy.sh push
+    master:
       - step:
-          name: EKS Deploy
-          image: atlassian/pipelines-kubectl
+          name: Build Image
+          image: atlassian/pipelines-awscli
           services:
             - docker
           script:
-            - apk --update --no-cache add curl openssl git openssh-client jq
-            - git clone git@bitbucket.org:sumraprague/bitbucket-cicd.git
-            - bitbucket-cicd/deploy.sh kube-init
-
-            - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-            - chmod 700 get_helm.sh
-            - bash ./get_helm.sh
-            - bitbucket-cicd/deploy.sh set-image
+            - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            - export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+            - apk --update --no-cache add openssh-client
+            -  chmod 700 deploy.sh
+            - ./deploy.sh build production
+            - ./deploy.sh login
+            - ./deploy.sh push
+#      - step:
+#          name: EKS Deploy
+#          image: atlassian/pipelines-kubectl
+#          services:
+#            - docker
+#          script:
+#            - apk --update --no-cache add curl openssl git openssh-client jq
+#            - git clone git@bitbucket.org:sumraprague/bitbucket-cicd.git
+#            - bitbucket-cicd/deploy.sh kube-init
+#
+#            - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+#            - chmod 700 get_helm.sh
+#            - bash ./get_helm.sh
+#            - bitbucket-cicd/deploy.sh set-image
 definitions:
   services:
     docker:

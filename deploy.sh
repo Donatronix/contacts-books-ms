@@ -25,7 +25,7 @@ build)
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
 
-  docker build -f Dockerfile -t $DOCKER_IMAGE:$BRANCH-$REVISION -t $DOCKER_IMAGE:latest .
+  docker build -f Dockerfile --build-arg MODE=$2 -t $DOCKER_IMAGE:$BRANCH-$REVISION -t $DOCKER_IMAGE:latest .
   ;;
 push)
   echo ""

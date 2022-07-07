@@ -44,6 +44,30 @@ use Laravel\Lumen\Routing\Controller as BaseController;
  */
 
 /**
+ * ApiResponse Schema
+ *
+ * @OA\Schema(
+ *     schema="ApiResponse",
+ *
+ *     @OA\Property(
+ *         property="type",
+ *         type="string",
+ *         description="Type of response (success, danger, warning)"
+ *     ),
+ *     @OA\Property(
+ *         property="title",
+ *         type="string",
+ *         description="Title of response"
+ *     ),
+ *     @OA\Property(
+ *         property="message",
+ *         type="string",
+ *         description="Message of response"
+ *     )
+ * )
+ */
+
+/**
  * Api Base Class Controller
  *
  * @package App\Api\V1\Controllers

@@ -318,6 +318,6 @@ class ContactHelper
             'avatars' => $avatars
         ];
 
-        return PubSub::publish('SaveAvatars', $info_send_rabbitmq, config('settings.exchange_queue.files'));
+        return PubSub::publish('SaveAvatars', $info_send_rabbitmq, config('settings.pubsub_receiver.files'));
     }
 }

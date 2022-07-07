@@ -13,6 +13,6 @@ all of our microservices are started as follows
 6. cd ../ & run ./deploy.sh start
 
 go to browser
-http://localhost:{port}/v1/docs
+http://localhost:8107/v1/docs
 
 !!! port number you can see in compose-tmpl.yaml file

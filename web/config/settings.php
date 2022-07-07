@@ -48,10 +48,14 @@ return [
     ],
 
     /**
-     * RabbitMQ Exchange Points
+     * RabbitMQ Receivers
      */
-    'exchange_queue' => [
-        'files' => env('RABBITMQ_RECEIVER_FILES', 'FilesMS'),
-        'referrals' => env('RABBITMQ_RECEIVER_REFERRALS', 'ReferralsMS')
+    'pubsub_receiver' => [
+        'files' => env('RABBITMQ_RECEIVER_FILES', ucfirst(env('APP_ENV')) . '.FilesMS'),
+        'referrals' => env('RABBITMQ_RECEIVER_REFERRALS', ucfirst(env('APP_ENV')) . '.ReferralsMS'),
+        'contacts_books' => env('RABBITMQ_RECEIVER_CONTACTS', ucfirst(env('APP_ENV')) . '.ContactsBooksMS'),
+        'identity_centre' => env('RABBITMQ_RECEIVER_IDENTITY', ucfirst(env('APP_ENV')) . '.IdentityCentreMS'),
+        'gmet_partners' => env('RABBITMQ_RECEIVER_GMET', ucfirst(env('APP_ENV')) . '.GMETPartnersMS'),
+        'wallets' => env('RABBITMQ_RECEIVER_GMET', ucfirst(env('APP_ENV')) . '.wallets'),
     ],
 ];

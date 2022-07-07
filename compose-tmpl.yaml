@@ -6,7 +6,7 @@ services:
     image: {{DOCKER_IMAGE}}
     restart: always
     networks:
-      - kus-net
+      - ugg.network
     ports:
       - '8107:80'
       - '18107:443'
@@ -15,12 +15,13 @@ services:
       - PHP_DISMOD=apcu,calendar,exif,gd,imagick,imap,ioncube,mongodb,ldap,pcntl,pdo_pgsql,pgsql,shmop,soap,sysvmsg,sysvsem,sysvshm,vips
       - PHP_DISPLAY_ERRORS=1
       - LOG_STDERR=/var/log/vhost-error.log
+      - PUBSUB_RECEIVER=Local.ContactsBooksMS
     volumes:
       - ./web:/var/www/html:rw
-      - ./logs:/var/log/nginx:rw
+#      - ./logs:/var/log/nginx:rw
 #     - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:rw
 
 networks:
-  kus-net:
-    name: KeyUniversalServicesNet
+  ugg.network:
+    name: UltainfinityGlobalGroup.Network
     driver: bridge

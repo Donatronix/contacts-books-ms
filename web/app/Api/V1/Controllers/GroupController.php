@@ -51,12 +51,12 @@ class GroupController extends Controller
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
-     *         response=400,
+     *         response="400",
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="not found"
+     *         response="404",
+     *         description="Not Found"
      *     )
      * )
      *
@@ -126,7 +126,7 @@ class GroupController extends Controller
      *         description="Successfully save"
      *     ),
      *     @OA\Response(
-     *         response=400,
+     *         response="400",
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
@@ -134,8 +134,8 @@ class GroupController extends Controller
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="not found"
+     *         response="404",
+     *         description="Not Found"
      *     ),
      *     @OA\Response(
      *         response="500",
@@ -330,7 +330,7 @@ class GroupController extends Controller
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
-     *         response=400,
+     *         response="400",
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
