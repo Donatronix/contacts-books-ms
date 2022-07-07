@@ -15,6 +15,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         'invitedReferral' => [
             InvitedReferralListener::class
+        ],
+        'getOwnerByPhone' => [
+            'App\Listeners\GetOwnerByPhoneListener'
         ]
     ];
 
