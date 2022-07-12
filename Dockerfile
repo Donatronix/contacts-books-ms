@@ -26,6 +26,9 @@ RUN sed -i 's/\r$//g' /opt/docker/bin/service.d/artisan.sh
 RUN sed -i 's/\r$//g' /opt/docker/bin/service.d/pubsub.sh
 RUN sed -i 's/\r$//g' /opt/docker/etc/supervisor.d/*
 
+## Set correct permisions
+RUN chmod -R 755 /opt/docker/bin/service.d/*.sh
+
 ## Copy existing application contents to workdir
 COPY --chown=nginx:nginx ./web /var/www/html
 COPY --chown=nginx:nginx ./sumra-sdk /var/www/sumra-sdk
