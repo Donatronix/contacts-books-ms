@@ -35,7 +35,7 @@ class CategoryController extends Controller
      *         description="Success send data"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(

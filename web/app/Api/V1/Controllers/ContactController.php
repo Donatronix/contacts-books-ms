@@ -118,7 +118,7 @@ class ContactController extends Controller
      *         description="Success send data"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
@@ -311,7 +311,7 @@ class ContactController extends Controller
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
@@ -570,7 +570,7 @@ class ContactController extends Controller
      *         description="Success send data"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
@@ -990,7 +990,7 @@ class ContactController extends Controller
      *         description="Import of data create successful"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
@@ -1093,7 +1093,7 @@ class ContactController extends Controller
      *         description="Success send data"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(

@@ -74,7 +74,7 @@ class EmailController extends Controller
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(

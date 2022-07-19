@@ -39,7 +39,7 @@ class GroupController extends Controller
      *         description="Success send data"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
@@ -114,7 +114,7 @@ class GroupController extends Controller
      *         description="Invalid request"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
@@ -294,7 +294,7 @@ class GroupController extends Controller
      *         description="Success send data"
      *     ),
      *     @OA\Response(
-     *         response=401,
+     *         response="401",
      *         description="Unauthorized"
      *     ),
      *     @OA\Response(
