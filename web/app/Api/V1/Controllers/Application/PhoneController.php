@@ -134,7 +134,7 @@ class PhoneController extends Controller
                 'title' => 'Adding new phone number',
                 'message' => "Contact's phone number {$phone->value} successfully added",
                 'data' => $phone->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -263,7 +263,7 @@ class PhoneController extends Controller
                 'title' => 'Changing phone number',
                 'message' => "Phone number {$phone->value} successfully updated",
                 'data' => $phone->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -331,7 +331,7 @@ class PhoneController extends Controller
                 'title' => "Delete of contact's phone",
                 'message' => 'Phone of contacts is successfully deleted',
                 'data' => null
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',

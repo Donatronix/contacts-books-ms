@@ -258,21 +258,16 @@ class ContactController extends Controller
             $letters = array_values(array_filter(array_unique($letters, SORT_LOCALE_STRING)));
 
             // Return response
-            return response()->json(array_merge(
-                [
-                    'type' => 'success',
-                    'title' => "Get contacts list",
-                    'message' => 'Contacts list received',
-                    'letters' => $letters
-                ],
-                $contacts->toArray()
-            ), 200);
+            return response()->json([
+                'title' => "Get contacts list",
+                'message' => 'Contacts list received',
+                'letters' => $letters,
+                'data' => $contacts
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Get contacts list",
                 'message' => $e->getMessage(),
-                'data' => null
             ], 400);
         }
     }
@@ -338,13 +333,11 @@ class ContactController extends Controller
                 'title' => "Adding new contact",
                 'message' => "User's contacts successfully saved",
                 'data' => $contact->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Adding new contact",
                 'message' => $e->getMessage(),
-                'data' => null
             ], 400);
         }
     }
@@ -433,11 +426,10 @@ class ContactController extends Controller
         $contact->setAttribute('avatar', $this->getImagesFromRemote($id, 'big'));
 
         return response()->jsonApi([
-            'type' => 'success',
             'title' => 'Contact details',
             'message' => "contact details received",
             'data' => $contact->toArray()
-        ], 200);
+        ]);
     }
 
     /**
@@ -507,17 +499,14 @@ class ContactController extends Controller
             $contact->save();
 
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => 'Change a contact data',
                 'message' => "Contact {$contact->display_name} successfully updated",
                 'data' => $contact->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Change a contact data',
                 'message' => $e->getMessage(),
-                'data' => null
             ], 400);
         }
     }
@@ -599,7 +588,7 @@ class ContactController extends Controller
                     'type' => 'success',
                     'title' => 'Delete contacts',
                     'message' => 'The selected contacts have been successfully deleted'
-                ], 200);
+                ]);
             } catch (Exception $e) {
                 return response()->jsonApi([
                     'type' => 'danger',
@@ -622,7 +611,7 @@ class ContactController extends Controller
                     'type' => 'success',
                     'title' => 'Delete contact',
                     'message' => 'The selected contact have been successfully deleted'
-                ], 200);
+                ]);
             } catch (Exception $e) {
                 return response()->jsonApi([
                     'type' => 'danger',
@@ -778,7 +767,7 @@ class ContactController extends Controller
                 'title' => 'Merging contacts',
                 'message' => 'Contacts was merged successfully',
                 'data' => $contact_to->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -845,7 +834,7 @@ class ContactController extends Controller
                 'title' => 'Favorites list',
                 'message' => sprintf("%s was successfully %s favorites", $contact->display_name, $contact->is_favorite ? 'added to' : 'removed from'),
                 'data' => $contact->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -937,7 +926,7 @@ class ContactController extends Controller
                 'title' => 'Join / delete contact to / from group',
                 'message' => 'Operation was been successfully',
                 'data' => null
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -1040,7 +1029,7 @@ class ContactController extends Controller
                 'title' => 'Batch import of contacts from file',
                 'message' => "Successfully imported {$result['count']} contact(s)",
                 'data' => $result
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -1134,7 +1123,7 @@ class ContactController extends Controller
                 'type' => 'success',
                 'title' => "Batch import of contacts",
                 'message' => "Contacts was imported successfully"
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',

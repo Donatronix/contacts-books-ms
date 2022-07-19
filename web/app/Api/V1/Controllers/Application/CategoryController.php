@@ -56,10 +56,13 @@ class CategoryController extends Controller
             $categories = Category::structure()->get();
 
             // Return response
-            return response()->jsonApi($categories->toArray(), 200);
+            return response()->jsonApi([
+                'title' => "Get categories list",
+                'message' => 'Get categories list',
+                'data' => $categories
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Get categories list",
                 'message' => $e->getMessage()
             ], 400);
