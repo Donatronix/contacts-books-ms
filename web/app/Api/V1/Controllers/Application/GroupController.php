@@ -66,7 +66,7 @@ class GroupController extends Controller
                 'title' => "Contacts groups list",
                 'message' => 'List of contacts groups successfully received',
                 'data' => $groups->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -148,7 +148,7 @@ class GroupController extends Controller
                 'title' => 'Adding a contact group',
                 'message' => "Group {$group->name} successfully added",
                 'data' => $group->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -252,7 +252,7 @@ class GroupController extends Controller
                 'title' => 'Change a contact group',
                 'message' => "Group {$group->name} successfully updated",
                 'data' => $group->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -329,7 +329,7 @@ class GroupController extends Controller
                 'title' => "Delete of contact's group",
                 'message' => 'Group of contacts is successfully deleted',
                 'data' => null
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',

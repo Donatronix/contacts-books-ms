@@ -102,10 +102,8 @@ class EmailController extends Controller
             $contact = Contact::findOrFail($contactId);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Get contact object",
                 'message' => "Contact with id #{$contactId} not found: " . $e->getMessage(),
-                'data' => null
             ], 404);
         }
 
@@ -134,7 +132,7 @@ class EmailController extends Controller
                 'title' => 'Adding new email',
                 'message' => "Contact's email {$email->value} successfully added",
                 'data' => $email->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -263,7 +261,7 @@ class EmailController extends Controller
                 'title' => 'Changing contact email',
                 'message' => "Contact email {$email->value} successfully updated",
                 'data' => $email->toArray()
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
@@ -331,7 +329,7 @@ class EmailController extends Controller
                 'title' => "Delete of contact's email",
                 'message' => 'Email of contacts is successfully deleted',
                 'data' => null
-            ], 200);
+            ]);
         } catch (Exception $e) {
             return response()->jsonApi([
                 'type' => 'danger',
