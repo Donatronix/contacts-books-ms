@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\V1\Controllers;
+namespace App\Api\V1\Controllers\Application;
 
 use App\Http\Controllers\Controller;
 use App\Models\Group;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 /**
  * Class ContactController
  *
- * @package App\Api\V1\Controllers
+ * @package App\Api\V1\Controllers\Application
  */
 class GroupController extends Controller
 {

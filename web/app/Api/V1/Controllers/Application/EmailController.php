@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\V1\Controllers;
+namespace App\Api\V1\Controllers\Application;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 /**
  * Class EmailController
  *
- * @package App\Api\V1\Controllers
+ * @package App\Api\V1\Controllers\Application
  */
 class EmailController extends Controller
 {
