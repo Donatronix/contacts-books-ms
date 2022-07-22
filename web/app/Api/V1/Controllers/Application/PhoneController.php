@@ -236,7 +236,7 @@ class PhoneController extends Controller
 
         // Read contact group model
         $phone = $this->getObject($id);
-        if (is_a($phone, 'Sumra\SDK\JsonApiResponse')) {
+        if (is_a($phone, 'Sumra\SDK\Services\JsonApiResponse')) {
             return $phone;
         }
 
@@ -312,13 +312,13 @@ class PhoneController extends Controller
      *
      * @param $id
      *
-     * @return mixed|\Sumra\SDK\JsonApiResponse
+     * @return mixed|\Sumra\SDK\Services\JsonApiResponse
      */
     public function destroy($id)
     {
         // Read contact group model
         $phone = $this->getObject($id);
-        if (is_a($phone, 'Sumra\SDK\JsonApiResponse')) {
+        if (is_a($phone, 'Sumra\SDK\Services\JsonApiResponse')) {
             return $phone;
         }
 

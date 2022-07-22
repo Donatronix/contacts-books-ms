@@ -13,8 +13,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Sumra\SDK\JsonApiResponse;
-use Sumra\SDK\PubSub;
+use Sumra\SDK\Services\JsonApiResponse;
+use Sumra\SDK\Facades\PubSub;
 
 /**
  * Class ContactController
@@ -487,7 +487,7 @@ class ContactController extends Controller
 
         // Read contact model
         $contact = $this->getObject($id);
-        if (is_a($contact, 'Sumra\SDK\JsonApiResponse')) {
+        if (is_a($contact, 'Sumra\SDK\Services\JsonApiResponse')) {
             return $contact;
         }
 
@@ -575,7 +575,7 @@ class ContactController extends Controller
      * @param                          $id
      * @param \Illuminate\Http\Request $request
      *
-     * @return \Sumra\SDK\JsonApiResponse
+     * @return \Sumra\SDK\Services\JsonApiResponse
      */
     public function destroy($id, Request $request): JsonApiResponse
     {
