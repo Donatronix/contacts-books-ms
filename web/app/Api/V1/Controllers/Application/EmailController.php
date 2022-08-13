@@ -128,17 +128,14 @@ class EmailController extends Controller
 
             // Return response to client
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => 'Adding new email',
                 'message' => "Contact's email {$email->value} successfully added",
-                'data' => $email->toArray()
+                'data' => $email
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Adding new email',
-                'message' => $e->getMessage(),
-                'data' => null
+                'message' => $e->getMessage()
             ], 400);
         }
     }
@@ -257,17 +254,14 @@ class EmailController extends Controller
 
             // Return response to client
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => 'Changing contact email',
                 'message' => "Contact email {$email->value} successfully updated",
-                'data' => $email->toArray()
+                'data' => $email
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Changing contact email',
-                'message' => $e->getMessage(),
-                'data' => null
+                'message' => $e->getMessage()
             ], 400);
         }
     }
@@ -325,17 +319,13 @@ class EmailController extends Controller
             $phone->delete();
 
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => "Delete of contact's email",
-                'message' => 'Email of contacts is successfully deleted',
-                'data' => null
+                'message' => 'Email of contacts is successfully deleted'
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Delete of contact's email",
-                'message' => $e->getMessage(),
-                'data' => null
+                'message' => $e->getMessage()
             ], 400);
         }
     }
@@ -353,10 +343,8 @@ class EmailController extends Controller
             return Email::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Get contact's email",
-                'message' => "Contact's email with id #{$id} not found",
-                'data' => null
+                'message' => "Contact's email with id #{$id} not found"
             ], 404);
         }
     }

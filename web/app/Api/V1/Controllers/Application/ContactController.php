@@ -258,7 +258,7 @@ class ContactController extends Controller
             $letters = array_values(array_filter(array_unique($letters, SORT_LOCALE_STRING)));
 
             // Return response
-            return response()->json([
+            return response()->jsonApi([
                 'title' => "Get contacts list",
                 'message' => 'Contacts list received',
                 'letters' => $letters,
@@ -584,13 +584,11 @@ class ContactController extends Controller
                 Contact::destroy($request->get('ids'));
 
                 return response()->jsonApi([
-                    'type' => 'success',
                     'title' => 'Delete contacts',
                     'message' => 'The selected contacts have been successfully deleted'
                 ]);
             } catch (Exception $e) {
                 return response()->jsonApi([
-                    'type' => 'danger',
                     'title' => 'Delete contacts',
                     'message' => 'Error while deleting contacts: ' . $e->getMessage()
                 ], 400);
@@ -607,13 +605,11 @@ class ContactController extends Controller
                 $contact->delete();
 
                 return response()->jsonApi([
-                    'type' => 'success',
                     'title' => 'Delete contact',
                     'message' => 'The selected contact have been successfully deleted'
                 ]);
             } catch (Exception $e) {
                 return response()->jsonApi([
-                    'type' => 'danger',
                     'title' => 'Delete contact',
                     'message' => 'Error while deleting contact: ' . $e->getMessage()
                 ], 400);
@@ -762,14 +758,12 @@ class ContactController extends Controller
 
             // Return response
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => 'Merging contacts',
                 'message' => 'Contacts was merged successfully',
                 'data' => $contact_to->toArray()
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Merging contacts',
                 'message' => $e->getMessage()
             ], 400);
@@ -829,14 +823,12 @@ class ContactController extends Controller
             $contact->load('groups');
 
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => 'Favorites list',
                 'message' => sprintf("%s was successfully %s favorites", $contact->display_name, $contact->is_favorite ? 'added to' : 'removed from'),
                 'data' => $contact->toArray()
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Favorites list",
                 'message' => "Can't change status for contacts {$contact->display_name}"
             ], 404);
@@ -921,17 +913,13 @@ class ContactController extends Controller
             }
 
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => 'Join / delete contact to / from group',
-                'message' => 'Operation was been successfully',
-                'data' => null
+                'message' => 'Operation was been successfully'
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Join / delete contact to / from group',
-                'message' => $e->getMessage(),
-                'data' => null
+                'message' => $e->getMessage()
             ], 400);
         }
     }
@@ -1024,17 +1012,14 @@ class ContactController extends Controller
 
             // Return response
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => 'Batch import of contacts from file',
                 'message' => "Successfully imported {$result['count']} contact(s)",
                 'data' => $result
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Batch import of contacts from file',
-                'message' => 'Error: ' . $e->getMessage(),
-                'data' => null
+                'message' => 'Error: ' . $e->getMessage()
             ], 400);
         }
     }
@@ -1119,13 +1104,11 @@ class ContactController extends Controller
             }
 
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => "Batch import of contacts",
                 'message' => "Contacts was imported successfully"
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Batch import of contacts",
                 'message' => $e->getMessage()
             ], 400);
@@ -1145,7 +1128,6 @@ class ContactController extends Controller
             return Contact::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Get contact object",
                 'message' => "Contact with id #{$id} not found: {$e->getMessage()}"
             ], 404);

@@ -78,7 +78,6 @@ class ContactController extends Controller
 
         if (count($errors) > 0)
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Data is not valid',
                 'message' => implode(', ', $errors)
             ], 400);
@@ -260,7 +259,6 @@ RETURN person";
 
         if (count($errors) > 0)
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Data is not valid',
                 'message' => implode(', ', $errors)
             ], 400);

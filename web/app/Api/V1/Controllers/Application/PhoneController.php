@@ -102,10 +102,8 @@ class PhoneController extends Controller
             $contact = Contact::findOrFail($contactId);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Get contact object",
                 'message' => "Contact with id #{$contactId} not found: " . $e->getMessage(),
-                'data' => null
             ], 404);
         }
 
@@ -130,17 +128,14 @@ class PhoneController extends Controller
 
             // Return response to client
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => 'Adding new phone number',
                 'message' => "Contact's phone number {$phone->value} successfully added",
-                'data' => $phone->toArray()
+                'data' => $phone
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Adding new phone number',
-                'message' => $e->getMessage(),
-                'data' => null
+                'message' => $e->getMessage()
             ], 400);
         }
     }
@@ -259,17 +254,14 @@ class PhoneController extends Controller
 
             // Return response to client
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => 'Changing phone number',
                 'message' => "Phone number {$phone->value} successfully updated",
-                'data' => $phone->toArray()
+                'data' => $phone
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => 'Change a contact group',
-                'message' => $e->getMessage(),
-                'data' => null
+                'message' => $e->getMessage()
             ], 400);
         }
     }
@@ -327,17 +319,13 @@ class PhoneController extends Controller
             $phone->delete();
 
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => "Delete of contact's phone",
-                'message' => 'Phone of contacts is successfully deleted',
-                'data' => null
+                'message' => 'Phone of contacts is successfully deleted'
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Delete of contact's phone",
-                'message' => $e->getMessage(),
-                'data' => null
+                'message' => $e->getMessage()
             ], 400);
         }
     }
@@ -355,10 +343,8 @@ class PhoneController extends Controller
             return Phone::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->jsonApi([
-                'type' => 'danger',
                 'title' => "Get contact's phone number",
-                'message' => "Contact's phone number with id #{$id} not found",
-                'data' => null
+                'message' => "Contact's phone number with id #{$id} not found"
             ], 404);
         }
     }
