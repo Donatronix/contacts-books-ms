@@ -3,8 +3,8 @@ LABEL Maintainer="Ihor Porokhnenko <ihor.porokhnenko@gmail.com>"
 LABEL Description="Lightweight container with Nginx & PHP-FPM 8 based on Alpine Linux."
 
 # Set environment variables
-ARG MODE
-ENV MODE=${MODE:-staging}
+ARG env_file
+ENV ENV_FILE=${env_file:-""}
 
 # Do a single run command to make the intermediary containers smaller.
 RUN set -ex
@@ -37,7 +37,10 @@ COPY --chown=nginx:nginx ./sumra-sdk /var/www/sumra-sdk
 WORKDIR /var/www/html
 
 ## Update .ENV and remove unneeded
-RUN cp -f .env.${MODE} .env
+RUN if [ "$ENV_FILE" != "" ]; then \
+ rm -rf /var/www/html/.env; \
+ cp -f .env${ENV_FILE} .env; \
+fi
 RUN rm -rf /var/www/html/.env.*
 
 ## Set writable dirs

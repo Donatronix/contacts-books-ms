@@ -63,11 +63,11 @@ class Handler extends ExceptionHandler
             $classFullName = $exception->getModel();
             $className = substr($classFullName, strrpos($classFullName, '\\') + 1);
 
-            return response()->json(config('constants.errors.' . $className . 'NotFound'), 404);
+            return response()->jsonApi(config('constants.errors.' . $className . 'NotFound'), 404);
         }
 
         if ($exception instanceof ValidationException) {
-            return response()->json([
+            return response()->jsonApi([
                 'message' => 'YOUR CUSTOM MESSAGE HERE',
                 'errors' => $exception->validator->getMessageBag(),
                 $exception->errors(),

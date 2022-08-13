@@ -10,8 +10,18 @@ DOCKER_ECR_REPO_URL="005279544259.dkr.ecr.us-west-2.amazonaws.com"
 
 REVISION=$(git rev-parse --short HEAD)
 BRANCH=$(git status | head -n 1 | awk '{print $3}')
+BRANCH=${BRANCH//"/"/"-"}
 DEPLOY_NAME=$(basename $(git remote show -n origin | grep URL | head -1 | cut -d: -f2-) | awk -F '.' '{print $1}')
-DOCKER_IMAGE=$DOCKER_ECR_REPO_URL/$DEPLOY_NAME
+
+if [ -z "$2" ]; then
+  ENVIRONMENT="local"
+  ENV_FILE=""
+else
+  ENVIRONMENT=$2
+  ENV_FILE="."$2
+fi
+
+DOCKER_IMAGE=$DOCKER_ECR_REPO_URL/$DEPLOY_NAME-$ENVIRONMENT
 
 case "$1" in
 build)
@@ -24,8 +34,9 @@ build)
   echo -e "${CYAN}Deploy Name: $DEPLOY_NAME${NC}"
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
+  echo -e "${CYAN}Environment: $ENVIRONMENT${NC}"
 
-  docker build -f Dockerfile --build-arg MODE=$2 -t $DOCKER_IMAGE:$BRANCH-$REVISION -t $DOCKER_IMAGE:latest .
+  docker build -f Dockerfile --build-arg env_file="$ENV_FILE" -t $DOCKER_IMAGE:$BRANCH-$REVISION -t $DOCKER_IMAGE:latest .
   ;;
 push)
   echo ""
@@ -33,6 +44,7 @@ push)
   echo -e "${CYAN}Deploy Name: $DEPLOY_NAME${NC}"
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
+  echo -e "${CYAN}Environment: $ENVIRONMENT${NC}"
 
   docker push $DOCKER_IMAGE:$BRANCH-$REVISION
   docker push $DOCKER_IMAGE:latest
@@ -43,6 +55,7 @@ start)
   echo -e "${CYAN}Deploy Name: $DEPLOY_NAME${NC}"
   echo -e "${CYAN}Branch: $BRANCH${NC}"
   echo -e "${CYAN}Rev: $REVISION${NC}"
+  echo -e "${CYAN}Environment: $ENVIRONMENT${NC}"
 
   cat compose-tmpl.yaml | grep -v "#" >docker-compose.yaml
   sed -i"" "s~{{DEPLOY_NAME}}~$DEPLOY_NAME~" docker-compose.yaml

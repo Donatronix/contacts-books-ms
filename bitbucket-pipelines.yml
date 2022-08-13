@@ -14,9 +14,9 @@ pipelines:
             - export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
             - apk --update --no-cache add openssh-client
             - chmod 700 deploy.sh
-            - ./deploy.sh build
+            - ./deploy.sh build staging
             - ./deploy.sh login
-            - ./deploy.sh push
+            - ./deploy.sh push staging
     master:
       - step:
           name: Build Image
@@ -28,10 +28,10 @@ pipelines:
             - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
             - export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
             - apk --update --no-cache add openssh-client
-            -  chmod 700 deploy.sh
+            - chmod 700 deploy.sh
             - ./deploy.sh build production
             - ./deploy.sh login
-            - ./deploy.sh push
+            - ./deploy.sh push production
 #      - step:
 #          name: EKS Deploy
 #          image: atlassian/pipelines-kubectl

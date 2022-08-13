@@ -1,6 +1,6 @@
 {
-    "name": "kus/contacts-book-ms",
-    "description": "Contacts Book API Microservice",
+    "name": "kus/contacts-books-ms",
+    "description": "Contacts Books API Microservice",
     "license": "MIT",
     "type": "project",
     "private": true,
