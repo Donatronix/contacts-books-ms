@@ -329,10 +329,9 @@ class ContactController extends Controller
             $contact = ContactHelper::save($request->all());
 
             return response()->jsonApi([
-                'type' => 'success',
                 'title' => "Adding new contact",
                 'message' => "User's contacts successfully saved",
-                'data' => $contact->toArray()
+             //   'data' => $contact
             ]);
         } catch (Exception $e) {
             return response()->jsonApi([
