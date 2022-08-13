@@ -18,7 +18,7 @@ build)
   echo ""
   echo -e "${B}${GREEN}1. ### UPDATE GIT SUBMODULE ###${NC}"
   git submodule init
-  git submodule update --remote
+  git submodule update --remote --force
 
   echo -e "${B}${GREEN}2. ### START BUILD ###${NC}"
   echo -e "${CYAN}Deploy Name: $DEPLOY_NAME${NC}"

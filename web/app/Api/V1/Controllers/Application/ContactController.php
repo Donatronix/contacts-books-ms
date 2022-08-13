@@ -757,7 +757,7 @@ class ContactController extends Controller
                         'user_id' => Auth::user()->getAuthIdentifier(),
                         'avatars' => $avatars
                     ],
-                    config('settings.pubsub_receiver.files')
+                    config('pubsub.queue.files')
                 );
             }
 
@@ -1163,10 +1163,10 @@ class ContactController extends Controller
     {
         $images = null;
 
-        $client = new Client(['base_uri' => config('settings.api.files.host')]);
+        $client = new Client(['base_uri' => config('settings.api.files')]);
 
         try {
-            $response = $client->request('GET', config('settings.api.files.version') . "/files?entity=contact&entity_id={$id}", [
+            $response = $client->request('GET',   "?entity=contact&entity_id={$id}", [
                 'headers' => [
                     'user-id' => Auth::user()->getAuthIdentifier(),
                     'Accept' => 'application/json',
