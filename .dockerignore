@@ -1,0 +1,11 @@
+**/__bkp
+**/.idea
+**/.editorconfig
+**/.gitignore
+**/.gitkeep
+**/.env.example
+**/.styleci.yml
+**/vendor
+**/composer.lock
+**/*.log
+web/storage/**/*.php
