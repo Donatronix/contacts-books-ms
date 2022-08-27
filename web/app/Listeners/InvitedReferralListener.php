@@ -14,8 +14,5 @@ class InvitedReferralListener
     public function handle($data)
     {
         Log::info($data);
-
-        // Send result by pubsub
-        \PubSub::publish('InvitedReferralResponse', $data, config('pubsub.queue.referrals'));
     }
 }

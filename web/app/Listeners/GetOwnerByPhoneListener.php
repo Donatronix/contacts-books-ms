@@ -9,16 +9,6 @@ use Sumra\SDK\Facades\PubSub;
 class GetOwnerByPhoneListener
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
      *
      * @param array $event
