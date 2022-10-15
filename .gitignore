@@ -5,3 +5,5 @@ docker-compose.yaml
 xdebug.ini
 server.php
 .env
+.env.production
+.env.staging
